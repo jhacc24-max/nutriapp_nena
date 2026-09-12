@@ -141,6 +141,9 @@ const MEDICAMENTOS_DB = [
   { alias: ["fenelzina", "tranilcipromina", "imao"], nombre: "IMAO (antidepresivos)", restricciones: {}, nota: "Evita quesos curados, embutidos fermentados y vino tinto (ricos en tiramina): riesgo de crisis hipertensiva." },
 ];
 
+const CATEGORIA_LABELS = { fruta: "Frutas", vegetal: "Verduras", proteina: "Carnes y proteínas", menestra: "Menestras", quinua: "Quinua", carbohidrato: "Carbohidratos", lacteo: "Lácteos", grasa: "Grasas y semillas" };
+const ORDEN_CATEGORIAS = ["fruta", "vegetal", "proteina", "menestra", "quinua", "carbohidrato", "lacteo", "grasa"];
+
 const PERFIL_DEFAULT = { edad: 32, sexo: "femenino", pesoKg: 65, tallaCm: 165, actividad: "moderado", objetivo: "mantenimiento", condiciones: [], formulaGEB: "mifflin" };
 const PRESCRIPCION_DEFAULT = { activa: false, kcalManual: null, proteinaManualG: null, carbohidratosPctManual: null, grasasPctManual: null };
 const SUPLEMENTOS_PRESET = [
@@ -176,6 +179,7 @@ const FOOD_DB = [
   { id: "f11", nombre: "Papa cocida", categoria: "carbohidrato", porcionBaseG: 100, kcal: 87, proteinasG: 1.9, carbohidratosG: 20, fibraG: 1.8, grasasG: 0.1, grasasSaturadasG: 0, sodioMg: 6, potasioMg: 379, azucaresG: 0.8 },
   { id: "f12", nombre: "Camote / batata cocido", categoria: "carbohidrato", porcionBaseG: 100, kcal: 90, proteinasG: 2, carbohidratosG: 21, fibraG: 3.3, grasasG: 0.1, grasasSaturadasG: 0, sodioMg: 36, potasioMg: 337, azucaresG: 6.5 },
   { id: "f13", nombre: "Pan de masa madre", categoria: "carbohidrato", porcionBaseG: 100, kcal: 286, proteinasG: 10, carbohidratosG: 55, fibraG: 2.5, grasasG: 1.8, grasasSaturadasG: 0.3, sodioMg: 560, potasioMg: 100, azucaresG: 2 },
+  { id: "f48", nombre: "Pan integral", categoria: "carbohidrato", porcionBaseG: 100, kcal: 247, proteinasG: 13, carbohidratosG: 41, fibraG: 7, grasasG: 4.2, grasasSaturadasG: 0.9, sodioMg: 400, potasioMg: 248, azucaresG: 6 },
   { id: "f14", nombre: "Quinoa cocida", categoria: "quinua", porcionBaseG: 100, kcal: 120, proteinasG: 4.4, carbohidratosG: 21.3, fibraG: 2.8, grasasG: 1.9, grasasSaturadasG: 0.2, sodioMg: 7, potasioMg: 172, azucaresG: 0 },
   { id: "f36", nombre: "Arracacha / racacha cocida", categoria: "carbohidrato", porcionBaseG: 100, kcal: 106, proteinasG: 1.5, carbohidratosG: 25, fibraG: 1.3, grasasG: 0.2, grasasSaturadasG: 0, sodioMg: 5, potasioMg: 450, azucaresG: 2 },
   { id: "f15", nombre: "Brócoli cocido", categoria: "vegetal", porcionBaseG: 100, kcal: 35, proteinasG: 2.4, carbohidratosG: 7.2, fibraG: 3.3, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 41, potasioMg: 293, azucaresG: 1.7 },
@@ -1052,9 +1056,9 @@ function PantallaMenu({ requerimiento, pacienteId }) {
   const edicionesDia = ediciones[claveDia] || {};
   const menuEfectivo = activo.menu.map((m) => (edicionesDia[m.key] ? { ...m, items: edicionesDia[m.key] } : m));
   const totalEfectivo = menuEfectivo.reduce((acc, m) => {
-    const t = m.items.reduce((s, it) => { const x = calcularTotalesItem(it.alimento, it.gramos); return { kcal: s.kcal + x.kcal, proteinasG: s.proteinasG + x.proteinasG }; }, { kcal: 0, proteinasG: 0 });
-    return { kcal: acc.kcal + t.kcal, proteinasG: acc.proteinasG + t.proteinasG };
-  }, { kcal: 0, proteinasG: 0 });
+    const t = m.items.reduce((s, it) => { const x = calcularTotalesItem(it.alimento, it.gramos); return { kcal: s.kcal + x.kcal, proteinasG: s.proteinasG + x.proteinasG, carbohidratosG: s.carbohidratosG + x.carbohidratosG, grasasG: s.grasasG + x.grasasG, fibraG: s.fibraG + x.fibraG }; }, { kcal: 0, proteinasG: 0, carbohidratosG: 0, grasasG: 0, fibraG: 0 });
+    return { kcal: acc.kcal + t.kcal, proteinasG: acc.proteinasG + t.proteinasG, carbohidratosG: acc.carbohidratosG + t.carbohidratosG, grasasG: acc.grasasG + t.grasasG, fibraG: acc.fibraG + t.fibraG };
+  }, { kcal: 0, proteinasG: 0, carbohidratosG: 0, grasasG: 0, fibraG: 0 });
 
   const actualizarItemsComida = (mealKey, nuevosItems) => setEdiciones((prev) => ({ ...prev, [claveDia]: { ...(prev[claveDia] || {}), [mealKey]: nuevosItems } }));
   const restablecerComida = (mealKey) => setEdiciones((prev) => { const dia = { ...(prev[claveDia] || {}) }; delete dia[mealKey]; return { ...prev, [claveDia]: dia }; });
@@ -1114,8 +1118,29 @@ function PantallaMenu({ requerimiento, pacienteId }) {
       </div>
 
       <p className="text-sm font-medium nutri-ink mb-1 capitalize">{NOMBRE_DIA_LARGO(activo.fecha)}</p>
-      <p className="text-xs nutri-muted mb-1">Total con tus ajustes: {Math.round(totalEfectivo.kcal)} kcal ({desvio >= 0 ? "+" : ""}{desvio}% vs. objetivo) · {Math.round(totalEfectivo.proteinasG)} g proteína de {Math.round(requerimiento.proteinasG)} g</p>
-      <p className="text-xs nutri-muted mb-5">{totalEfectivo.kcal >= requerimiento.get * 0.95 && totalEfectivo.proteinasG >= requerimiento.proteinasG * 0.95 ? "✅ Con esto llegas a tu meta del día." : `Aún te faltan ~${Math.max(Math.round(requerimiento.get - totalEfectivo.kcal), 0)} kcal y ~${Math.max(Math.round(requerimiento.proteinasG - totalEfectivo.proteinasG), 0)} g de proteína para completar el día.`}</p>
+      <div className="nutri-panel rounded-xl p-4 mb-5">
+        {[
+          { label: "Calorías", unidad: "kcal", meta: requerimiento.get, actual: totalEfectivo.kcal },
+          { label: "Proteína", unidad: "g", meta: requerimiento.proteinasG, actual: totalEfectivo.proteinasG },
+          { label: "Carbohidratos", unidad: "g", meta: requerimiento.carbohidratosG, actual: totalEfectivo.carbohidratosG },
+          { label: "Grasas", unidad: "g", meta: requerimiento.grasasG, actual: totalEfectivo.grasasG },
+          { label: "Fibra", unidad: "g", meta: requerimiento.fibraG, actual: totalEfectivo.fibraG },
+        ].map((n, i) => {
+          const cumplido = n.actual >= n.meta;
+          return (
+            <div key={i} className="py-2" style={{ borderTop: i > 0 ? "1px solid var(--panel-border)" : "none" }}>
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-xs font-medium nutri-ink">{n.label}</span>
+                {cumplido ? <span className="text-xs" style={{ color: "#3E8E5A" }}>✅ Cumplido</span> : <span className="text-xs nutri-warn">⚠️ Ajustar</span>}
+              </div>
+              <div className="flex items-center justify-between text-xs nutri-muted">
+                <span>Meta: {Math.round(n.meta)} {n.unidad}</span>
+                <span>Menú: {Math.round(n.actual)} {n.unidad}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       <div className="space-y-4">
         {menuEfectivo.map((m) => (
@@ -1143,7 +1168,15 @@ function PantallaMenu({ requerimiento, pacienteId }) {
               <div className="flex gap-2 mt-2">
                 <select className="flex-1 rounded-lg nutri-chip px-2 py-1.5 bg-white nutri-ink" style={{ fontSize: "0.7rem" }} defaultValue="" onChange={(e) => agregarItem(m.key, e.target.value)}>
                   <option value="" disabled>Elige un alimento...</option>
-                  {FOOD_DB.filter((f) => aptoParaRestricciones(f, requerimiento.restricciones)).map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+                  {ORDEN_CATEGORIAS.map((cat) => {
+                    const items = FOOD_DB.filter((f) => f.categoria === cat && aptoParaRestricciones(f, requerimiento.restricciones));
+                    if (items.length === 0) return null;
+                    return (
+                      <optgroup key={cat} label={CATEGORIA_LABELS[cat] || cat}>
+                        {items.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+                      </optgroup>
+                    );
+                  })}
                 </select>
                 <button onClick={() => setAgregando(null)} className="text-xs nutri-muted px-2">Cancelar</button>
               </div>
