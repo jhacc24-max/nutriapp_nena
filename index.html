@@ -795,7 +795,7 @@ function DesglosePreview({ alimento, gramos }) {
   );
 }
 
-function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId }) {
+function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId, fechaInicial, onFechaInicialConsumida }) {
   const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
   const [recipienteId, setRecipienteId] = useState("ninguno");
@@ -807,9 +807,22 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const [fechaSeleccionada, setFechaSeleccionada] = useState(hoyISO());
   const [logOtraFecha, setLogOtraFecha] = useState([]);
   const [filtroMomento, setFiltroMomento] = useState("todos");
+  const [semanaOffset, setSemanaOffset] = useState(0);
 
   const hoy = hoyISO();
-  const diasSemana = useMemo(() => { const l = getLunes(new Date()); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setDate(d.getDate() + i); return d; }); }, []);
+  const diasSemana = useMemo(() => { const l = getLunes(new Date()); l.setDate(l.getDate() + semanaOffset * 7); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setDate(d.getDate() + i); return d; }); }, [semanaOffset]);
+
+  // Si venimos de "Historial" con una fecha concreta para editar, saltamos a la semana de esa fecha.
+  useEffect(() => {
+    if (!fechaInicial) return;
+    const lunesActual = getLunes(new Date());
+    const lunesDestino = getLunes(new Date(fechaInicial + "T00:00:00"));
+    const offset = Math.round((lunesDestino - lunesActual) / (7 * DIAS_EN_MS));
+    setSemanaOffset(offset);
+    setFechaSeleccionada(fechaInicial);
+    setSeleccionado(null);
+    if (onFechaInicialConsumida) onFechaInicialConsumida();
+  }, [fechaInicial]);
 
   useEffect(() => {
     if (fechaSeleccionada === hoy) return;
@@ -863,7 +876,12 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
       <h1 className="nutri-serif text-2xl nutri-ink mb-1">Registro de alimentos</h1>
       <p className="text-sm nutri-muted mb-3">Busca un alimento, indica el recipiente (si pesaste con él) y verás el cálculo al instante.</p>
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1 mb-4" style={{ scrollbarWidth: "none" }}>
+      <div className="flex items-center justify-between mb-2">
+        <button onClick={() => setSemanaOffset((s) => s - 1)} className="text-xs nutri-brand-text">‹ Semana anterior</button>
+        <span className="text-xs nutri-muted">{RANGO_SEMANA(diasSemana[0], diasSemana[6])}</span>
+        <button onClick={() => setSemanaOffset((s) => Math.min(s + 1, 0))} disabled={semanaOffset === 0} className="text-xs nutri-brand-text disabled:opacity-30">Semana siguiente ›</button>
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1 mb-2" style={{ scrollbarWidth: "none" }}>
         {diasSemana.map((d, i) => {
           const iso = d.toISOString().slice(0, 10);
           const futuro = iso > hoy;
@@ -875,6 +893,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
           );
         })}
       </div>
+      {semanaOffset !== 0 && <button onClick={() => { setSemanaOffset(0); setFechaSeleccionada(hoy); setSeleccionado(null); }} className="text-xs nutri-brand-text mb-2 underline">Volver a esta semana</button>}
       {fechaSeleccionada !== hoy && <p className="text-xs nutri-brand-text mb-3">Editando el registro del {fechaSeleccionada}. Los cambios de esa fecha se guardan igual que los de hoy.</p>}
 
       <div className="relative mb-3">
@@ -1014,7 +1033,7 @@ function FilaCumplimiento({ n }) {
   );
 }
 
-function PantallaHistorial({ requerimiento, pacienteId, onCerrar }) {
+function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia }) {
   const [vista, setVista] = useState("semana");
   const [anio, setAnio] = useState(new Date().getFullYear());
   const [mes, setMes] = useState(new Date().getMonth());
@@ -1109,7 +1128,12 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar }) {
                       <div className="text-sm nutri-ink capitalize">{NOMBRE_DIA_LARGO(d.dia)}</div>
                       <div className="text-xs nutri-muted">{d.items.length === 0 ? "Sin registro" : `${Math.round(t.kcal)} kcal · ${Math.round(t.proteinasG)} g proteína`}</div>
                     </div>
-                    {d.items.length > 0 && (cumpleKcal ? <span style={{ color: "#3E8E5A" }}>✅</span> : <span className="nutri-warn">⚠️</span>)}
+                    <div className="flex items-center gap-3">
+                      {d.items.length > 0 && (cumpleKcal ? <span style={{ color: "#3E8E5A" }}>✅</span> : <span className="nutri-warn">⚠️</span>)}
+                      <button onClick={() => onEditarDia(d.fecha)} className="nutri-brand-text flex items-center gap-1 text-xs shrink-0">
+                        <IconEdit size={14} /> {d.items.length === 0 ? "Agregar" : "Editar"}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -1794,6 +1818,7 @@ function NutriApp({ pacienteId, salir }) {
   const [log, setLog] = useState(() => { try { const s = localStorage.getItem("nutriapp_log_" + hoyISO()); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [tab, setTab] = useState("perfil");
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
+  const [fechaDesdeHistorial, setFechaDesdeHistorial] = useState(null);
   const [errorSync, setErrorSync] = useState("");
   const [enLinea, setEnLinea] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   useEffect(() => {
@@ -1908,7 +1933,7 @@ function NutriApp({ pacienteId, salir }) {
     { key: "opciones", label: "Opciones", icon: IconSettings },
   ];
 
-  if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} />;
+  if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
@@ -1924,7 +1949,7 @@ function NutriApp({ pacienteId, salir }) {
         </div>
       )}
       {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
-      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} />}
+      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} />}
       {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} />}
       {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} />}
       {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} />}
