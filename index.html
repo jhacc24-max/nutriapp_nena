@@ -1029,6 +1029,28 @@ function Bar({ value, max, colorClass }) {
   );
 }
 
+/* Barra de avance por nutriente: roja→amarilla→verde mientras se completa la meta,
+   y el tramo que excede el 100% se pinta de blanco, separado por una línea en la marca del 100%. */
+const ESCALA_BARRA_PCT = 130;
+function BarraNutriente({ valor, meta }) {
+  const pct = meta > 0 ? (valor / meta) * 100 : 0;
+  const pctClamp = Math.max(pct, 0);
+  const anchoDentro = Math.min(pctClamp, 100);
+  const excedido = pctClamp > 100;
+  const anchoExceso = excedido ? Math.min(pctClamp - 100, ESCALA_BARRA_PCT - 100) : 0;
+  const color = pctClamp >= 100 ? "#6C8F63" : pctClamp >= 50 ? "#C79A3D" : "#B23B3B";
+  const posMarca = (100 / ESCALA_BARRA_PCT) * 100;
+  return (
+    <div className="relative w-full h-1.5 rounded-full nutri-track overflow-hidden mt-1.5">
+      <div className="h-full" style={{ width: `${(anchoDentro / ESCALA_BARRA_PCT) * 100}%`, background: color, transition: "width .3s" }} />
+      {excedido && (
+        <div className="h-full absolute top-0" style={{ left: `${posMarca}%`, width: `${(anchoExceso / ESCALA_BARRA_PCT) * 100}%`, background: "#FFFFFF" }} />
+      )}
+      <div className="absolute top-0 h-full" style={{ left: `${posMarca}%`, width: 1, background: "var(--panel-border)" }} />
+    </div>
+  );
+}
+
 /* Un solo tipo de gráfico (gauge radial con inclinación 3D y sombra) reutilizado en Panel,
    Historial y el objetivo calórico — así todo el cumplimiento se lee con el mismo lenguaje visual. */
 function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = "porcentaje", animarDelay = 0 }) {
@@ -1252,7 +1274,7 @@ function DesglosePreview({ alimento, gramos }) {
   );
 }
 
-function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId, fechaInicial, onFechaInicialConsumida }) {
+function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId, fechaInicial, onFechaInicialConsumida, requerimiento }) {
   const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
   const [recipienteId, setRecipienteId] = useState("ninguno");
@@ -1306,6 +1328,14 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const mostrarRestarCarne = momento === "almuerzo" && seleccionado && seleccionado.categoria !== "proteina" && carnesAlmuerzo.length > 0;
 
   const totalesActivo = calcularTotalesLog(logFiltrado);
+  const pctMomento = filtroMomento === "todos" ? 1 : (MEAL_DEFS.find((m) => m.key === filtroMomento) || {}).pct || 1;
+  const metasActivo = {
+    kcal: (requerimiento.get || 0) * pctMomento,
+    proteinasG: (requerimiento.proteinasG || 0) * pctMomento,
+    carbohidratosG: (requerimiento.carbohidratosG || 0) * pctMomento,
+    grasasG: (requerimiento.grasasG || 0) * pctMomento,
+    sodioMg: (requerimiento.sodioMg || 0) * pctMomento,
+  };
 
   const iniciarEdicion = (item) => {
     setEditandoId(item.uid);
@@ -1419,11 +1449,11 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
           Totales {filtroMomento !== "todos" ? `de ${filtroMomento}` : ""} {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}
         </span>
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.kcal)}</div><div className="text-[11px] nutri-muted">kcal</div></div>
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.proteinasG)}g</div><div className="text-[11px] nutri-muted">proteína</div></div>
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.carbohidratosG)}g</div><div className="text-[11px] nutri-muted">carbohidratos</div></div>
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.grasasG)}g</div><div className="text-[11px] nutri-muted">grasas</div></div>
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.sodioMg)}mg</div><div className="text-[11px] nutri-muted">sodio</div></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.kcal)}</div><div className="text-[11px] nutri-muted">kcal</div><BarraNutriente valor={totalesActivo.kcal} meta={metasActivo.kcal} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.proteinasG)}g</div><div className="text-[11px] nutri-muted">proteína</div><BarraNutriente valor={totalesActivo.proteinasG} meta={metasActivo.proteinasG} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.carbohidratosG)}g</div><div className="text-[11px] nutri-muted">carbohidratos</div><BarraNutriente valor={totalesActivo.carbohidratosG} meta={metasActivo.carbohidratosG} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.grasasG)}g</div><div className="text-[11px] nutri-muted">grasas</div><BarraNutriente valor={totalesActivo.grasasG} meta={metasActivo.grasasG} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.sodioMg)}mg</div><div className="text-[11px] nutri-muted">sodio</div><BarraNutriente valor={totalesActivo.sodioMg} meta={metasActivo.sodioMg} /></div>
         </div>
       </div>
 
@@ -2523,7 +2553,7 @@ function NutriApp({ pacienteId, salir }) {
         </div>
       )}
       {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
-      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} />}
+      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
       {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
       {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} />}
       {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} />}
