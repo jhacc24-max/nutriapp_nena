@@ -606,6 +606,7 @@ function calcularTotalesLog(log) {
    qué comida se originó el déficit o el exceso y sugerir un cambio concreto para hoy. */
 const NOMBRE_MOMENTO = { desayuno: "el desayuno", almuerzo: "el almuerzo", cena: "la cena", colacion: "la colación" };
 const MOMENTOS_KEYS = ["desayuno", "almuerzo", "cena", "colacion"];
+const MOMENTO_LABEL_CAPITALIZADO = { desayuno: "Desayuno", almuerzo: "Almuerzo", cena: "Cena", colacion: "Colación" };
 
 function evaluarDia(log, requerimiento) {
   const totales = calcularTotalesLog(log);
@@ -693,27 +694,108 @@ function generarRecomendacionesDiaAnterior(analisis, requerimiento) {
 /* Elige hasta n alimentos de la base (de categorías distintas cuando es posible, y aptos
    para las restricciones del paciente) y calcula cuántos gramos de cada uno cubrirían el
    déficit del nutriente indicado. */
+/* Semilla numérica basada en la fecha de hoy: hace que la rotación de sugerencias
+   cambie de un día a otro pero se mantenga estable durante el mismo día (no en cada render). */
+function semillaDelDia() {
+  const s = hoyISO();
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 function sugerirAlimentos(nutrienteKey, cantidadFaltante, restricciones, n = 4) {
   if (!(cantidadFaltante > 0)) return [];
   const candidatos = FOOD_DB
     .filter((f) => f[nutrienteKey] > 0 && aptoParaRestricciones(f, restricciones || {}))
     .sort((a, b) => b[nutrienteKey] - a[nutrienteKey]);
-  const elegidos = [];
-  const categoriasUsadas = new Set();
-  for (const f of candidatos) {
-    if (categoriasUsadas.has(f.categoria)) continue;
-    categoriasUsadas.add(f.categoria);
-    elegidos.push(f);
-    if (elegidos.length >= n) break;
-  }
-  if (elegidos.length < n) {
-    for (const f of candidatos) {
-      if (elegidos.some((e) => e.id === f.id)) continue;
-      elegidos.push(f);
-      if (elegidos.length >= n) break;
-    }
-  }
+  if (candidatos.length === 0) return [];
+  /* Solo se consideran los alimentos realmente relevantes para este nutriente (el tercio
+     superior, con un mínimo de 8): así no se sugieren cantidades absurdas de algo que casi
+     no lo aporta (p. ej. coliflor para cubrir un déficit de grasas). */
+  const topK = Math.min(candidatos.length, Math.max(8, Math.ceil(candidatos.length / 3)));
+  const relevantes = candidatos.slice(0, topK);
+  const porCategoria = {};
+  relevantes.forEach((f) => { (porCategoria[f.categoria] = porCategoria[f.categoria] || []).push(f); });
+  const seed = semillaDelDia();
+  /* De cada categoría relevante se rota entre sus 3 mejores opciones (no siempre la de mayor
+     contenido absoluto), para no repetir siempre aceite de oliva / avena / tarwi. */
+  const categorias = Object.keys(porCategoria).sort();
+  const candidatosDelDia = categorias.map((cat, i) => {
+    const lista = porCategoria[cat];
+    const top = lista.slice(0, Math.min(3, lista.length));
+    return top[(seed + i * 13) % top.length];
+  });
+  const orden = candidatosDelDia
+    .map((f, i) => ({ f, k: (seed * (i + 7) + i) % 997 }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.f);
+  const elegidos = orden.slice(0, Math.min(n, orden.length));
   return elegidos.map((f) => ({ nombre: f.nombre, gramos: Math.max(Math.round((cantidadFaltante / f[nutrienteKey]) * 100), 5) }));
+}
+
+/* Patrón clínico frecuente (saciedad precoz: adultos mayores, post-quirúrgicos, oncológicos):
+   la proteína se cubre con carnes/huevo, pero falta volumen para llegar a calorías,
+   carbohidratos y grasas a la vez. La estrategia habitual no es "comer más cantidad" sino
+   fortificar con combos energéticos concentrados (avena con lácteo, frutos secos, palta,
+   camote con aceite...) que aportan a los tres déficits en poco volumen. Si la proteína ya
+   está cubierta, se descartan los alimentos proteicamente densos (carnes, pescado, lácteos
+   muy proteicos, batido de proteína) para no hacer que el paciente termine excediendo su
+   meta de proteína solo por completar energía. */
+function sugerirCombosEnergeticos(requerimiento, totales, restricciones, proteinaCubierta, n = 4) {
+  const kcalFaltante = requerimiento.get - totales.kcal;
+  const carbFaltante = requerimiento.carbohidratosG - totales.carbohidratosG;
+  const grasaFaltante = requerimiento.grasasG - totales.grasasG;
+  if (!(kcalFaltante > 0) || !(carbFaltante > 0) || !(grasaFaltante > 0)) return [];
+
+  let candidatos = FOOD_DB.filter((f) => f.kcal > 0 && aptoParaRestricciones(f, restricciones || {}));
+  if (proteinaCubierta) {
+    /* Umbral de g de proteína por kcal: deja fuera carnes, pescado, batido de proteína,
+       yogur griego y menestras muy proteicas (tarwi); mantiene lácteos moderados, quinua,
+       frutas, grasas y la mayoría de menestras y carbohidratos. */
+    candidatos = candidatos.filter((f) => f.proteinasG / f.kcal <= 0.08);
+  }
+  if (candidatos.length === 0) return [];
+
+  /* Puntaje de combo: cuánto cubre una porción de referencia de 100 g de los tres déficits a
+     la vez (con un extra si aporta a más de uno), para priorizar alimentos "todo en uno"
+     (avena, palta, frutos secos) en vez de uno que solo sobresalga en un nutriente. */
+  const puntuados = candidatos.map((f) => {
+    const cobKcal = Math.min(f.kcal / kcalFaltante, 1);
+    const cobCarb = Math.min(f.carbohidratosG / carbFaltante, 1);
+    const cobGrasa = Math.min(f.grasasG / grasaFaltante, 1);
+    const nAportes = [f.kcal > 0, f.carbohidratosG > 0, f.grasasG > 0].filter(Boolean).length;
+    return { f, score: (cobKcal + cobCarb + cobGrasa) * (nAportes >= 2 ? 1.3 : 1) };
+  }).filter((p) => p.score > 0).sort((a, b) => b.score - a.score);
+  if (puntuados.length === 0) return [];
+
+  const topK = Math.min(puntuados.length, Math.max(8, Math.ceil(puntuados.length / 3)));
+  const relevantes = puntuados.slice(0, topK).map((p) => p.f);
+  const porCategoria = {};
+  relevantes.forEach((f) => { (porCategoria[f.categoria] = porCategoria[f.categoria] || []).push(f); });
+  const seed = semillaDelDia();
+  const categorias = Object.keys(porCategoria).sort();
+  const candidatosDelDia = categorias.map((cat, i) => {
+    const lista = porCategoria[cat];
+    const top = lista.slice(0, Math.min(3, lista.length));
+    return top[(seed + i * 13) % top.length];
+  });
+  const orden = candidatosDelDia
+    .map((f, i) => ({ f, k: (seed * (i + 7) + i) % 997 }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.f);
+  const elegidos = orden.slice(0, Math.min(n, orden.length));
+
+  return elegidos.map((f) => {
+    /* Gramos: el menor entre lo que se necesitaría para cubrir cada déficit por separado, para
+       no sobrepasar de largo el primero que se complete (p. ej. no sugerir 800 g de avena solo
+       por llegar a la meta de grasas cuando con 200 g ya se cubrió el carbohidrato). */
+    const opciones = [];
+    if (f.kcal > 0) opciones.push((kcalFaltante / f.kcal) * 100);
+    if (f.carbohidratosG > 0) opciones.push((carbFaltante / f.carbohidratosG) * 100);
+    if (f.grasasG > 0) opciones.push((grasaFaltante / f.grasasG) * 100);
+    const gramos = Math.max(Math.round(Math.min(...opciones) / 5) * 5, 10);
+    return { nombre: f.nombre, gramos };
+  });
 }
 
 function generarSugerencias(requerimiento, totales, perfil, log) {
@@ -737,6 +819,19 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
 
   const enRiesgoAlto = requerimiento.riesgoNutricionalMayor && requerimiento.riesgoNutricionalMayor.nivel === "alto";
   const kcalFaltante = requerimiento.get - totales.kcal;
+  const carbFaltante = requerimiento.carbohidratosG - totales.carbohidratosG;
+  const grasaFaltante = requerimiento.grasasG - totales.grasasG;
+  const proteinaFaltante = requerimiento.proteinasG - totales.proteinasG;
+  const proteinaCubierta = proteinaFaltante <= requerimiento.proteinasG * 0.15;
+
+  /* Patrón frecuente (saciedad precoz): se cumple proteína pero faltan calorías, carbohidratos
+     y grasas a la vez. En ese caso conviene un solo bloque de combos energéticos concentrados
+     en vez de tres listas de alimentos sueltos (ver sugerirCombosEnergeticos). */
+  const esDeficitTriple = !enRiesgoAlto && perfil.objetivo !== "perdida"
+    && kcalFaltante > requerimiento.get * 0.1
+    && carbFaltante > requerimiento.carbohidratosG * 0.15
+    && grasaFaltante > requerimiento.grasasG * 0.15;
+
   /* En una persona con desnutrición ya identificada, subir la ingesta de golpe hasta cubrir
      todo el déficit calórico del día (en vez de progresivamente) es justo el escenario que
      puede desencadenar un síndrome de realimentación: caídas súbitas de fósforo, potasio y
@@ -746,6 +841,11 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     sugerencias.push({
       mensaje: `Detecté riesgo de desnutrición y hoy la ingesta quedó bastante por debajo de tu meta calórica. En este contexto, subir la comida de golpe hasta cubrir todo el déficit no es lo más seguro: existe riesgo de síndrome de realimentación (caída brusca de potasio, fósforo y magnesio). Lo recomendable es aumentar la ingesta de forma gradual en 3-5 días, con control médico y de electrolitos, en vez de intentar cubrir todo hoy mismo.`,
       opciones: [],
+    });
+  } else if (esDeficitTriple) {
+    sugerencias.push({
+      mensaje: `Hoy te faltan calorías (${Math.round(kcalFaltante)} kcal), carbohidratos (${Math.round(carbFaltante)} g) y grasas (${Math.round(grasaFaltante)} g) a la vez${proteinaCubierta ? ", pero tu proteína ya está cubierta" : ""}. En vez de comer más cantidad, conviene fortificar lo que ya comes con combos energéticos concentrados${proteinaCubierta ? " y bajos en proteína, para no pasarte de tu meta" : ""}:`,
+      opciones: sugerirCombosEnergeticos(requerimiento, totales, restricciones, proteinaCubierta),
     });
   } else if (perfil.objetivo !== "perdida" && kcalFaltante > requerimiento.get * 0.1) {
     sugerencias.push({
@@ -757,7 +857,6 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     sugerencias.push({ mensaje: `Superaste tu objetivo calórico de hoy por ${Math.round(totales.kcal - requerimiento.get)} kcal.`, opciones: [] });
   }
 
-  const proteinaFaltante = requerimiento.proteinasG - totales.proteinasG;
   if (proteinaFaltante > requerimiento.proteinasG * 0.15) {
     sugerencias.push({
       mensaje: `Te faltan ${Math.round(proteinaFaltante)} g de proteína. Algunas opciones para cubrirlos:`,
@@ -765,16 +864,14 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     });
   }
 
-  const carbFaltante = requerimiento.carbohidratosG - totales.carbohidratosG;
-  if (carbFaltante > requerimiento.carbohidratosG * 0.15) {
+  if (!esDeficitTriple && carbFaltante > requerimiento.carbohidratosG * 0.15) {
     sugerencias.push({
       mensaje: `Te faltan ${Math.round(carbFaltante)} g de carbohidratos. Algunas opciones:`,
       opciones: sugerirAlimentos("carbohidratosG", carbFaltante, restricciones),
     });
   }
 
-  const grasaFaltante = requerimiento.grasasG - totales.grasasG;
-  if (grasaFaltante > requerimiento.grasasG * 0.15) {
+  if (!esDeficitTriple && grasaFaltante > requerimiento.grasasG * 0.15) {
     sugerencias.push({
       mensaje: `Te faltan ${Math.round(grasaFaltante)} g de grasas. Algunas opciones:`,
       opciones: sugerirAlimentos("grasasG", grasaFaltante, restricciones),
@@ -1029,6 +1126,28 @@ function Bar({ value, max, colorClass }) {
   );
 }
 
+/* Barra de avance por nutriente: roja→amarilla→verde mientras se completa la meta,
+   y el tramo que excede el 100% se pinta de blanco, separado por una línea en la marca del 100%. */
+const ESCALA_BARRA_PCT = 130;
+function BarraNutriente({ valor, meta }) {
+  const pct = meta > 0 ? (valor / meta) * 100 : 0;
+  const pctClamp = Math.max(pct, 0);
+  const anchoDentro = Math.min(pctClamp, 100);
+  const excedido = pctClamp > 100;
+  const anchoExceso = excedido ? Math.min(pctClamp - 100, ESCALA_BARRA_PCT - 100) : 0;
+  const color = pctClamp >= 100 ? "#6C8F63" : pctClamp >= 50 ? "#C79A3D" : "#B23B3B";
+  const posMarca = (100 / ESCALA_BARRA_PCT) * 100;
+  return (
+    <div className="relative w-full h-1.5 rounded-full nutri-track overflow-hidden mt-1.5">
+      <div className="h-full" style={{ width: `${(anchoDentro / ESCALA_BARRA_PCT) * 100}%`, background: color, transition: "width .3s" }} />
+      {excedido && (
+        <div className="h-full absolute top-0" style={{ left: `${posMarca}%`, width: `${(anchoExceso / ESCALA_BARRA_PCT) * 100}%`, background: "#FFFFFF" }} />
+      )}
+      <div className="absolute top-0 h-full" style={{ left: `${posMarca}%`, width: 1, background: "var(--panel-border)" }} />
+    </div>
+  );
+}
+
 /* Un solo tipo de gráfico (gauge radial con inclinación 3D y sombra) reutilizado en Panel,
    Historial y el objetivo calórico — así todo el cumplimiento se lee con el mismo lenguaje visual. */
 function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = "porcentaje", animarDelay = 0 }) {
@@ -1088,7 +1207,7 @@ function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = 
 /* Vista de cumplimiento: por defecto una cuadrícula de gauges independientes, uno por
    nutriente (sin superponerse, para que no se lean como "anillos dentro de anillos"); al
    tocar un nutriente, el resto desaparece y se aísla su gauge en grande con el detalle exacto. */
-function PanelMetas({ totales, requerimiento, tamanoGrid = "md" }) {
+function PanelMetas({ totales, requerimiento, tamanoGrid = "md", log }) {
   const metricas = [
     { key: "kcal", label: "Calorías", valor: totales.kcal, meta: requerimiento.get, unidad: "kcal", color: "var(--accent-energy)" },
     { key: "proteinasG", label: "Proteína", valor: totales.proteinasG, meta: requerimiento.proteinasG, unidad: "g", color: "var(--accent-protein)" },
@@ -1100,12 +1219,39 @@ function PanelMetas({ totales, requerimiento, tamanoGrid = "md" }) {
   if (seleccionado !== null) {
     const m = metricas[seleccionado];
     const pct = m.meta > 0 ? Math.round((m.valor / m.meta) * 100) : 0;
+    const porMomento = MOMENTOS_KEYS.map((momento) => {
+      const items = (log || [])
+        .filter((it) => it.momento === momento)
+        .map((it) => ({ ...it, aporte: calcularTotalesItem(it.alimento, it.gramos)[m.key] }))
+        .filter((it) => it.aporte > 0)
+        .sort((a, b) => b.aporte - a.aporte);
+      return { momento, items };
+    }).filter((g) => g.items.length > 0);
     return (
       <div key="detalle" className="nutri-fade-in flex flex-col items-center py-2">
         <GaugeRadial label={m.label} valor={m.valor} meta={m.meta} unidad={m.unidad} color={m.color} tamano="lg" modo="porcentaje" />
         <span className="text-sm font-medium nutri-ink mt-3">{m.label}</span>
         <span className="text-xs nutri-muted">{Math.round(m.valor)} / {Math.round(m.meta)} {m.unidad} · {pct}%{pct >= 100 ? " ✓" : ""}</span>
-        <button onClick={() => setSeleccionado(null)} className="text-xs nutri-brand-text mt-4 underline">‹ Ver todas las metas</button>
+        {log && (
+          <div className="w-full mt-4 text-left">
+            {porMomento.length === 0 ? (
+              <p className="text-xs nutri-muted text-center">Ningún alimento registrado aportó {m.label.toLowerCase()}.</p>
+            ) : porMomento.map((g) => (
+              <div key={g.momento} className="mb-3">
+                <span className="text-xs font-medium nutri-ink capitalize block mb-1">{MOMENTO_LABEL_CAPITALIZADO[g.momento]}</span>
+                <ul className="space-y-0.5">
+                  {g.items.map((it, i) => (
+                    <li key={i} className="text-xs nutri-muted flex items-center justify-between">
+                      <span>{it.alimento.nombre} ({it.gramos} g)</span>
+                      <span className="nutri-ink">{Math.round(it.aporte)} {m.unidad}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setSeleccionado(null)} className="text-xs nutri-brand-text mt-1 underline">‹ Ver todas las metas</button>
       </div>
     );
   }
@@ -1252,7 +1398,7 @@ function DesglosePreview({ alimento, gramos }) {
   );
 }
 
-function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId, fechaInicial, onFechaInicialConsumida }) {
+function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId, fechaInicial, onFechaInicialConsumida, requerimiento }) {
   const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
   const [recipienteId, setRecipienteId] = useState("ninguno");
@@ -1305,7 +1451,15 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const pesoNeto = Math.max(Math.round(pesoBruto - tara - pesoCarneRestada), 0);
   const mostrarRestarCarne = momento === "almuerzo" && seleccionado && seleccionado.categoria !== "proteina" && carnesAlmuerzo.length > 0;
 
-  const totalesActivo = calcularTotalesLog(logActivo);
+  const totalesActivo = calcularTotalesLog(logFiltrado);
+  const pctMomento = filtroMomento === "todos" ? 1 : (MEAL_DEFS.find((m) => m.key === filtroMomento) || {}).pct || 1;
+  const metasActivo = {
+    kcal: (requerimiento.get || 0) * pctMomento,
+    proteinasG: (requerimiento.proteinasG || 0) * pctMomento,
+    carbohidratosG: (requerimiento.carbohidratosG || 0) * pctMomento,
+    grasasG: (requerimiento.grasasG || 0) * pctMomento,
+    sodioMg: (requerimiento.sodioMg || 0) * pctMomento,
+  };
 
   const iniciarEdicion = (item) => {
     setEditandoId(item.uid);
@@ -1415,11 +1569,15 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
         </div>
       )}
       <div className="nutri-panel rounded-2xl p-4 mb-5">
-        <span className="text-sm font-medium nutri-ink block mb-2">Totales {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}</span>
+        <span className="text-sm font-medium nutri-ink block mb-2">
+          Totales{filtroMomento !== "todos" ? ` de ${filtroMomento}` : ""} {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}
+        </span>
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.kcal)}</div><div className="text-[11px] nutri-muted">kcal</div></div>
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.proteinasG)}g</div><div className="text-[11px] nutri-muted">proteína</div></div>
-          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.sodioMg)}mg</div><div className="text-[11px] nutri-muted">sodio</div></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.kcal)}</div><div className="text-[11px] nutri-muted">kcal</div><BarraNutriente valor={totalesActivo.kcal} meta={metasActivo.kcal} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.proteinasG)}g</div><div className="text-[11px] nutri-muted">proteína</div><BarraNutriente valor={totalesActivo.proteinasG} meta={metasActivo.proteinasG} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.carbohidratosG)}g</div><div className="text-[11px] nutri-muted">carbohidratos</div><BarraNutriente valor={totalesActivo.carbohidratosG} meta={metasActivo.carbohidratosG} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.grasasG)}g</div><div className="text-[11px] nutri-muted">grasas</div><BarraNutriente valor={totalesActivo.grasasG} meta={metasActivo.grasasG} /></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.sodioMg)}mg</div><div className="text-[11px] nutri-muted">sodio</div><BarraNutriente valor={totalesActivo.sodioMg} meta={metasActivo.sodioMg} /></div>
         </div>
       </div>
 
@@ -1462,7 +1620,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
                 <div>
                   <div className="text-sm nutri-ink">{item.alimento.nombre}</div>
                   <div className="text-xs nutri-muted capitalize">
-                    {item.momento} · {item.gramos} g · {Math.round(calcularTotalesItem(item.alimento, item.gramos).kcal)} kcal
+                    {item.momento} · {item.gramos} g · {Math.round(calcularTotalesItem(item.alimento, item.gramos).kcal)} kcal · {Math.round(calcularTotalesItem(item.alimento, item.gramos).proteinasG)}g prot · {Math.round(calcularTotalesItem(item.alimento, item.gramos).carbohidratosG)}g carb
                     {item.tara ? ` · (${item.tara.pesoBruto} g bruto${item.tara.recipiente ? ` − ${item.tara.tara} g ${item.tara.recipiente}` : ""}${item.tara.carneGramos ? ` − ${item.tara.carneGramos} g ${item.tara.carneNombre}` : ""})` : ""}
                   </div>
                 </div>
@@ -1604,7 +1762,7 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
                     </div>
                     {expandido && (
                       <div className="px-4 pb-4 pt-1 border-t" style={{ borderColor: "var(--panel-border)" }}>
-                        <PanelMetas totales={t} requerimiento={requerimiento} tamanoGrid="sm" />
+                        <PanelMetas totales={t} requerimiento={requerimiento} tamanoGrid="sm" log={d.items} />
                       </div>
                     )}
                   </div>
@@ -1718,6 +1876,26 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
         {ultimoPeso && (
           <p className="text-xs nutri-muted">Último registro: {ultimoPeso.pesoKg} kg ({ultimoPeso.fecha}){deltaPeso !== null && <> · {deltaPeso >= 0 ? "+" : ""}{deltaPeso.toFixed(1)} kg desde el registro anterior</>}</p>
         )}
+        {pesosOrdenados.length > 1 && (
+          <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--panel-border)" }}>
+            <span className="text-xs font-medium nutri-ink block mb-2">Historial de pesos</span>
+            <div className="space-y-1.5">
+              {[...pesosOrdenados].reverse().slice(0, 10).map((p, i, arr) => {
+                const anterior = arr[i + 1];
+                const delta = anterior ? p.pesoKg - anterior.pesoKg : null;
+                return (
+                  <div key={p.id || p.fecha} className="flex items-center justify-between text-xs">
+                    <span className="nutri-muted">{p.fecha}</span>
+                    <span className="nutri-ink font-medium">{p.pesoKg} kg</span>
+                    <span className={delta === null ? "nutri-muted" : delta > 0 ? "nutri-warn" : delta < 0 ? "nutri-brand-text" : "nutri-muted"}>
+                      {delta === null ? "—" : `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} kg`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {requerimiento.riesgoNutricionalMayor && (
           <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--panel-border)" }}>
             <p className="text-xs nutri-muted mb-1">IMC (adulto mayor): <span className="nutri-ink font-medium">{requerimiento.riesgoNutricionalMayor.imc.toFixed(1)}</span> · {requerimiento.riesgoNutricionalMayor.categoriaIMC}</p>
@@ -1809,7 +1987,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
       <div className="nutri-panel rounded-2xl p-5">
         <span className="text-sm font-medium nutri-ink block mb-1">Cumplimiento de metas de hoy</span>
         <p className="text-xs nutri-muted mb-1">Cada anillo es un nutriente frente a tu meta diaria.</p>
-        <PanelMetas totales={totales} requerimiento={requerimiento} />
+        <PanelMetas totales={totales} requerimiento={requerimiento} log={log} />
       </div>
     </div>
   );
@@ -1828,6 +2006,33 @@ const NOMBRE_DIA_CORTO = (d) => d.toLocaleDateString("es-ES", { weekday: "short"
 const NOMBRE_DIA_LARGO = (d) => d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" });
 const RANGO_SEMANA = (inicio, fin) => `${inicio.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${fin.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
 
+/* Conversión aproximada de cucharas a gramos para aceites y similares (referencia habitual:
+   1 cucharadita ≈ 5 g, 1 cucharada ≈ 15 g), para no obligar a pesar el aceite en una balanza. */
+const GRAMOS_CUCHARADITA = 5;
+const GRAMOS_CUCHARADA = 15;
+const UNIDADES_CUCHARA = [
+  { label: "½ cucharadita", gramos: GRAMOS_CUCHARADITA / 2 },
+  { label: "1 cucharadita", gramos: GRAMOS_CUCHARADITA },
+  { label: "½ cucharada", gramos: GRAMOS_CUCHARADA / 2 },
+  { label: "1 cucharada", gramos: GRAMOS_CUCHARADA },
+];
+function esAceite(alimento) {
+  return !!alimento && alimento.categoria === "grasa" && /aceite/i.test(alimento.nombre);
+}
+function SelectorCucharas({ onElegir }) {
+  return (
+    <select
+      className="rounded-lg nutri-chip px-1.5 py-1 bg-white nutri-ink"
+      style={{ fontSize: "0.7rem" }}
+      defaultValue=""
+      onChange={(e) => { const v = Number(e.target.value); if (v) onElegir(v); e.target.value = ""; }}
+    >
+      <option value="" disabled>en cucharas…</option>
+      {UNIDADES_CUCHARA.map((u) => <option key={u.label} value={u.gramos}>{u.label} ({u.gramos} g)</option>)}
+    </select>
+  );
+}
+
 function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [variacion, setVariacion] = useState(0);
@@ -1837,6 +2042,8 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
   });
   const [ediciones, setEdiciones] = useState({});
   const [agregando, setAgregando] = useState(null);
+  const [nuevoAlimento, setNuevoAlimento] = useState(null);
+  const [nuevoGramos, setNuevoGramos] = useState(100);
   const aplicandoRemotoMenu = useRef(false);
   const diasCargados = useRef({});
 
@@ -1909,12 +2116,22 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
     const meal = menuEfectivo.find((m) => m.key === mealKey);
     actualizarItemsComida(mealKey, meal.items.filter((_, i) => i !== idx));
   };
-  const agregarItem = (mealKey, alimentoId) => {
+  const elegirAlimentoParaAgregar = (alimentoId) => {
     const alimento = FOOD_DB.find((f) => f.id === alimentoId);
     if (!alimento) return;
+    setNuevoAlimento(alimento);
+    setNuevoGramos(100);
+  };
+  const confirmarAgregarItem = (mealKey) => {
+    if (!nuevoAlimento || !(nuevoGramos > 0)) return;
     const meal = menuEfectivo.find((m) => m.key === mealKey);
-    actualizarItemsComida(mealKey, [...meal.items, { alimento, gramos: 100 }]);
-    setAgregando(null);
+    actualizarItemsComida(mealKey, [...meal.items, { alimento: nuevoAlimento, gramos: nuevoGramos }]);
+    setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100);
+  };
+  const cancelarAgregarItem = () => { setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100); };
+  const editarGramosItem = (mealKey, idx, gramos) => {
+    const meal = menuEfectivo.find((m) => m.key === mealKey);
+    actualizarItemsComida(mealKey, meal.items.map((it, i) => (i === idx ? { ...it, gramos: Math.max(Number(gramos) || 0, 0) } : it)));
   };
 
   const desvio = requerimiento.get > 0 ? Math.round(((totalEfectivo.kcal - requerimiento.get) / requerimiento.get) * 100) : 0;
@@ -1988,10 +2205,17 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
             </div>
             <div className="space-y-2 mb-2">
               {m.items.map((it, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
+                <div key={i} className="flex items-center justify-between text-sm flex-wrap gap-y-1">
                   <span className="nutri-ink">{it.alimento.nombre}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="nutri-muted">{it.gramos} g</span>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <input
+                      type="number"
+                      value={it.gramos}
+                      onChange={(e) => editarGramosItem(m.key, i, e.target.value)}
+                      className="w-14 rounded-lg nutri-chip px-1.5 py-1 text-xs bg-white nutri-ink text-right"
+                    />
+                    <span className="nutri-muted text-xs">g</span>
+                    {esAceite(it.alimento) && <SelectorCucharas onElegir={(g) => editarGramosItem(m.key, i, g)} />}
                     <button onClick={() => cambiarItem(m.key, i)} title="Cambiar por otra opción" className="nutri-brand-text"><IconRefresh size={13} /></button>
                     <button onClick={() => quitarItem(m.key, i)} title="Quitar" className="nutri-warn"><IconTrash size={13} /></button>
                   </div>
@@ -1999,20 +2223,45 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
               ))}
             </div>
             {agregando === m.key ? (
-              <div className="flex gap-2 mt-2">
-                <select className="flex-1 rounded-lg nutri-chip px-2 py-1.5 bg-white nutri-ink" style={{ fontSize: "0.7rem" }} defaultValue="" onChange={(e) => agregarItem(m.key, e.target.value)}>
-                  <option value="" disabled>Elige un alimento...</option>
-                  {ORDEN_CATEGORIAS.map((cat) => {
-                    const items = FOOD_DB.filter((f) => f.categoria === cat && aptoParaRestricciones(f, requerimiento.restricciones));
-                    if (items.length === 0) return null;
-                    return (
-                      <optgroup key={cat} label={CATEGORIA_LABELS[cat] || cat}>
-                        {items.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-                <button onClick={() => setAgregando(null)} className="text-xs nutri-muted px-2">Cancelar</button>
+              <div className="mt-2 space-y-2">
+                {!nuevoAlimento ? (
+                  <div className="flex gap-2">
+                    <select className="flex-1 rounded-lg nutri-chip px-2 py-1.5 bg-white nutri-ink" style={{ fontSize: "0.7rem" }} defaultValue="" onChange={(e) => elegirAlimentoParaAgregar(e.target.value)}>
+                      <option value="" disabled>Elige un alimento...</option>
+                      {ORDEN_CATEGORIAS.map((cat) => {
+                        const items = FOOD_DB.filter((f) => f.categoria === cat && aptoParaRestricciones(f, requerimiento.restricciones));
+                        if (items.length === 0) return null;
+                        return (
+                          <optgroup key={cat} label={CATEGORIA_LABELS[cat] || cat}>
+                            {items.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+                          </optgroup>
+                        );
+                      })}
+                    </select>
+                    <button onClick={cancelarAgregarItem} className="text-xs nutri-muted px-2">Cancelar</button>
+                  </div>
+                ) : (
+                  <div className="nutri-panel rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm nutri-ink font-medium">{nuevoAlimento.nombre}</span>
+                      <button onClick={() => setNuevoAlimento(null)} className="text-xs nutri-muted">cambiar</button>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <input
+                        type="number"
+                        value={nuevoGramos}
+                        onChange={(e) => setNuevoGramos(Number(e.target.value))}
+                        className="w-20 rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink"
+                      />
+                      <span className="text-xs nutri-muted">gramos</span>
+                      {esAceite(nuevoAlimento) && <SelectorCucharas onElegir={setNuevoGramos} />}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => confirmarAgregarItem(m.key)} disabled={!(nuevoGramos > 0)} className="flex-1 nutri-brand text-white rounded-lg py-1.5 text-xs disabled:opacity-40">Agregar</button>
+                      <button onClick={cancelarAgregarItem} className="flex-1 nutri-chip nutri-ink rounded-lg py-1.5 text-xs">Cancelar</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <button onClick={() => setAgregando(m.key)} className="text-xs nutri-brand-text flex items-center gap-1"><IconPlus size={12} /> Agregar alimento</button>
@@ -2519,7 +2768,7 @@ function NutriApp({ pacienteId, salir }) {
         </div>
       )}
       {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
-      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} />}
+      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
       {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
       {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} />}
       {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} />}
