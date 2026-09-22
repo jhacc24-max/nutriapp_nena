@@ -2033,14 +2033,24 @@ function SelectorCucharas({ onElegir }) {
   );
 }
 
-function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
+function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [variacion, setVariacion] = useState(0);
   const [diaSeleccionado, setDiaSeleccionado] = useState(() => {
     const hoy = new Date().getDay();
     return hoy === 0 ? 6 : hoy - 1; // índice 0=lunes...6=domingo
   });
-  const [ediciones, setEdiciones] = useState({});
+  /* Las ediciones del menú (cambios de alimento/gramaje por día) antes solo se guardaban en la
+     nube (Firestore): si no había "espacio" configurado o la sincronización fallaba, se perdían
+     al cambiar de pestaña o recargar, porque este estado vive dentro de PantallaMenu y se
+     reinicia cada vez que el componente se desmonta. Ahora se respaldan también en localStorage
+     para que un cambio hecho hoy en el menú de mañana siga ahí aunque no haya nube. */
+  const [ediciones, setEdiciones] = useState(() => {
+    try { const s = localStorage.getItem("nutriapp_menu_ediciones"); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("nutriapp_menu_ediciones", JSON.stringify(ediciones)); } catch {}
+  }, [ediciones]);
   const [agregando, setAgregando] = useState(null);
   const [nuevoAlimento, setNuevoAlimento] = useState(null);
   const [nuevoGramos, setNuevoGramos] = useState(100);
@@ -2137,6 +2147,24 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
   const desvio = requerimiento.get > 0 ? Math.round(((totalEfectivo.kcal - requerimiento.get) / requerimiento.get) * 100) : 0;
   const esHoy = (d) => d.toDateString() === new Date().toDateString();
 
+  const [pasandoARegistro, setPasandoARegistro] = useState(false);
+  const [copiadoOk, setCopiadoOk] = useState(false);
+  const confirmarPasarARegistro = async () => {
+    if (!pasarARegistro || pasandoARegistro) return;
+    const ok = window.confirm(`¿Copiar el menú de ${NOMBRE_DIA_LARGO(activo.fecha)} a tu registro de alimentos de ese día? Esto reemplaza lo que ya tengas registrado ese día por lo planificado en el menú (después solo ajustas cantidades si algo cambió al momento de comer).`);
+    if (!ok) return;
+    setPasandoARegistro(true); setCopiadoOk(false);
+    try {
+      await pasarARegistro(claveDia, menuEfectivo);
+      setCopiadoOk(true);
+      setTimeout(() => setCopiadoOk(false), 5000);
+    } catch {
+      onErrorSync && onErrorSync("No se pudo copiar el menú a tu registro. Revisa tu conexión e inténtalo de nuevo.");
+    } finally {
+      setPasandoARegistro(false);
+    }
+  };
+
   return (
     <div className="px-5 pt-6 pb-24">
       <div className="flex items-center justify-between mb-1">
@@ -2168,7 +2196,15 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
         ))}
       </div>
 
-      <p className="text-sm font-medium nutri-ink mb-1 capitalize">{NOMBRE_DIA_LARGO(activo.fecha)}</p>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-sm font-medium nutri-ink capitalize">{NOMBRE_DIA_LARGO(activo.fecha)}</p>
+        {pasarARegistro && (
+          <button onClick={confirmarPasarARegistro} disabled={pasandoARegistro} className="text-xs nutri-brand-text font-medium disabled:opacity-40">
+            {pasandoARegistro ? "Copiando..." : "→ A registro"}
+          </button>
+        )}
+      </div>
+      {copiadoOk && <p className="text-xs mb-2" style={{ color: "#3E8E5A" }}>✓ Menú copiado a tu registro de {NOMBRE_DIA_LARGO(activo.fecha)}. Ahora solo ajusta cantidades ahí si algo cambió.</p>}
       <div className="nutri-panel rounded-xl p-4 mb-5">
         {[
           { label: "Calorías", unidad: "kcal", meta: requerimiento.get, actual: totalEfectivo.kcal },
@@ -2742,6 +2778,16 @@ function NutriApp({ pacienteId, salir }) {
     }
   }, [pacienteId]);
 
+  /* Copia el menú ya planificado (y ajustado) de un día al registro de alimentos de esa misma
+     fecha, reemplazando lo que hubiera. Pensado para el flujo de "arma el menú de mañana hoy en
+     la noche" y que al día siguiente el registro ya salga con todo cargado, listo para solo
+     ajustar cantidades en vez de volver a buscar cada alimento. */
+  const pasarMenuARegistro = useCallback(async (fecha, menuDelDia) => {
+    const actuales = await obtenerLogFecha(pacienteId, fecha);
+    actuales.forEach((it) => removeItem(it.uid, fecha));
+    menuDelDia.forEach((m) => { m.items.forEach((it) => addItem(it.alimento, it.gramos, m.key, null, fecha)); });
+  }, [pacienteId, addItem, removeItem]);
+
   const agregarCondicionCustom = useCallback((nueva) => setCatalogo((prev) => [...prev, nueva]), []);
 
   const TABS = [
@@ -2770,7 +2816,7 @@ function NutriApp({ pacienteId, salir }) {
       {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
       {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
       {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
-      {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} />}
+      {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
       {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} />}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto nutri-panel border-t flex" style={{ borderColor: "var(--panel-border)" }}>
         {TABS.map(({ key, label, icon: IconC }) => (
