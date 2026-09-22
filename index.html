@@ -704,13 +704,19 @@ function semillaDelDia() {
 
 function sugerirAlimentos(nutrienteKey, cantidadFaltante, restricciones, n = 4) {
   if (!(cantidadFaltante > 0)) return [];
-  const candidatos = FOOD_DB.filter((f) => f[nutrienteKey] > 0 && aptoParaRestricciones(f, restricciones || {}));
+  const candidatos = FOOD_DB
+    .filter((f) => f[nutrienteKey] > 0 && aptoParaRestricciones(f, restricciones || {}))
+    .sort((a, b) => b[nutrienteKey] - a[nutrienteKey]);
   if (candidatos.length === 0) return [];
+  /* Solo se consideran los alimentos realmente relevantes para este nutriente (el tercio
+     superior, con un mínimo de 8): así no se sugieren cantidades absurdas de algo que casi
+     no lo aporta (p. ej. coliflor para cubrir un déficit de grasas). */
+  const topK = Math.min(candidatos.length, Math.max(8, Math.ceil(candidatos.length / 3)));
+  const relevantes = candidatos.slice(0, topK);
   const porCategoria = {};
-  candidatos.forEach((f) => { (porCategoria[f.categoria] = porCategoria[f.categoria] || []).push(f); });
-  Object.values(porCategoria).forEach((lista) => lista.sort((a, b) => b[nutrienteKey] - a[nutrienteKey]));
+  relevantes.forEach((f) => { (porCategoria[f.categoria] = porCategoria[f.categoria] || []).push(f); });
   const seed = semillaDelDia();
-  /* De cada categoría se rota entre sus 3 mejores opciones (no siempre la de mayor
+  /* De cada categoría relevante se rota entre sus 3 mejores opciones (no siempre la de mayor
      contenido absoluto), para no repetir siempre aceite de oliva / avena / tarwi. */
   const categorias = Object.keys(porCategoria).sort();
   const candidatosDelDia = categorias.map((cat, i) => {
@@ -1456,7 +1462,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
       )}
       <div className="nutri-panel rounded-2xl p-4 mb-5">
         <span className="text-sm font-medium nutri-ink block mb-2">
-          Totales {filtroMomento !== "todos" ? `de ${filtroMomento}` : ""} {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}
+          Totales{filtroMomento !== "todos" ? ` de ${filtroMomento}` : ""} {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}
         </span>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.kcal)}</div><div className="text-[11px] nutri-muted">kcal</div><BarraNutriente valor={totalesActivo.kcal} meta={metasActivo.kcal} /></div>
