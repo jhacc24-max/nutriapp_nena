@@ -1466,7 +1466,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
                 <div>
                   <div className="text-sm nutri-ink">{item.alimento.nombre}</div>
                   <div className="text-xs nutri-muted capitalize">
-                    {item.momento} · {item.gramos} g · {Math.round(calcularTotalesItem(item.alimento, item.gramos).kcal)} kcal
+                    {item.momento} · {item.gramos} g · {Math.round(calcularTotalesItem(item.alimento, item.gramos).kcal)} kcal · {Math.round(calcularTotalesItem(item.alimento, item.gramos).proteinasG)}g prot · {Math.round(calcularTotalesItem(item.alimento, item.gramos).carbohidratosG)}g carb
                     {item.tara ? ` · (${item.tara.pesoBruto} g bruto${item.tara.recipiente ? ` − ${item.tara.tara} g ${item.tara.recipiente}` : ""}${item.tara.carneGramos ? ` − ${item.tara.carneGramos} g ${item.tara.carneNombre}` : ""})` : ""}
                   </div>
                 </div>
