@@ -1892,6 +1892,33 @@ const NOMBRE_DIA_CORTO = (d) => d.toLocaleDateString("es-ES", { weekday: "short"
 const NOMBRE_DIA_LARGO = (d) => d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" });
 const RANGO_SEMANA = (inicio, fin) => `${inicio.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${fin.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
 
+/* Conversión aproximada de cucharas a gramos para aceites y similares (referencia habitual:
+   1 cucharadita ≈ 5 g, 1 cucharada ≈ 15 g), para no obligar a pesar el aceite en una balanza. */
+const GRAMOS_CUCHARADITA = 5;
+const GRAMOS_CUCHARADA = 15;
+const UNIDADES_CUCHARA = [
+  { label: "½ cucharadita", gramos: GRAMOS_CUCHARADITA / 2 },
+  { label: "1 cucharadita", gramos: GRAMOS_CUCHARADITA },
+  { label: "½ cucharada", gramos: GRAMOS_CUCHARADA / 2 },
+  { label: "1 cucharada", gramos: GRAMOS_CUCHARADA },
+];
+function esAceite(alimento) {
+  return !!alimento && alimento.categoria === "grasa" && /aceite/i.test(alimento.nombre);
+}
+function SelectorCucharas({ onElegir }) {
+  return (
+    <select
+      className="rounded-lg nutri-chip px-1.5 py-1 bg-white nutri-ink"
+      style={{ fontSize: "0.7rem" }}
+      defaultValue=""
+      onChange={(e) => { const v = Number(e.target.value); if (v) onElegir(v); e.target.value = ""; }}
+    >
+      <option value="" disabled>en cucharas…</option>
+      {UNIDADES_CUCHARA.map((u) => <option key={u.label} value={u.gramos}>{u.label} ({u.gramos} g)</option>)}
+    </select>
+  );
+}
+
 function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [variacion, setVariacion] = useState(0);
@@ -1901,6 +1928,8 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
   });
   const [ediciones, setEdiciones] = useState({});
   const [agregando, setAgregando] = useState(null);
+  const [nuevoAlimento, setNuevoAlimento] = useState(null);
+  const [nuevoGramos, setNuevoGramos] = useState(100);
   const aplicandoRemotoMenu = useRef(false);
   const diasCargados = useRef({});
 
@@ -1973,12 +2002,22 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
     const meal = menuEfectivo.find((m) => m.key === mealKey);
     actualizarItemsComida(mealKey, meal.items.filter((_, i) => i !== idx));
   };
-  const agregarItem = (mealKey, alimentoId) => {
+  const elegirAlimentoParaAgregar = (alimentoId) => {
     const alimento = FOOD_DB.find((f) => f.id === alimentoId);
     if (!alimento) return;
+    setNuevoAlimento(alimento);
+    setNuevoGramos(100);
+  };
+  const confirmarAgregarItem = (mealKey) => {
+    if (!nuevoAlimento || !(nuevoGramos > 0)) return;
     const meal = menuEfectivo.find((m) => m.key === mealKey);
-    actualizarItemsComida(mealKey, [...meal.items, { alimento, gramos: 100 }]);
-    setAgregando(null);
+    actualizarItemsComida(mealKey, [...meal.items, { alimento: nuevoAlimento, gramos: nuevoGramos }]);
+    setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100);
+  };
+  const cancelarAgregarItem = () => { setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100); };
+  const editarGramosItem = (mealKey, idx, gramos) => {
+    const meal = menuEfectivo.find((m) => m.key === mealKey);
+    actualizarItemsComida(mealKey, meal.items.map((it, i) => (i === idx ? { ...it, gramos: Math.max(Number(gramos) || 0, 0) } : it)));
   };
 
   const desvio = requerimiento.get > 0 ? Math.round(((totalEfectivo.kcal - requerimiento.get) / requerimiento.get) * 100) : 0;
@@ -2052,10 +2091,17 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
             </div>
             <div className="space-y-2 mb-2">
               {m.items.map((it, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
+                <div key={i} className="flex items-center justify-between text-sm flex-wrap gap-y-1">
                   <span className="nutri-ink">{it.alimento.nombre}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="nutri-muted">{it.gramos} g</span>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <input
+                      type="number"
+                      value={it.gramos}
+                      onChange={(e) => editarGramosItem(m.key, i, e.target.value)}
+                      className="w-14 rounded-lg nutri-chip px-1.5 py-1 text-xs bg-white nutri-ink text-right"
+                    />
+                    <span className="nutri-muted text-xs">g</span>
+                    {esAceite(it.alimento) && <SelectorCucharas onElegir={(g) => editarGramosItem(m.key, i, g)} />}
                     <button onClick={() => cambiarItem(m.key, i)} title="Cambiar por otra opción" className="nutri-brand-text"><IconRefresh size={13} /></button>
                     <button onClick={() => quitarItem(m.key, i)} title="Quitar" className="nutri-warn"><IconTrash size={13} /></button>
                   </div>
@@ -2063,20 +2109,45 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync }) {
               ))}
             </div>
             {agregando === m.key ? (
-              <div className="flex gap-2 mt-2">
-                <select className="flex-1 rounded-lg nutri-chip px-2 py-1.5 bg-white nutri-ink" style={{ fontSize: "0.7rem" }} defaultValue="" onChange={(e) => agregarItem(m.key, e.target.value)}>
-                  <option value="" disabled>Elige un alimento...</option>
-                  {ORDEN_CATEGORIAS.map((cat) => {
-                    const items = FOOD_DB.filter((f) => f.categoria === cat && aptoParaRestricciones(f, requerimiento.restricciones));
-                    if (items.length === 0) return null;
-                    return (
-                      <optgroup key={cat} label={CATEGORIA_LABELS[cat] || cat}>
-                        {items.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-                <button onClick={() => setAgregando(null)} className="text-xs nutri-muted px-2">Cancelar</button>
+              <div className="mt-2 space-y-2">
+                {!nuevoAlimento ? (
+                  <div className="flex gap-2">
+                    <select className="flex-1 rounded-lg nutri-chip px-2 py-1.5 bg-white nutri-ink" style={{ fontSize: "0.7rem" }} defaultValue="" onChange={(e) => elegirAlimentoParaAgregar(e.target.value)}>
+                      <option value="" disabled>Elige un alimento...</option>
+                      {ORDEN_CATEGORIAS.map((cat) => {
+                        const items = FOOD_DB.filter((f) => f.categoria === cat && aptoParaRestricciones(f, requerimiento.restricciones));
+                        if (items.length === 0) return null;
+                        return (
+                          <optgroup key={cat} label={CATEGORIA_LABELS[cat] || cat}>
+                            {items.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+                          </optgroup>
+                        );
+                      })}
+                    </select>
+                    <button onClick={cancelarAgregarItem} className="text-xs nutri-muted px-2">Cancelar</button>
+                  </div>
+                ) : (
+                  <div className="nutri-panel rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm nutri-ink font-medium">{nuevoAlimento.nombre}</span>
+                      <button onClick={() => setNuevoAlimento(null)} className="text-xs nutri-muted">cambiar</button>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <input
+                        type="number"
+                        value={nuevoGramos}
+                        onChange={(e) => setNuevoGramos(Number(e.target.value))}
+                        className="w-20 rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink"
+                      />
+                      <span className="text-xs nutri-muted">gramos</span>
+                      {esAceite(nuevoAlimento) && <SelectorCucharas onElegir={setNuevoGramos} />}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => confirmarAgregarItem(m.key)} disabled={!(nuevoGramos > 0)} className="flex-1 nutri-brand text-white rounded-lg py-1.5 text-xs disabled:opacity-40">Agregar</button>
+                      <button onClick={cancelarAgregarItem} className="flex-1 nutri-chip nutri-ink rounded-lg py-1.5 text-xs">Cancelar</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <button onClick={() => setAgregando(m.key)} className="text-xs nutri-brand-text flex items-center gap-1"><IconPlus size={12} /> Agregar alimento</button>
