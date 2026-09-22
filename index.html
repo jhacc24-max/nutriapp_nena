@@ -1305,7 +1305,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const pesoNeto = Math.max(Math.round(pesoBruto - tara - pesoCarneRestada), 0);
   const mostrarRestarCarne = momento === "almuerzo" && seleccionado && seleccionado.categoria !== "proteina" && carnesAlmuerzo.length > 0;
 
-  const totalesActivo = calcularTotalesLog(logActivo);
+  const totalesActivo = calcularTotalesLog(logFiltrado);
 
   const iniciarEdicion = (item) => {
     setEditandoId(item.uid);
@@ -1415,10 +1415,14 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
         </div>
       )}
       <div className="nutri-panel rounded-2xl p-4 mb-5">
-        <span className="text-sm font-medium nutri-ink block mb-2">Totales {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}</span>
+        <span className="text-sm font-medium nutri-ink block mb-2">
+          Totales {filtroMomento !== "todos" ? `de ${filtroMomento}` : ""} {fechaSeleccionada === hoy ? "de hoy" : `del ${fechaSeleccionada}`}
+        </span>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.kcal)}</div><div className="text-[11px] nutri-muted">kcal</div></div>
           <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.proteinasG)}g</div><div className="text-[11px] nutri-muted">proteína</div></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.carbohidratosG)}g</div><div className="text-[11px] nutri-muted">carbohidratos</div></div>
+          <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.grasasG)}g</div><div className="text-[11px] nutri-muted">grasas</div></div>
           <div><div className="nutri-serif text-lg nutri-ink">{Math.round(totalesActivo.sodioMg)}mg</div><div className="text-[11px] nutri-muted">sodio</div></div>
         </div>
       </div>
