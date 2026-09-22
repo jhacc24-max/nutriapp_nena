@@ -693,26 +693,36 @@ function generarRecomendacionesDiaAnterior(analisis, requerimiento) {
 /* Elige hasta n alimentos de la base (de categorías distintas cuando es posible, y aptos
    para las restricciones del paciente) y calcula cuántos gramos de cada uno cubrirían el
    déficit del nutriente indicado. */
+/* Semilla numérica basada en la fecha de hoy: hace que la rotación de sugerencias
+   cambie de un día a otro pero se mantenga estable durante el mismo día (no en cada render). */
+function semillaDelDia() {
+  const s = hoyISO();
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
 function sugerirAlimentos(nutrienteKey, cantidadFaltante, restricciones, n = 4) {
   if (!(cantidadFaltante > 0)) return [];
-  const candidatos = FOOD_DB
-    .filter((f) => f[nutrienteKey] > 0 && aptoParaRestricciones(f, restricciones || {}))
-    .sort((a, b) => b[nutrienteKey] - a[nutrienteKey]);
-  const elegidos = [];
-  const categoriasUsadas = new Set();
-  for (const f of candidatos) {
-    if (categoriasUsadas.has(f.categoria)) continue;
-    categoriasUsadas.add(f.categoria);
-    elegidos.push(f);
-    if (elegidos.length >= n) break;
-  }
-  if (elegidos.length < n) {
-    for (const f of candidatos) {
-      if (elegidos.some((e) => e.id === f.id)) continue;
-      elegidos.push(f);
-      if (elegidos.length >= n) break;
-    }
-  }
+  const candidatos = FOOD_DB.filter((f) => f[nutrienteKey] > 0 && aptoParaRestricciones(f, restricciones || {}));
+  if (candidatos.length === 0) return [];
+  const porCategoria = {};
+  candidatos.forEach((f) => { (porCategoria[f.categoria] = porCategoria[f.categoria] || []).push(f); });
+  Object.values(porCategoria).forEach((lista) => lista.sort((a, b) => b[nutrienteKey] - a[nutrienteKey]));
+  const seed = semillaDelDia();
+  /* De cada categoría se rota entre sus 3 mejores opciones (no siempre la de mayor
+     contenido absoluto), para no repetir siempre aceite de oliva / avena / tarwi. */
+  const categorias = Object.keys(porCategoria).sort();
+  const candidatosDelDia = categorias.map((cat, i) => {
+    const lista = porCategoria[cat];
+    const top = lista.slice(0, Math.min(3, lista.length));
+    return top[(seed + i * 13) % top.length];
+  });
+  const orden = candidatosDelDia
+    .map((f, i) => ({ f, k: (seed * (i + 7) + i) % 997 }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.f);
+  const elegidos = orden.slice(0, Math.min(n, orden.length));
   return elegidos.map((f) => ({ nombre: f.nombre, gramos: Math.max(Math.round((cantidadFaltante / f[nutrienteKey]) * 100), 5) }));
 }
 
@@ -1751,6 +1761,26 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
         </div>
         {ultimoPeso && (
           <p className="text-xs nutri-muted">Último registro: {ultimoPeso.pesoKg} kg ({ultimoPeso.fecha}){deltaPeso !== null && <> · {deltaPeso >= 0 ? "+" : ""}{deltaPeso.toFixed(1)} kg desde el registro anterior</>}</p>
+        )}
+        {pesosOrdenados.length > 1 && (
+          <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--panel-border)" }}>
+            <span className="text-xs font-medium nutri-ink block mb-2">Historial de pesos</span>
+            <div className="space-y-1.5">
+              {[...pesosOrdenados].reverse().slice(0, 10).map((p, i, arr) => {
+                const anterior = arr[i + 1];
+                const delta = anterior ? p.pesoKg - anterior.pesoKg : null;
+                return (
+                  <div key={p.id || p.fecha} className="flex items-center justify-between text-xs">
+                    <span className="nutri-muted">{p.fecha}</span>
+                    <span className="nutri-ink font-medium">{p.pesoKg} kg</span>
+                    <span className={delta === null ? "nutri-muted" : delta > 0 ? "nutri-warn" : delta < 0 ? "nutri-brand-text" : "nutri-muted"}>
+                      {delta === null ? "—" : `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} kg`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
         {requerimiento.riesgoNutricionalMayor && (
           <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--panel-border)" }}>
