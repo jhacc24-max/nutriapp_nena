@@ -733,6 +733,71 @@ function sugerirAlimentos(nutrienteKey, cantidadFaltante, restricciones, n = 4) 
   return elegidos.map((f) => ({ nombre: f.nombre, gramos: Math.max(Math.round((cantidadFaltante / f[nutrienteKey]) * 100), 5) }));
 }
 
+/* Patrón clínico frecuente (saciedad precoz: adultos mayores, post-quirúrgicos, oncológicos):
+   la proteína se cubre con carnes/huevo, pero falta volumen para llegar a calorías,
+   carbohidratos y grasas a la vez. La estrategia habitual no es "comer más cantidad" sino
+   fortificar con combos energéticos concentrados (avena con lácteo, frutos secos, palta,
+   camote con aceite...) que aportan a los tres déficits en poco volumen. Si la proteína ya
+   está cubierta, se descartan los alimentos proteicamente densos (carnes, pescado, lácteos
+   muy proteicos, batido de proteína) para no hacer que el paciente termine excediendo su
+   meta de proteína solo por completar energía. */
+function sugerirCombosEnergeticos(requerimiento, totales, restricciones, proteinaCubierta, n = 4) {
+  const kcalFaltante = requerimiento.get - totales.kcal;
+  const carbFaltante = requerimiento.carbohidratosG - totales.carbohidratosG;
+  const grasaFaltante = requerimiento.grasasG - totales.grasasG;
+  if (!(kcalFaltante > 0) || !(carbFaltante > 0) || !(grasaFaltante > 0)) return [];
+
+  let candidatos = FOOD_DB.filter((f) => f.kcal > 0 && aptoParaRestricciones(f, restricciones || {}));
+  if (proteinaCubierta) {
+    /* Umbral de g de proteína por kcal: deja fuera carnes, pescado, batido de proteína,
+       yogur griego y menestras muy proteicas (tarwi); mantiene lácteos moderados, quinua,
+       frutas, grasas y la mayoría de menestras y carbohidratos. */
+    candidatos = candidatos.filter((f) => f.proteinasG / f.kcal <= 0.08);
+  }
+  if (candidatos.length === 0) return [];
+
+  /* Puntaje de combo: cuánto cubre una porción de referencia de 100 g de los tres déficits a
+     la vez (con un extra si aporta a más de uno), para priorizar alimentos "todo en uno"
+     (avena, palta, frutos secos) en vez de uno que solo sobresalga en un nutriente. */
+  const puntuados = candidatos.map((f) => {
+    const cobKcal = Math.min(f.kcal / kcalFaltante, 1);
+    const cobCarb = Math.min(f.carbohidratosG / carbFaltante, 1);
+    const cobGrasa = Math.min(f.grasasG / grasaFaltante, 1);
+    const nAportes = [f.kcal > 0, f.carbohidratosG > 0, f.grasasG > 0].filter(Boolean).length;
+    return { f, score: (cobKcal + cobCarb + cobGrasa) * (nAportes >= 2 ? 1.3 : 1) };
+  }).filter((p) => p.score > 0).sort((a, b) => b.score - a.score);
+  if (puntuados.length === 0) return [];
+
+  const topK = Math.min(puntuados.length, Math.max(8, Math.ceil(puntuados.length / 3)));
+  const relevantes = puntuados.slice(0, topK).map((p) => p.f);
+  const porCategoria = {};
+  relevantes.forEach((f) => { (porCategoria[f.categoria] = porCategoria[f.categoria] || []).push(f); });
+  const seed = semillaDelDia();
+  const categorias = Object.keys(porCategoria).sort();
+  const candidatosDelDia = categorias.map((cat, i) => {
+    const lista = porCategoria[cat];
+    const top = lista.slice(0, Math.min(3, lista.length));
+    return top[(seed + i * 13) % top.length];
+  });
+  const orden = candidatosDelDia
+    .map((f, i) => ({ f, k: (seed * (i + 7) + i) % 997 }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.f);
+  const elegidos = orden.slice(0, Math.min(n, orden.length));
+
+  return elegidos.map((f) => {
+    /* Gramos: el menor entre lo que se necesitaría para cubrir cada déficit por separado, para
+       no sobrepasar de largo el primero que se complete (p. ej. no sugerir 800 g de avena solo
+       por llegar a la meta de grasas cuando con 200 g ya se cubrió el carbohidrato). */
+    const opciones = [];
+    if (f.kcal > 0) opciones.push((kcalFaltante / f.kcal) * 100);
+    if (f.carbohidratosG > 0) opciones.push((carbFaltante / f.carbohidratosG) * 100);
+    if (f.grasasG > 0) opciones.push((grasaFaltante / f.grasasG) * 100);
+    const gramos = Math.max(Math.round(Math.min(...opciones) / 5) * 5, 10);
+    return { nombre: f.nombre, gramos };
+  });
+}
+
 function generarSugerencias(requerimiento, totales, perfil, log) {
   if (totales.kcal === 0) return [{ mensaje: "Aún no registras alimentos hoy. Comienza a registrar para recibir sugerencias personalizadas.", opciones: [] }];
   const restricciones = requerimiento.restricciones || {};
@@ -754,6 +819,19 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
 
   const enRiesgoAlto = requerimiento.riesgoNutricionalMayor && requerimiento.riesgoNutricionalMayor.nivel === "alto";
   const kcalFaltante = requerimiento.get - totales.kcal;
+  const carbFaltante = requerimiento.carbohidratosG - totales.carbohidratosG;
+  const grasaFaltante = requerimiento.grasasG - totales.grasasG;
+  const proteinaFaltante = requerimiento.proteinasG - totales.proteinasG;
+  const proteinaCubierta = proteinaFaltante <= requerimiento.proteinasG * 0.15;
+
+  /* Patrón frecuente (saciedad precoz): se cumple proteína pero faltan calorías, carbohidratos
+     y grasas a la vez. En ese caso conviene un solo bloque de combos energéticos concentrados
+     en vez de tres listas de alimentos sueltos (ver sugerirCombosEnergeticos). */
+  const esDeficitTriple = !enRiesgoAlto && perfil.objetivo !== "perdida"
+    && kcalFaltante > requerimiento.get * 0.1
+    && carbFaltante > requerimiento.carbohidratosG * 0.15
+    && grasaFaltante > requerimiento.grasasG * 0.15;
+
   /* En una persona con desnutrición ya identificada, subir la ingesta de golpe hasta cubrir
      todo el déficit calórico del día (en vez de progresivamente) es justo el escenario que
      puede desencadenar un síndrome de realimentación: caídas súbitas de fósforo, potasio y
@@ -763,6 +841,11 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     sugerencias.push({
       mensaje: `Detecté riesgo de desnutrición y hoy la ingesta quedó bastante por debajo de tu meta calórica. En este contexto, subir la comida de golpe hasta cubrir todo el déficit no es lo más seguro: existe riesgo de síndrome de realimentación (caída brusca de potasio, fósforo y magnesio). Lo recomendable es aumentar la ingesta de forma gradual en 3-5 días, con control médico y de electrolitos, en vez de intentar cubrir todo hoy mismo.`,
       opciones: [],
+    });
+  } else if (esDeficitTriple) {
+    sugerencias.push({
+      mensaje: `Hoy te faltan calorías (${Math.round(kcalFaltante)} kcal), carbohidratos (${Math.round(carbFaltante)} g) y grasas (${Math.round(grasaFaltante)} g) a la vez${proteinaCubierta ? ", pero tu proteína ya está cubierta" : ""}. En vez de comer más cantidad, conviene fortificar lo que ya comes con combos energéticos concentrados${proteinaCubierta ? " y bajos en proteína, para no pasarte de tu meta" : ""}:`,
+      opciones: sugerirCombosEnergeticos(requerimiento, totales, restricciones, proteinaCubierta),
     });
   } else if (perfil.objetivo !== "perdida" && kcalFaltante > requerimiento.get * 0.1) {
     sugerencias.push({
@@ -774,7 +857,6 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     sugerencias.push({ mensaje: `Superaste tu objetivo calórico de hoy por ${Math.round(totales.kcal - requerimiento.get)} kcal.`, opciones: [] });
   }
 
-  const proteinaFaltante = requerimiento.proteinasG - totales.proteinasG;
   if (proteinaFaltante > requerimiento.proteinasG * 0.15) {
     sugerencias.push({
       mensaje: `Te faltan ${Math.round(proteinaFaltante)} g de proteína. Algunas opciones para cubrirlos:`,
@@ -782,16 +864,14 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     });
   }
 
-  const carbFaltante = requerimiento.carbohidratosG - totales.carbohidratosG;
-  if (carbFaltante > requerimiento.carbohidratosG * 0.15) {
+  if (!esDeficitTriple && carbFaltante > requerimiento.carbohidratosG * 0.15) {
     sugerencias.push({
       mensaje: `Te faltan ${Math.round(carbFaltante)} g de carbohidratos. Algunas opciones:`,
       opciones: sugerirAlimentos("carbohidratosG", carbFaltante, restricciones),
     });
   }
 
-  const grasaFaltante = requerimiento.grasasG - totales.grasasG;
-  if (grasaFaltante > requerimiento.grasasG * 0.15) {
+  if (!esDeficitTriple && grasaFaltante > requerimiento.grasasG * 0.15) {
     sugerencias.push({
       mensaje: `Te faltan ${Math.round(grasaFaltante)} g de grasas. Algunas opciones:`,
       opciones: sugerirAlimentos("grasasG", grasaFaltante, restricciones),
