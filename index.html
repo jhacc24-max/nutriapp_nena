@@ -606,6 +606,7 @@ function calcularTotalesLog(log) {
    qué comida se originó el déficit o el exceso y sugerir un cambio concreto para hoy. */
 const NOMBRE_MOMENTO = { desayuno: "el desayuno", almuerzo: "el almuerzo", cena: "la cena", colacion: "la colación" };
 const MOMENTOS_KEYS = ["desayuno", "almuerzo", "cena", "colacion"];
+const MOMENTO_LABEL_CAPITALIZADO = { desayuno: "Desayuno", almuerzo: "Almuerzo", cena: "Cena", colacion: "Colación" };
 
 function evaluarDia(log, requerimiento) {
   const totales = calcularTotalesLog(log);
@@ -1126,7 +1127,7 @@ function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = 
 /* Vista de cumplimiento: por defecto una cuadrícula de gauges independientes, uno por
    nutriente (sin superponerse, para que no se lean como "anillos dentro de anillos"); al
    tocar un nutriente, el resto desaparece y se aísla su gauge en grande con el detalle exacto. */
-function PanelMetas({ totales, requerimiento, tamanoGrid = "md" }) {
+function PanelMetas({ totales, requerimiento, tamanoGrid = "md", log }) {
   const metricas = [
     { key: "kcal", label: "Calorías", valor: totales.kcal, meta: requerimiento.get, unidad: "kcal", color: "var(--accent-energy)" },
     { key: "proteinasG", label: "Proteína", valor: totales.proteinasG, meta: requerimiento.proteinasG, unidad: "g", color: "var(--accent-protein)" },
@@ -1138,12 +1139,39 @@ function PanelMetas({ totales, requerimiento, tamanoGrid = "md" }) {
   if (seleccionado !== null) {
     const m = metricas[seleccionado];
     const pct = m.meta > 0 ? Math.round((m.valor / m.meta) * 100) : 0;
+    const porMomento = MOMENTOS_KEYS.map((momento) => {
+      const items = (log || [])
+        .filter((it) => it.momento === momento)
+        .map((it) => ({ ...it, aporte: calcularTotalesItem(it.alimento, it.gramos)[m.key] }))
+        .filter((it) => it.aporte > 0)
+        .sort((a, b) => b.aporte - a.aporte);
+      return { momento, items };
+    }).filter((g) => g.items.length > 0);
     return (
       <div key="detalle" className="nutri-fade-in flex flex-col items-center py-2">
         <GaugeRadial label={m.label} valor={m.valor} meta={m.meta} unidad={m.unidad} color={m.color} tamano="lg" modo="porcentaje" />
         <span className="text-sm font-medium nutri-ink mt-3">{m.label}</span>
         <span className="text-xs nutri-muted">{Math.round(m.valor)} / {Math.round(m.meta)} {m.unidad} · {pct}%{pct >= 100 ? " ✓" : ""}</span>
-        <button onClick={() => setSeleccionado(null)} className="text-xs nutri-brand-text mt-4 underline">‹ Ver todas las metas</button>
+        {log && (
+          <div className="w-full mt-4 text-left">
+            {porMomento.length === 0 ? (
+              <p className="text-xs nutri-muted text-center">Ningún alimento registrado aportó {m.label.toLowerCase()}.</p>
+            ) : porMomento.map((g) => (
+              <div key={g.momento} className="mb-3">
+                <span className="text-xs font-medium nutri-ink capitalize block mb-1">{MOMENTO_LABEL_CAPITALIZADO[g.momento]}</span>
+                <ul className="space-y-0.5">
+                  {g.items.map((it, i) => (
+                    <li key={i} className="text-xs nutri-muted flex items-center justify-between">
+                      <span>{it.alimento.nombre} ({it.gramos} g)</span>
+                      <span className="nutri-ink">{Math.round(it.aporte)} {m.unidad}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setSeleccionado(null)} className="text-xs nutri-brand-text mt-1 underline">‹ Ver todas las metas</button>
       </div>
     );
   }
@@ -1654,7 +1682,7 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
                     </div>
                     {expandido && (
                       <div className="px-4 pb-4 pt-1 border-t" style={{ borderColor: "var(--panel-border)" }}>
-                        <PanelMetas totales={t} requerimiento={requerimiento} tamanoGrid="sm" />
+                        <PanelMetas totales={t} requerimiento={requerimiento} tamanoGrid="sm" log={d.items} />
                       </div>
                     )}
                   </div>
@@ -1879,7 +1907,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
       <div className="nutri-panel rounded-2xl p-5">
         <span className="text-sm font-medium nutri-ink block mb-1">Cumplimiento de metas de hoy</span>
         <p className="text-xs nutri-muted mb-1">Cada anillo es un nutriente frente a tu meta diaria.</p>
-        <PanelMetas totales={totales} requerimiento={requerimiento} />
+        <PanelMetas totales={totales} requerimiento={requerimiento} log={log} />
       </div>
     </div>
   );
