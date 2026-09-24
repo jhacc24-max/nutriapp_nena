@@ -2724,14 +2724,22 @@ function NutriApp({ pacienteId, salir }) {
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
 
-  /* ---- Sincronización con Firestore (espacio compartido) ---- */
+  /* ---- Sincronización con Firestore (espacio compartido) ----
+     `remotoListo` evita una condición de carrera: al conectar a un espacio (recién unido, o al
+     reabrir la app), el efecto que ENVÍA cambios a la nube podía dispararse con los datos
+     guardados solo en este celular (por ejemplo, recipientes vacíos por defecto) ANTES de que
+     llegara el primer snapshot con los datos reales del espacio compartido, pisando en Firestore
+     lo que otro usuario ya había agregado. Ahora no se envía nada hasta tener esos datos reales. */
   const aplicandoRemoto = useRef(false);
+  const remotoListo = useRef(false);
   useEffect(() => {
-    if (!pacienteId) return;
+    if (!pacienteId) { remotoListo.current = false; return; }
+    remotoListo.current = false;
     const unsubEstado = dbFirestore.collection("pacientes").doc(pacienteId).onSnapshot((snap) => {
       const d = snap.data();
-      if (!d) return;
       aplicandoRemoto.current = true;
+      remotoListo.current = true;
+      if (!d) return;
       if (d.perfil) setPerfil(d.perfil);
       if (d.catalogoCustom) setCatalogo([...CONDICIONES_PRESET, ...d.catalogoCustom]);
       if (d.recipientes) setRecipientes(d.recipientes);
@@ -2744,7 +2752,7 @@ function NutriApp({ pacienteId, salir }) {
     const unsubLog = dbFirestore.collection("pacientes").doc(pacienteId).collection("registros").doc(hoyISO()).collection("items").orderBy("agregadoEn").onSnapshot((snap) => {
       setLog(snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() })));
     }, () => setErrorSync("No se pudo leer el registro de hoy desde la nube. Revisa tu conexión."));
-    return () => { unsubEstado(); unsubLog(); };
+    return () => { unsubEstado(); unsubLog(); remotoListo.current = false; };
   }, [pacienteId]);
 
   const guardarEstadoRemoto = useMemo(() => debounce((datos) => {
@@ -2754,6 +2762,7 @@ function NutriApp({ pacienteId, salir }) {
 
   useEffect(() => {
     if (!pacienteId) return;
+    if (!remotoListo.current) return;
     if (aplicandoRemoto.current) { aplicandoRemoto.current = false; return; }
     guardarEstadoRemoto({ perfil, catalogoCustom: catalogo.filter((c) => c.personalizada), recipientes, medicamentos, prescripcion, suplementos, pesos, tema });
   }, [pacienteId, perfil, catalogo, recipientes, medicamentos, prescripcion, suplementos, pesos, tema]);
