@@ -1372,10 +1372,10 @@ function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom })
       <p className="text-sm nutri-muted mb-6">Estos datos definen tus requerimientos energéticos y de macronutrientes.</p>
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="grid grid-cols-2 gap-3">
-          {campo("Edad (años)", <input type="number" className={inputCls} value={perfil.edad} onChange={(e) => setPerfil((p) => ({ ...p, edad: Number(e.target.value) }))} />)}
+          {campo("Edad (años)", <input type="number" className={inputCls} value={perfil.edad} onChange={(e) => setPerfil((p) => ({ ...p, edad: Number(e.target.value) }))}  onFocus={(e) => e.target.select()} />)}
           {campo("Sexo biológico", <select className={inputCls} value={perfil.sexo} onChange={(e) => setPerfil((p) => ({ ...p, sexo: e.target.value }))}><option value="femenino">Femenino</option><option value="masculino">Masculino</option></select>)}
-          {campo("Peso (kg)", <input type="number" className={inputCls} value={perfil.pesoKg} onChange={(e) => setPerfil((p) => ({ ...p, pesoKg: Number(e.target.value) }))} />)}
-          {campo("Talla (cm)", <input type="number" className={inputCls} value={perfil.tallaCm} onChange={(e) => setPerfil((p) => ({ ...p, tallaCm: Number(e.target.value) }))} />)}
+          {campo("Peso (kg)", <input type="number" className={inputCls} value={perfil.pesoKg} onChange={(e) => setPerfil((p) => ({ ...p, pesoKg: Number(e.target.value) }))}  onFocus={(e) => e.target.select()} />)}
+          {campo("Talla (cm)", <input type="number" className={inputCls} value={perfil.tallaCm} onChange={(e) => setPerfil((p) => ({ ...p, tallaCm: Number(e.target.value) }))}  onFocus={(e) => e.target.select()} />)}
         </div>
         {campo("Nivel de actividad física", <select className={inputCls} value={perfil.actividad} onChange={(e) => setPerfil((p) => ({ ...p, actividad: e.target.value }))}><option value="sedentario">Sedentario</option><option value="ligero">Ligero</option><option value="moderado">Moderado</option><option value="intenso">Intenso</option></select>)}
         {campo("Objetivo", <select className={inputCls} value={perfil.objetivo} onChange={(e) => setPerfil((p) => ({ ...p, objetivo: e.target.value }))}><option value="perdida">Pérdida de peso</option><option value="mantenimiento">Mantenimiento</option><option value="ganancia_muscular">Ganancia muscular</option></select>)}
@@ -1558,7 +1558,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
           )}
 
           <div className="flex gap-2 mb-1">
-            <input type="number" value={pesoBruto} onChange={(e) => setPesoBruto(Number(e.target.value))} className="w-28 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
+            <input type="number" value={pesoBruto} onChange={(e) => setPesoBruto(Number(e.target.value))} className="w-28 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink"  onFocus={(e) => e.target.select()} />
             <span className="self-center text-sm nutri-muted">gramos (todo lo que pesaste junto)</span>
           </div>
           {(recipienteId !== "ninguno" || carneRestada) && (
@@ -1620,7 +1620,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
                   </select>
                 )}
                 <div className="flex gap-2 mb-2">
-                  <input type="number" value={edicion.pesoBruto} onChange={(e) => setEdicion((s) => ({ ...s, pesoBruto: Number(e.target.value) }))} className="w-28 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
+                  <input type="number" value={edicion.pesoBruto} onChange={(e) => setEdicion((s) => ({ ...s, pesoBruto: Number(e.target.value) }))} className="w-28 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink"  onFocus={(e) => e.target.select()} />
                   <span className="self-center text-xs nutri-muted">gramos (todo lo pesado junto)</span>
                 </div>
                 <div className="flex gap-2">
@@ -1883,7 +1883,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
         <div className="flex items-center gap-2 mb-2"><span className="nutri-brand-text"><IconActivity size={15} /></span><span className="text-sm font-medium nutri-ink">Control de peso</span></div>
         <p className="text-xs nutri-muted mb-3">Registra el peso cada vez que lo pesen (semanalmente) para ver la tendencia.</p>
         <div className="flex gap-2 mb-2">
-          <input type="number" value={pesoInput} onChange={(e) => setPesoInput(e.target.value)} placeholder={`Peso actual (${perfil.pesoKg} kg)`} className="flex-1 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
+          <input type="number" value={pesoInput} onChange={(e) => setPesoInput(e.target.value)} placeholder={`Peso actual (${perfil.pesoKg} kg)`} className="flex-1 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink"  onFocus={(e) => e.target.select()} />
           <button onClick={confirmarPeso} disabled={!pesoInput} className="nutri-brand text-white rounded-lg px-4 text-sm disabled:opacity-40">Registrar</button>
         </div>
         {ultimoPeso && (
@@ -2287,7 +2287,7 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
                       value={it.gramos}
                       onChange={(e) => editarGramosItem(m.key, i, e.target.value)}
                       className="w-14 rounded-lg nutri-chip px-1.5 py-1 text-xs bg-white nutri-ink text-right"
-                    />
+                     onFocus={(e) => e.target.select()} />
                     <span className="nutri-muted text-xs">g</span>
                     {esAceite(it.alimento) && <SelectorCucharas onElegir={(g) => editarGramosItem(m.key, i, g)} />}
                     {esNuez(it.alimento) && <SelectorNueces onElegir={(g) => editarGramosItem(m.key, i, g)} />}
@@ -2327,7 +2327,7 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
                         value={nuevoGramos}
                         onChange={(e) => setNuevoGramos(Number(e.target.value))}
                         className="w-20 rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink"
-                      />
+                       onFocus={(e) => e.target.select()} />
                       <span className="text-xs nutri-muted">gramos</span>
                       {esAceite(nuevoAlimento) && <SelectorCucharas onElegir={setNuevoGramos} />}
                       {esNuez(nuevoAlimento) && <SelectorNueces onElegir={setNuevoGramos} />}
@@ -2452,10 +2452,10 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
         <p className="text-xs nutri-muted mb-3">Mantén "Subir de peso" mientras dure la indicación. Cuando lo pesen y el médico reevalúe, cambia el selector a la segunda opción para volver al cálculo automático por perfil.</p>
         {prescripcion.activa && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">Kcal objetivo/día</span><input type="number" className={inputCls} placeholder="ej. 1300" value={prescripcion.kcalManual ?? ""} onChange={(e) => actualizarRx("kcalManual", e.target.value === "" ? null : Number(e.target.value))} /></div>
-            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">Proteína g/día</span><input type="number" className={inputCls} placeholder="ej. 60" value={prescripcion.proteinaManualG ?? ""} onChange={(e) => actualizarRx("proteinaManualG", e.target.value === "" ? null : Number(e.target.value))} /></div>
-            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">% Carbohidratos</span><input type="number" className={inputCls} placeholder="ej. 50" value={prescripcion.carbohidratosPctManual ?? ""} onChange={(e) => actualizarRx("carbohidratosPctManual", e.target.value === "" ? null : Number(e.target.value))} /></div>
-            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">% Grasas</span><input type="number" className={inputCls} placeholder="ej. 32" value={prescripcion.grasasPctManual ?? ""} onChange={(e) => actualizarRx("grasasPctManual", e.target.value === "" ? null : Number(e.target.value))} /></div>
+            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">Kcal objetivo/día</span><input type="number" className={inputCls} placeholder="ej. 1300" value={prescripcion.kcalManual ?? ""} onChange={(e) => actualizarRx("kcalManual", e.target.value === "" ? null : Number(e.target.value))}  onFocus={(e) => e.target.select()} /></div>
+            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">Proteína g/día</span><input type="number" className={inputCls} placeholder="ej. 60" value={prescripcion.proteinaManualG ?? ""} onChange={(e) => actualizarRx("proteinaManualG", e.target.value === "" ? null : Number(e.target.value))}  onFocus={(e) => e.target.select()} /></div>
+            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">% Carbohidratos</span><input type="number" className={inputCls} placeholder="ej. 50" value={prescripcion.carbohidratosPctManual ?? ""} onChange={(e) => actualizarRx("carbohidratosPctManual", e.target.value === "" ? null : Number(e.target.value))}  onFocus={(e) => e.target.select()} /></div>
+            <div className="flex items-center gap-2"><span className="text-xs nutri-muted w-32">% Grasas</span><input type="number" className={inputCls} placeholder="ej. 32" value={prescripcion.grasasPctManual ?? ""} onChange={(e) => actualizarRx("grasasPctManual", e.target.value === "" ? null : Number(e.target.value))}  onFocus={(e) => e.target.select()} /></div>
           </div>
         )}
       </div>
@@ -2473,9 +2473,9 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
         <div className="flex flex-col gap-2 mb-3">
           <input className={inputCls} placeholder="Nombre (ej. Ensure Advance con HMB)" value={nuevoSup.nombre} onChange={(e) => setNuevoSup((s) => ({ ...s, nombre: e.target.value }))} />
           <div className="flex gap-2">
-            <input type="number" className={inputCls} placeholder="Kcal/toma" value={nuevoSup.kcal} onChange={(e) => setNuevoSup((s) => ({ ...s, kcal: e.target.value }))} />
-            <input type="number" className={inputCls} placeholder="Proteína g/toma" value={nuevoSup.proteinaG} onChange={(e) => setNuevoSup((s) => ({ ...s, proteinaG: e.target.value }))} />
-            <input type="number" className={inputCls} placeholder="Tomas/día" value={nuevoSup.vecesDia} onChange={(e) => setNuevoSup((s) => ({ ...s, vecesDia: e.target.value }))} />
+            <input type="number" className={inputCls} placeholder="Kcal/toma" value={nuevoSup.kcal} onChange={(e) => setNuevoSup((s) => ({ ...s, kcal: e.target.value }))}  onFocus={(e) => e.target.select()} />
+            <input type="number" className={inputCls} placeholder="Proteína g/toma" value={nuevoSup.proteinaG} onChange={(e) => setNuevoSup((s) => ({ ...s, proteinaG: e.target.value }))}  onFocus={(e) => e.target.select()} />
+            <input type="number" className={inputCls} placeholder="Tomas/día" value={nuevoSup.vecesDia} onChange={(e) => setNuevoSup((s) => ({ ...s, vecesDia: e.target.value }))}  onFocus={(e) => e.target.select()} />
           </div>
           <div className="flex gap-2 items-center">
             <span className="text-xs nutri-muted">Horario:</span>
@@ -2512,7 +2512,7 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
           {recipientes.map((r) => (
             <div key={r.id} className="flex items-center gap-2">
               <input className={inputCls + " flex-1"} value={r.nombre} onChange={(e) => actualizarRecipiente(r.id, "nombre", e.target.value)} />
-              <input type="number" className={inputCls + " w-24"} value={r.taraG} onChange={(e) => actualizarRecipiente(r.id, "taraG", Number(e.target.value))} />
+              <input type="number" className={inputCls + " w-24"} value={r.taraG} onChange={(e) => actualizarRecipiente(r.id, "taraG", Number(e.target.value))}  onFocus={(e) => e.target.select()} />
               <span className="text-xs nutri-muted">g</span>
               <button onClick={() => eliminarRecipiente(r.id)} className="nutri-warn"><IconTrash size={15} /></button>
             </div>
