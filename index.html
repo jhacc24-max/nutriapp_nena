@@ -165,15 +165,18 @@ const PERFIL_DEFAULT = { edad: 32, sexo: "femenino", pesoKg: 47, tallaCm: 165, a
    a fijar aparte, así que se dejan en automático (grasa por defecto y carbohidratos como
    resto) y solo se fijan manualmente las dos cifras finales que sí prescribió. */
 const PRESCRIPCION_DEFAULT = { activa: true, kcalManual: 1300, proteinaManualG: 60, carbohidratosPctManual: null, grasasPctManual: null };
+/* Valores por porción según etiqueta real: Ensure Clinical, botella de 220 ml (330 kcal /
+   20 g prot.); Ensure Advance con HMB en polvo, 6 cucharadas en 200 ml de agua → 235 ml
+   finales (235 kcal / 8.84 g prot., más 1.2 g de HMB que la app no trackea aparte). */
 const SUPLEMENTOS_PRESET = [
   { nombre: "Ensure Clinical", kcal: 330, proteinaG: 20 },
-  { nombre: "Ensure Advance con HMB", kcal: 250, proteinaG: 9 },
+  { nombre: "Ensure Advance con HMB", kcal: 235, proteinaG: 8.84 },
 ];
 /* Suplemento indicado en la misma nota: Ensure Advance con HMB, 2 tomas/día (10:00 am y
-   5:00 pm) → 500 kcal y 18 g de proteína extra al día, aparte de la dieta. El HMB
+   5:00 pm) → 470 kcal y 17.7 g de proteína extra al día, aparte de la dieta. El HMB
    (β-hidroxi-β-metilbutirato, metabolito de la leucina) ayuda a preservar masa muscular. */
 const SUPLEMENTOS_DEFAULT = [
-  { id: "sup_ensure_advance_hmb", nombre: "Ensure Advance con HMB", kcal: 250, proteinaG: 9, vecesDia: 2, momento: "mañana", notas: "Indicación médica: 1 toma a las 10:00 am y 1 toma a las 5:00 pm. Contiene HMB para preservar masa muscular." },
+  { id: "sup_ensure_advance_hmb", nombre: "Ensure Advance con HMB", kcal: 235, proteinaG: 8.84, vecesDia: 2, momento: "mañana", notas: "Indicación médica: 1 toma a las 10:00 am y 1 toma a las 5:00 pm. Contiene HMB para preservar masa muscular." },
 ];
 
 const RECIPIENTES_DEFAULT = [
@@ -248,15 +251,19 @@ const FOOD_DB = [
   { id: "f28", nombre: "Leche descremada", categoria: "lacteo", porcionBaseG: 100, kcal: 34, proteinasG: 3.4, carbohidratosG: 5, fibraG: 0, grasasG: 0.1, grasasSaturadasG: 0.1, sodioMg: 44, potasioMg: 150, azucaresG: 5 },
   { id: "f29", nombre: "Queso cottage", categoria: "proteina", porcionBaseG: 100, kcal: 98, proteinasG: 11, carbohidratosG: 3.4, fibraG: 0, grasasG: 4.3, grasasSaturadasG: 2.7, sodioMg: 364, potasioMg: 104, azucaresG: 2.7 },
   { id: "f30", nombre: "Batido de proteína (whey)", categoria: "proteina", porcionBaseG: 100, kcal: 400, proteinasG: 80, carbohidratosG: 8, fibraG: 1, grasasG: 6, grasasSaturadasG: 2, sodioMg: 150, potasioMg: 200, azucaresG: 4 },
-  /* Fórmulas nutricionales orales (Abbott). Kcal y proteína por 100 ml derivadas de los mismos
-     valores ya usados en SUPLEMENTOS_PRESET (330 kcal / 20 g prot. y 250 kcal / 9 g prot., cada
-     uno por una botella de 220 ml, el tamaño estándar de venta), para que un mismo producto no
-     tenga dos cifras distintas en la app. Carbohidratos, grasas, fibra y sodio son ESTIMADOS
-     según la distribución típica de este tipo de fórmula (no vienen de una etiqueta específica):
-     verifícalos contra el empaque real si el paciente es diabético, renal o tiene restricción de
-     sodio, donde la precisión de esos valores importa clínicamente. */
-  { id: "f63", nombre: "Ensure Clinical", categoria: "proteina", porcionBaseG: 100, kcal: 150, proteinasG: 9.1, carbohidratosG: 16.4, fibraG: 0, grasasG: 5, grasasSaturadasG: 0.6, sodioMg: 80, potasioMg: 190, azucaresG: 8 },
-  { id: "f64", nombre: "Ensure Advance con HMB", categoria: "proteina", porcionBaseG: 100, kcal: 114, proteinasG: 4.1, carbohidratosG: 15, fibraG: 0.7, grasasG: 4.1, grasasSaturadasG: 0.5, sodioMg: 70, potasioMg: 170, azucaresG: 7 },
+  /* Fórmulas nutricionales orales (Abbott), valores por 100 ml calculados a partir de la
+     etiqueta real de cada presentación:
+     - Ensure Advance Polvo (con HMB): 6 cucharadas en 200 ml de agua → 235 ml finales, con
+       235 kcal, 8.84 g prot., 30.65 g carb. (11.23 g azúcares), 7.15 g grasa, 2.05 g fibra
+       (FOS), 194 mg sodio y 1.2 g de HMB por porción (235 ml). La app no trackea HMB como
+       nutriente aparte; queda documentado aquí para referencia clínica.
+     - Ensure Clinical: botella lista para tomar de 220 ml, con 330 kcal, 20.0 g prot.,
+       37.0 g carb. (15.0 g azúcares) y 10.6 g grasa por botella. La etiqueta no da un
+       gramaje exacto de fibra ("aporte moderado, soluble") ni de sodio ("bajo/control
+       clínico"): fibraG y sodioMg son ESTIMADOS (conservadores) hasta tener el dato preciso;
+       verifícalos contra el empaque si el paciente tiene restricción de sodio. */
+  { id: "f63", nombre: "Ensure Clinical", categoria: "proteina", porcionBaseG: 100, kcal: 150, proteinasG: 9.09, carbohidratosG: 16.82, fibraG: 0.7, grasasG: 4.82, grasasSaturadasG: 0.5, sodioMg: 41, potasioMg: 190, azucaresG: 6.82 },
+  { id: "f64", nombre: "Ensure Advance con HMB (polvo)", categoria: "proteina", porcionBaseG: 100, kcal: 100, proteinasG: 3.76, carbohidratosG: 13.04, fibraG: 0.87, grasasG: 3.04, grasasSaturadasG: 0.4, sodioMg: 82.6, potasioMg: 170, azucaresG: 4.78 },
 ];
 
 const MEAL_DEFS = [
