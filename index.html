@@ -2737,17 +2737,21 @@ function NutriApp({ pacienteId, salir }) {
     remotoListo.current = false;
     const unsubEstado = dbFirestore.collection("pacientes").doc(pacienteId).onSnapshot((snap) => {
       const d = snap.data();
-      aplicandoRemoto.current = true;
       remotoListo.current = true;
       if (!d) return;
-      if (d.perfil) setPerfil(d.perfil);
-      if (d.catalogoCustom) setCatalogo([...CONDICIONES_PRESET, ...d.catalogoCustom]);
-      if (d.recipientes) setRecipientes(d.recipientes);
-      if (d.medicamentos) setMedicamentos(d.medicamentos);
-      if (d.prescripcion) setPrescripcion(d.prescripcion);
-      if (d.suplementos) setSuplementos(d.suplementos);
-      if (d.pesos) setPesos(d.pesos);
-      if (d.tema) setTema(d.tema);
+      /* `aplicandoRemoto` solo debe marcarse si de verdad se va a aplicar un cambio remoto:
+         antes se marcaba siempre, incluso cuando este snapshot no traía ningún campo (o llegaba
+         vacío), dejando la bandera "encendida" sin que ningún efecto la consumiera — así, el
+         SIGUIENTE cambio genuino del usuario (p. ej. registrar su peso) se descartaba porque se
+         confundía con un eco de la nube y nunca se enviaba a Firestore. */
+      if (d.perfil) { aplicandoRemoto.current = true; setPerfil(d.perfil); }
+      if (d.catalogoCustom) { aplicandoRemoto.current = true; setCatalogo([...CONDICIONES_PRESET, ...d.catalogoCustom]); }
+      if (d.recipientes) { aplicandoRemoto.current = true; setRecipientes(d.recipientes); }
+      if (d.medicamentos) { aplicandoRemoto.current = true; setMedicamentos(d.medicamentos); }
+      if (d.prescripcion) { aplicandoRemoto.current = true; setPrescripcion(d.prescripcion); }
+      if (d.suplementos) { aplicandoRemoto.current = true; setSuplementos(d.suplementos); }
+      if (d.pesos) { aplicandoRemoto.current = true; setPesos(d.pesos); }
+      if (d.tema) { aplicandoRemoto.current = true; setTema(d.tema); }
     }, () => setErrorSync("No se pudo leer tu información desde la nube. Revisa tu conexión."));
     const unsubLog = dbFirestore.collection("pacientes").doc(pacienteId).collection("registros").doc(hoyISO()).collection("items").orderBy("agregadoEn").onSnapshot((snap) => {
       setLog(snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() })));
