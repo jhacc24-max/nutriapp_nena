@@ -1426,13 +1426,13 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const [semanaOffset, setSemanaOffset] = useState(0);
 
   const hoy = hoyISO();
-  const diasSemana = useMemo(() => { const l = getLunes(new Date()); l.setDate(l.getDate() + semanaOffset * 7); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setDate(d.getDate() + i); return d; }); }, [semanaOffset]);
+  const diasSemana = useMemo(() => { const l = getLunes(new Date()); l.setUTCDate(l.getUTCDate() + semanaOffset * 7); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setUTCDate(d.getUTCDate() + i); return d; }); }, [semanaOffset]);
 
   // Si venimos de "Historial" con una fecha concreta para editar, saltamos a la semana de esa fecha.
   useEffect(() => {
     if (!fechaInicial) return;
     const lunesActual = getLunes(new Date());
-    const lunesDestino = getLunes(new Date(fechaInicial + "T00:00:00"));
+    const lunesDestino = getLunes(fechaInicial);
     const offset = Math.round((lunesDestino - lunesActual) / (7 * DIAS_EN_MS));
     setSemanaOffset(offset);
     setFechaSeleccionada(fechaInicial);
@@ -1675,9 +1675,8 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
   const rangoFechas = useMemo(() => {
     if (vista === "semana") {
       const l = getLunes(new Date());
-      l.setDate(l.getDate() + semanaOffset * 7);
-      l.setFullYear(anio === new Date().getFullYear() ? l.getFullYear() : l.getFullYear());
-      return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setDate(d.getDate() + i); return d; }).filter((d) => d <= new Date());
+      l.setUTCDate(l.getUTCDate() + semanaOffset * 7);
+      return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setUTCDate(d.getUTCDate() + i); return d; }).filter((d) => d <= new Date());
     }
     const ultimoDia = new Date(anio, mes + 1, 0).getDate();
     return Array.from({ length: ultimoDia }, (_, i) => new Date(anio, mes, i + 1)).filter((d) => d <= new Date());
@@ -2006,18 +2005,29 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
   );
 }
 
+/* Deriva el lunes de la semana a partir del día calendario en huso horario de Lima (no el del
+   dispositivo): antes usaba getDay()/setDate() locales, que en un dispositivo con otra zona
+   horaria podían desalinear la semana un día entero respecto a lo que fechaLimaISO()/hoyISO()
+   consideran "hoy" — por ejemplo, "A registro" terminaba guardando en el día anterior. Acepta
+   un Date o una fecha ISO "YYYY-MM-DD", y devuelve el lunes anclado al MEDIODÍA UTC (no
+   medianoche) del día calendario correcto en Lima: así, al convertir de vuelta a cualquier huso
+   horario razonable (incluido UTC-5 de Lima) con fechaLimaISO() o toLocaleDateString(), sigue
+   cayendo en el mismo día calendario en vez de retroceder un día. Todo el código que suma o
+   resta días sobre este valor debe usar los métodos UTC (getUTCDate/setUTCDate) para no
+   reintroducir el mismo problema. */
 function getLunes(fecha) {
-  const d = new Date(fecha);
-  const dia = d.getDay(); // 0=domingo,1=lunes,...
+  const iso = typeof fecha === "string" ? fecha : fechaLimaISO(fecha);
+  const [y, m, d] = iso.split("-").map(Number);
+  const base = new Date(Date.UTC(y, m - 1, d, 12));
+  const dia = base.getUTCDay(); // 0=domingo,1=lunes,...
   const diff = dia === 0 ? -6 : 1 - dia;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
+  base.setUTCDate(base.getUTCDate() + diff);
+  return base;
 }
 const DIAS_EN_MS = 86400000;
-const NOMBRE_DIA_CORTO = (d) => d.toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "");
-const NOMBRE_DIA_LARGO = (d) => d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" });
-const RANGO_SEMANA = (inicio, fin) => `${inicio.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${fin.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
+const NOMBRE_DIA_CORTO = (d) => d.toLocaleDateString("es-ES", { weekday: "short", timeZone: "America/Lima" }).replace(".", "");
+const NOMBRE_DIA_LARGO = (d) => d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short", timeZone: "America/Lima" });
+const RANGO_SEMANA = (inicio, fin) => `${inicio.toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "America/Lima" })} – ${fin.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Lima" })}`;
 
 /* Conversión aproximada de cucharas a gramos para aceites y similares (referencia habitual:
    1 cucharadita ≈ 5 g, 1 cucharada ≈ 15 g), para no obligar a pesar el aceite en una balanza. */
@@ -2075,7 +2085,9 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [variacion, setVariacion] = useState(0);
   const [diaSeleccionado, setDiaSeleccionado] = useState(() => {
-    const hoy = new Date().getDay();
+    // Día de la semana de "hoy" en Lima (no el del dispositivo), para que el tab seleccionado
+    // por defecto coincida con el día real en Perú.
+    const hoy = new Date(hoyISO() + "T12:00:00Z").getUTCDay();
     return hoy === 0 ? 6 : hoy - 1; // índice 0=lunes...6=domingo
   });
   /* Las ediciones del menú (cambios de alimento/gramaje por día) antes solo se guardaban en la
@@ -2092,16 +2104,18 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
   const [agregando, setAgregando] = useState(null);
   const [nuevoAlimento, setNuevoAlimento] = useState(null);
   const [nuevoGramos, setNuevoGramos] = useState(100);
+  const [modoManual, setModoManual] = useState(false);
+  const [manual, setManual] = useState({ nombre: "", kcal: "", proteinasG: "", carbohidratosG: "", grasasG: "" });
   const aplicandoRemotoMenu = useRef(false);
   const diasCargados = useRef({});
 
   const lunes = useMemo(() => {
     const l = getLunes(new Date());
-    l.setDate(l.getDate() + semanaOffset * 7);
+    l.setUTCDate(l.getUTCDate() + semanaOffset * 7);
     return l;
   }, [semanaOffset]);
 
-  const dias = useMemo(() => Array.from({ length: 7 }, (_, i) => { const d = new Date(lunes); d.setDate(d.getDate() + i); return d; }), [lunes]);
+  const dias = useMemo(() => Array.from({ length: 7 }, (_, i) => { const d = new Date(lunes); d.setUTCDate(d.getUTCDate() + i); return d; }), [lunes]);
 
   const menusSemana = useMemo(() => dias.map((d) => {
     const seedDia = Math.floor(d.getTime() / DIAS_EN_MS) + variacion * 1000;
@@ -2165,10 +2179,37 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
     actualizarItemsComida(mealKey, meal.items.filter((_, i) => i !== idx));
   };
   const elegirAlimentoParaAgregar = (alimentoId) => {
+    if (alimentoId === "__manual__") { setModoManual(true); return; }
     const alimento = FOOD_DB.find((f) => f.id === alimentoId);
     if (!alimento) return;
     setNuevoAlimento(alimento);
     setNuevoGramos(100);
+  };
+  /* Alimento/nutriente que no está en la base de datos: el usuario ingresa los valores por
+     cada 100 g (igual que el resto del catálogo), y de ahí en adelante se trata exactamente
+     igual que cualquier otro alimento del menú — cuenta en los totales del día y, al usar
+     "A registro", se copia al registro de alimentos contando dentro de sus nutrientes. */
+  const confirmarManual = () => {
+    const n = (v) => Math.max(Number(v) || 0, 0);
+    if (!manual.nombre.trim()) return;
+    setNuevoAlimento({
+      id: `manual_${Date.now()}`,
+      nombre: manual.nombre.trim(),
+      categoria: "otro",
+      porcionBaseG: 100,
+      kcal: n(manual.kcal),
+      proteinasG: n(manual.proteinasG),
+      carbohidratosG: n(manual.carbohidratosG),
+      fibraG: 0,
+      grasasG: n(manual.grasasG),
+      grasasSaturadasG: 0,
+      sodioMg: 0,
+      potasioMg: 0,
+      azucaresG: 0,
+    });
+    setNuevoGramos(100);
+    setModoManual(false);
+    setManual({ nombre: "", kcal: "", proteinasG: "", carbohidratosG: "", grasasG: "" });
   };
   const confirmarAgregarItem = (mealKey) => {
     if (!nuevoAlimento || !(nuevoGramos > 0)) return;
@@ -2176,14 +2217,17 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
     actualizarItemsComida(mealKey, [...meal.items, { alimento: nuevoAlimento, gramos: nuevoGramos }]);
     setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100);
   };
-  const cancelarAgregarItem = () => { setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100); };
+  const cancelarAgregarItem = () => {
+    setAgregando(null); setNuevoAlimento(null); setNuevoGramos(100);
+    setModoManual(false); setManual({ nombre: "", kcal: "", proteinasG: "", carbohidratosG: "", grasasG: "" });
+  };
   const editarGramosItem = (mealKey, idx, gramos) => {
     const meal = menuEfectivo.find((m) => m.key === mealKey);
     actualizarItemsComida(mealKey, meal.items.map((it, i) => (i === idx ? { ...it, gramos: Math.max(Number(gramos) || 0, 0) } : it)));
   };
 
   const desvio = requerimiento.get > 0 ? Math.round(((totalEfectivo.kcal - requerimiento.get) / requerimiento.get) * 100) : 0;
-  const esHoy = (d) => d.toDateString() === new Date().toDateString();
+  const esHoy = (d) => fechaLimaISO(d) === hoyISO();
 
   const [pasandoARegistro, setPasandoARegistro] = useState(false);
   const [copiadoOk, setCopiadoOk] = useState(false);
@@ -2299,10 +2343,40 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
             </div>
             {agregando === m.key ? (
               <div className="mt-2 space-y-2">
-                {!nuevoAlimento ? (
+                {modoManual ? (
+                  <div className="nutri-panel rounded-lg p-3">
+                    <span className="text-sm nutri-ink font-medium block mb-2">Alimento o nutriente personalizado</span>
+                    <input
+                      className="w-full rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink mb-2"
+                      placeholder="Nombre (ej. Ensure Advance, plato casero...)"
+                      value={manual.nombre}
+                      onChange={(e) => setManual((s) => ({ ...s, nombre: e.target.value }))}
+                    />
+                    <p className="text-[11px] nutri-muted mb-1">Valores por cada 100 g (o 100 ml):</p>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <label className="text-xs nutri-muted">Kcal
+                        <input type="number" className="w-full rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink" value={manual.kcal} onChange={(e) => setManual((s) => ({ ...s, kcal: e.target.value }))} onFocus={(e) => e.target.select()} />
+                      </label>
+                      <label className="text-xs nutri-muted">Proteína (g)
+                        <input type="number" className="w-full rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink" value={manual.proteinasG} onChange={(e) => setManual((s) => ({ ...s, proteinasG: e.target.value }))} onFocus={(e) => e.target.select()} />
+                      </label>
+                      <label className="text-xs nutri-muted">Carbohidratos (g)
+                        <input type="number" className="w-full rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink" value={manual.carbohidratosG} onChange={(e) => setManual((s) => ({ ...s, carbohidratosG: e.target.value }))} onFocus={(e) => e.target.select()} />
+                      </label>
+                      <label className="text-xs nutri-muted">Grasas (g)
+                        <input type="number" className="w-full rounded-lg nutri-chip px-2 py-1.5 text-sm bg-white nutri-ink" value={manual.grasasG} onChange={(e) => setManual((s) => ({ ...s, grasasG: e.target.value }))} onFocus={(e) => e.target.select()} />
+                      </label>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={confirmarManual} disabled={!manual.nombre.trim()} className="flex-1 nutri-brand text-white rounded-lg py-1.5 text-xs disabled:opacity-40">Continuar</button>
+                      <button onClick={cancelarAgregarItem} className="flex-1 nutri-chip nutri-ink rounded-lg py-1.5 text-xs">Cancelar</button>
+                    </div>
+                  </div>
+                ) : !nuevoAlimento ? (
                   <div className="flex gap-2">
                     <select className="flex-1 rounded-lg nutri-chip px-2 py-1.5 bg-white nutri-ink" style={{ fontSize: "0.7rem" }} defaultValue="" onChange={(e) => elegirAlimentoParaAgregar(e.target.value)}>
                       <option value="" disabled>Elige un alimento...</option>
+                      <option value="__manual__">➕ Otro (no está en la lista)...</option>
                       {ORDEN_CATEGORIAS.map((cat) => {
                         const items = FOOD_DB.filter((f) => f.categoria === cat && aptoParaRestricciones(f, requerimiento.restricciones));
                         if (items.length === 0) return null;
