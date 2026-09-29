@@ -2434,13 +2434,41 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
   );
 }
 
-function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, pacienteId, salir }) {
+function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, pacienteId, salir, exportarBackup, restaurarBackup }) {
   const [nuevoMed, setNuevoMed] = useState({ nombre: "", dosis: "", frecuencia: "" });
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState("");
   const [sugerenciasFoto, setSugerenciasFoto] = useState([]);
   const [nuevoSup, setNuevoSup] = useState({ nombre: "", kcal: "", proteinaG: "", vecesDia: 1, momento: "mañana", notas: "" });
   const fileInputRef = useRef(null);
+  const backupFileInputRef = useRef(null);
+  const [exportando, setExportando] = useState(false);
+  const [restaurando, setRestaurando] = useState(false);
+  const [backupMsg, setBackupMsg] = useState("");
+
+  const handleExportarBackup = async () => {
+    setExportando(true);
+    try { await exportarBackup(); } finally { setExportando(false); }
+  };
+  const handleRestaurarBackup = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setBackupMsg("");
+    try {
+      const texto = await file.text();
+      const backup = JSON.parse(texto);
+      const ok = window.confirm("¿Restaurar este respaldo? Reemplazará tu perfil, recipientes, medicamentos, prescripción, suplementos y pesos actuales, y agregará los registros de alimentación guardados en el archivo.");
+      if (!ok) return;
+      setRestaurando(true);
+      await restaurarBackup(backup);
+      setBackupMsg("✓ Respaldo restaurado correctamente.");
+    } catch (err) {
+      setBackupMsg("No se pudo leer ese archivo. Verifica que sea el .json exportado desde esta app.");
+    } finally {
+      setRestaurando(false);
+      if (backupFileInputRef.current) backupFileInputRef.current.value = "";
+    }
+  };
 
   const actualizarRecipiente = (id, campo, valor) => setRecipientes((prev) => prev.map((r) => (r.id === id ? { ...r, [campo]: valor } : r)));
   const eliminarRecipiente = (id) => setRecipientes((prev) => prev.filter((r) => r.id !== id));
@@ -2490,6 +2518,17 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
     <div className="px-5 pt-6 pb-24">
       <h1 className="nutri-serif text-2xl nutri-ink mb-1">Opciones</h1>
       <p className="text-sm nutri-muted mb-6">Configura tus recipientes de pesaje, medicamentos, prescripción médica y suplementos.</p>
+
+      <div className="nutri-panel rounded-2xl p-5 mb-5">
+        <div className="flex items-center gap-2 mb-2"><IconActivity size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Respaldo de datos</span></div>
+        <p className="text-xs nutri-muted mb-3">Descarga una copia de todo (perfil, recipientes, medicamentos, prescripción, suplementos, pesos y hasta {60} días de registro de alimentos) en un archivo a tu celular. Es gratis: no depende de ninguna nube ni servicio de pago, solo se guarda en tu dispositivo.</p>
+        <div className="flex gap-2">
+          <button onClick={handleExportarBackup} disabled={exportando} className="flex-1 nutri-brand text-white rounded-lg py-2 text-sm disabled:opacity-40">{exportando ? "Preparando..." : "Descargar respaldo"}</button>
+          <button onClick={() => backupFileInputRef.current && backupFileInputRef.current.click()} disabled={restaurando} className="flex-1 nutri-chip nutri-ink rounded-lg py-2 text-sm disabled:opacity-40">{restaurando ? "Restaurando..." : "Restaurar respaldo"}</button>
+        </div>
+        <input ref={backupFileInputRef} type="file" accept="application/json" className="hidden" onChange={handleRestaurarBackup} />
+        {backupMsg && <p className={`text-xs mt-2 ${backupMsg.startsWith("✓") ? "" : "nutri-warn"}`} style={backupMsg.startsWith("✓") ? { color: "#3E8E5A" } : undefined}>{backupMsg}</p>}
+      </div>
 
       {pacienteId && (
         <div className="nutri-panel rounded-2xl p-5 mb-5">
@@ -2915,6 +2954,58 @@ function NutriApp({ pacienteId, salir }) {
     menuDelDia.forEach((m) => { m.items.forEach((it) => addItem(it.alimento, it.gramos, m.key, null, fecha)); });
   }, [pacienteId, addItem, removeItem]);
 
+  /* Respaldo completo de datos: no solo el registro de alimentos, también perfil, recipientes,
+     medicamentos, prescripción, suplementos, condiciones personalizadas y pesos — todo lo que se
+     perdería si se borra la app o se cambia de celular. Se descarga como un archivo .json al
+     dispositivo: gratis, sin depender de ningún servicio de pago ni de conexión a internet. */
+  const DIAS_BACKUP_REGISTROS = 60;
+  const exportarBackup = useCallback(async () => {
+    const fechas = Array.from({ length: DIAS_BACKUP_REGISTROS }, (_, i) => fechaISOOffset(i));
+    const registros = {};
+    await Promise.all(fechas.map(async (fecha) => {
+      const items = await obtenerLogFecha(pacienteId, fecha);
+      if (items.length > 0) registros[fecha] = items.map(({ uid, ...resto }) => resto);
+    }));
+    const backup = {
+      version: 1,
+      exportadoEn: new Date().toISOString(),
+      perfil,
+      catalogoCustom: catalogo.filter((c) => c.personalizada),
+      recipientes,
+      medicamentos,
+      prescripcion,
+      suplementos,
+      pesos,
+      tema,
+      registros,
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nutriapp_respaldo_${hoyISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, [pacienteId, perfil, catalogo, recipientes, medicamentos, prescripcion, suplementos, pesos, tema]);
+
+  const restaurarBackup = useCallback(async (backup) => {
+    if (backup.perfil) setPerfil(backup.perfil);
+    if (backup.catalogoCustom) setCatalogo([...CONDICIONES_PRESET, ...backup.catalogoCustom]);
+    if (backup.recipientes) setRecipientes(backup.recipientes);
+    if (backup.medicamentos) setMedicamentos(backup.medicamentos);
+    if (backup.prescripcion) setPrescripcion(backup.prescripcion);
+    if (backup.suplementos) setSuplementos(backup.suplementos);
+    if (backup.pesos) setPesos(backup.pesos);
+    if (backup.tema) setTema(backup.tema);
+    for (const [fecha, items] of Object.entries(backup.registros || {})) {
+      const actuales = await obtenerLogFecha(pacienteId, fecha);
+      actuales.forEach((it) => removeItem(it.uid, fecha));
+      items.forEach((it) => addItem(it.alimento, it.gramos, it.momento, it.tara || null, fecha));
+    }
+  }, [pacienteId, addItem, removeItem]);
+
   const agregarCondicionCustom = useCallback((nueva) => setCatalogo((prev) => [...prev, nueva]), []);
 
   const TABS = [
@@ -2944,7 +3035,7 @@ function NutriApp({ pacienteId, salir }) {
       {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
       {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
       {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
-      {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} />}
+      {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto nutri-panel border-t flex" style={{ borderColor: "var(--panel-border)" }}>
         {TABS.map(({ key, label, icon: IconC }) => (
           <button key={key} onClick={() => setTab(key)} className={`flex-1 flex flex-col items-center gap-1 py-3 text-[11px] ${tab === key ? "nutri-brand-text font-medium" : "nutri-muted"}`}><IconC size={18} />{label}</button>
