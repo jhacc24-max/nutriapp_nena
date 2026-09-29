@@ -248,6 +248,15 @@ const FOOD_DB = [
   { id: "f28", nombre: "Leche descremada", categoria: "lacteo", porcionBaseG: 100, kcal: 34, proteinasG: 3.4, carbohidratosG: 5, fibraG: 0, grasasG: 0.1, grasasSaturadasG: 0.1, sodioMg: 44, potasioMg: 150, azucaresG: 5 },
   { id: "f29", nombre: "Queso cottage", categoria: "proteina", porcionBaseG: 100, kcal: 98, proteinasG: 11, carbohidratosG: 3.4, fibraG: 0, grasasG: 4.3, grasasSaturadasG: 2.7, sodioMg: 364, potasioMg: 104, azucaresG: 2.7 },
   { id: "f30", nombre: "Batido de proteína (whey)", categoria: "proteina", porcionBaseG: 100, kcal: 400, proteinasG: 80, carbohidratosG: 8, fibraG: 1, grasasG: 6, grasasSaturadasG: 2, sodioMg: 150, potasioMg: 200, azucaresG: 4 },
+  /* Fórmulas nutricionales orales (Abbott). Kcal y proteína por 100 ml derivadas de los mismos
+     valores ya usados en SUPLEMENTOS_PRESET (330 kcal / 20 g prot. y 250 kcal / 9 g prot., cada
+     uno por una botella de 220 ml, el tamaño estándar de venta), para que un mismo producto no
+     tenga dos cifras distintas en la app. Carbohidratos, grasas, fibra y sodio son ESTIMADOS
+     según la distribución típica de este tipo de fórmula (no vienen de una etiqueta específica):
+     verifícalos contra el empaque real si el paciente es diabético, renal o tiene restricción de
+     sodio, donde la precisión de esos valores importa clínicamente. */
+  { id: "f63", nombre: "Ensure Clinical", categoria: "proteina", porcionBaseG: 100, kcal: 150, proteinasG: 9.1, carbohidratosG: 16.4, fibraG: 0, grasasG: 5, grasasSaturadasG: 0.6, sodioMg: 80, potasioMg: 190, azucaresG: 8 },
+  { id: "f64", nombre: "Ensure Advance con HMB", categoria: "proteina", porcionBaseG: 100, kcal: 114, proteinasG: 4.1, carbohidratosG: 15, fibraG: 0.7, grasasG: 4.1, grasasSaturadasG: 0.5, sodioMg: 70, potasioMg: 170, azucaresG: 7 },
 ];
 
 const MEAL_DEFS = [
