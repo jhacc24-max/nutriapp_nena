@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// Modelo de acceso de NutriClínica
+// - Hay que iniciar sesión (Firebase Auth) para tocar cualquier dato.
+// - usuarios/{uid}: cada persona solo lee/escribe su propio documento, y solo puede
+//   vincularse (pacienteId) a un espacio que ya exista.
+// - pacientes/{codigo} y todo lo que cuelga de él (registros, menuEdiciones...):
+//   solo lo leen/escriben las personas vinculadas a ese espacio.
+// - Nadie puede listar espacios ni borrarlos desde la app.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function iniciada() {
+      return request.auth != null;
+    }
+
+    function esMiembro(codigo) {
+      return iniciada()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.pacienteId == codigo;
+    }
+
+    match /usuarios/{uid} {
+      allow read: if iniciada() && request.auth.uid == uid;
+      allow create, update: if iniciada() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['pacienteId'])
+        && request.resource.data.pacienteId is string
+        && request.resource.data.pacienteId.matches('^[A-Z0-9]{4,12}$')
+        && exists(/databases/$(database)/documents/pacientes/$(request.resource.data.pacienteId));
+      allow delete: if false;
+    }
+
+    match /pacientes/{codigo} {
+      // Crear un espacio nuevo: el código no debe existir y debes quedar como creador.
+      allow create: if iniciada()
+        && codigo.matches('^[A-Z0-9]{4,12}$')
+        && request.resource.data.creadoPor == request.auth.uid;
+      // Leer: solo miembros. Modificar: solo miembros, sin cambiar el creador
+      // (los espacios antiguos sin ese campo también quedan permitidos).
+      allow get: if esMiembro(codigo);
+      allow update: if esMiembro(codigo)
+        && request.resource.data.get('creadoPor', null) == resource.data.get('creadoPor', null);
+      allow list, delete: if false;
+
+      // Subcolecciones del espacio. Se listan explícitamente: en la versión 2 de las reglas
+      // un comodín recursivo también coincide con el propio documento y anularía las
+      // restricciones de arriba (borrado, creador).
+      match /registros/{fecha}/items/{itemId} {
+        allow read, write: if esMiembro(codigo);
+      }
+      match /menuEdiciones/{dia} {
+        allow read, write: if esMiembro(codigo);
+      }
+    }
+
+    // Todo lo demás, cerrado.
+    match /{otro=**} {
+      allow read, write: if false;
+    }
+  }
+}

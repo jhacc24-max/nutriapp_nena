@@ -4337,9 +4337,10 @@ function PantallaEspacio({ uid, onListo }) {
     setCargando(true); setError("");
     try {
       const codigo = codigoInput.trim().toUpperCase();
-      const doc = await dbFirestore.collection("pacientes").doc(codigo).get();
-      if (!doc.exists) { setError("No existe un espacio con ese código."); setCargando(false); return; }
-      await dbFirestore.collection("usuarios").doc(uid).set({ pacienteId: codigo }, { merge: true });
+      // Las reglas de Firestore solo permiten vincularse a un espacio que exista; así el espacio
+      // no se puede leer antes de ser miembro (ver firestore.rules).
+      try { await dbFirestore.collection("usuarios").doc(uid).set({ pacienteId: codigo }, { merge: true }); }
+      catch (e) { setError("No existe un espacio con ese código."); setCargando(false); return; }
       onListo(codigo);
     } catch (e) { setError("Ocurrió un error. Intenta de nuevo."); } finally { setCargando(false); }
   };
