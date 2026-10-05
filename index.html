@@ -101,6 +101,7 @@ const IconPlus = (p) => <Icon {...p}><path d="M5 12h14"/><path d="M12 5v14"/></I
 const IconTrash = (p) => <Icon {...p}><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></Icon>;
 const IconEdit = (p) => <Icon {...p}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></Icon>;
 const IconHistorial = (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></Icon>;
+const IconReporte = (p) => <Icon {...p}><path d="M3 3v18h18"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-7"/></Icon>;
 const IconUtensils = (p) => <Icon {...p}><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></Icon>;
 const IconActivity = (p) => <Icon {...p}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></Icon>;
 const IconRefresh = (p) => <Icon {...p}><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M3 21v-5h5"/><path d="M16 3h5v5"/></Icon>;
@@ -1177,6 +1178,17 @@ function BarraNutriente({ valor, meta }) {
   );
 }
 
+/* Barra horizontal de una sola serie (sin leyenda: el título de la sección ya identifica qué
+   mide) para el reporte de aporte por alimento. Un solo color por gráfico, ya que la magnitud
+   -no la identidad del alimento- es lo que se compara entre barras. */
+function BarraContribucion({ pct, color }) {
+  return (
+    <div className="h-2 w-full rounded-full nutri-track overflow-hidden">
+      <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(pct, 0), 100)}%`, background: color, transition: "width .3s" }} />
+    </div>
+  );
+}
+
 /* Un solo tipo de gráfico (gauge radial con inclinación 3D y sombra) reutilizado en Panel,
    Historial y el objetivo calórico — así todo el cumplimiento se lee con el mismo lenguaje visual. */
 function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = "porcentaje", animarDelay = 0 }) {
@@ -1796,6 +1808,141 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
                   </div>
                 );
               })}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* Reporte diario: aporte calórico y proteico total de un día concreto, con el detalle de cada
+   alimento (gramos, kcal y proteína aportados, y su % sobre el total del día), tanto en números
+   como en gráfico (barras de magnitud, una por alimento). Reusa la navegación de semana/día de
+   Registro y Menú (ya corregida para calcular "hoy" en huso horario de Lima, no el del
+   dispositivo), y obtenerLogFecha para leer el registro de cualquier fecha, local o en la nube. */
+function PantallaReporte({ requerimiento, pacienteId, onCerrar }) {
+  const [semanaOffset, setSemanaOffset] = useState(0);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(hoyISO());
+  const [items, setItems] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  const hoy = hoyISO();
+  const diasSemana = useMemo(() => { const l = getLunes(new Date()); l.setUTCDate(l.getUTCDate() + semanaOffset * 7); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setUTCDate(d.getUTCDate() + i); return d; }); }, [semanaOffset]);
+
+  useEffect(() => {
+    let activo = true;
+    setCargando(true);
+    obtenerLogFecha(pacienteId, fechaSeleccionada).then((its) => { if (activo) { setItems(its); setCargando(false); } });
+    return () => { activo = false; };
+  }, [fechaSeleccionada, pacienteId]);
+
+  const totales = useMemo(() => calcularTotalesLog(items), [items]);
+  const filas = useMemo(() => items.map((it) => {
+    const aporte = calcularTotalesItem(it.alimento, it.gramos);
+    return {
+      ...it,
+      aporteKcal: aporte.kcal,
+      aporteProteina: aporte.proteinasG,
+      pctKcal: totales.kcal > 0 ? (aporte.kcal / totales.kcal) * 100 : 0,
+      pctProteina: totales.proteinasG > 0 ? (aporte.proteinasG / totales.proteinasG) * 100 : 0,
+    };
+  }), [items, totales]);
+  const filasPorKcal = useMemo(() => [...filas].sort((a, b) => b.aporteKcal - a.aporteKcal), [filas]);
+  const filasPorProteina = useMemo(() => [...filas].sort((a, b) => b.aporteProteina - a.aporteProteina), [filas]);
+
+  const pctMetaKcal = requerimiento.get > 0 ? Math.round((totales.kcal / requerimiento.get) * 100) : 0;
+  const pctMetaProteina = requerimiento.proteinasG > 0 ? Math.round((totales.proteinasG / requerimiento.proteinasG) * 100) : 0;
+
+  return (
+    <div className="min-h-screen max-w-md mx-auto relative">
+      <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
+        <span className="nutri-serif text-white text-lg">Reporte diario</span>
+        <button onClick={onCerrar} className="text-white flex items-center gap-1 text-xs"><IconX size={16} /> Cerrar</button>
+      </header>
+      <div className="px-5 pt-6 pb-24">
+        <p className="text-sm nutri-muted mb-4">Aporte calórico y proteico total del día, con el detalle de cada alimento.</p>
+
+        <div className="flex items-center justify-between mb-2">
+          <button onClick={() => setSemanaOffset((s) => s - 1)} className="text-xs nutri-brand-text">‹ Semana anterior</button>
+          <span className="text-xs nutri-muted">{RANGO_SEMANA(diasSemana[0], diasSemana[6])}</span>
+          <button onClick={() => setSemanaOffset((s) => Math.min(s + 1, 0))} disabled={semanaOffset === 0} className="text-xs nutri-brand-text disabled:opacity-30">Semana siguiente ›</button>
+        </div>
+        <div className="flex gap-1.5 overflow-x-auto pb-1 mb-5" style={{ scrollbarWidth: "none" }}>
+          {diasSemana.map((d, i) => {
+            const iso = fechaLimaISO(d);
+            const futuro = iso > hoy;
+            return (
+              <button key={i} disabled={futuro} onClick={() => setFechaSeleccionada(iso)} className={`shrink-0 rounded-lg px-2.5 py-1.5 text-center nutri-chip ${iso === fechaSeleccionada ? "nutri-chip-active" : "bg-white nutri-ink"} ${futuro ? "opacity-30" : ""}`}>
+                <div className="text-[10px] uppercase">{NOMBRE_DIA_CORTO(d)}</div>
+                <div className="text-xs font-medium">{d.toLocaleDateString("es-ES", { day: "numeric", timeZone: "America/Lima" })}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {cargando ? (
+          <p className="text-sm nutri-muted">Cargando...</p>
+        ) : items.length === 0 ? (
+          <p className="text-sm nutri-muted">No hay alimentos registrados en esta fecha.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="nutri-panel rounded-2xl p-4 text-center">
+                <div className="nutri-serif text-2xl nutri-ink">{Math.round(totales.kcal)}</div>
+                <div className="text-[11px] nutri-muted">kcal{requerimiento.get > 0 ? ` · ${pctMetaKcal}% de la meta` : ""}</div>
+                <BarraNutriente valor={totales.kcal} meta={requerimiento.get} />
+              </div>
+              <div className="nutri-panel rounded-2xl p-4 text-center">
+                <div className="nutri-serif text-2xl nutri-ink">{Math.round(totales.proteinasG)}g</div>
+                <div className="text-[11px] nutri-muted">proteína{requerimiento.proteinasG > 0 ? ` · ${pctMetaProteina}% de la meta` : ""}</div>
+                <BarraNutriente valor={totales.proteinasG} meta={requerimiento.proteinasG} />
+              </div>
+            </div>
+
+            <div className="nutri-panel rounded-2xl p-5 mb-5">
+              <span className="text-sm font-medium nutri-ink block mb-3">Aporte de calorías por alimento</span>
+              <div className="space-y-2.5">
+                {filasPorKcal.map((f, i) => (
+                  <div key={f.uid || i}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="nutri-ink">{f.alimento.nombre} <span className="nutri-muted">({f.gramos} g)</span></span>
+                      <span className="nutri-muted shrink-0 ml-2">{Math.round(f.aporteKcal)} kcal · {f.pctKcal.toFixed(0)}%</span>
+                    </div>
+                    <BarraContribucion pct={f.pctKcal} color="var(--accent-energy)" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="nutri-panel rounded-2xl p-5 mb-5">
+              <span className="text-sm font-medium nutri-ink block mb-3">Aporte de proteína por alimento</span>
+              <div className="space-y-2.5">
+                {filasPorProteina.map((f, i) => (
+                  <div key={f.uid || i}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="nutri-ink">{f.alimento.nombre} <span className="nutri-muted">({f.gramos} g)</span></span>
+                      <span className="nutri-muted shrink-0 ml-2">{Math.round(f.aporteProteina)} g · {f.pctProteina.toFixed(0)}%</span>
+                    </div>
+                    <BarraContribucion pct={f.pctProteina} color="var(--accent-protein)" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="nutri-panel rounded-2xl p-5">
+              <span className="text-sm font-medium nutri-ink block mb-3">Detalle por alimento</span>
+              <div className="space-y-2">
+                {filasPorKcal.map((f, i) => (
+                  <div key={f.uid || i} className="text-xs pb-2 mb-2 border-b last:border-0 last:pb-0 last:mb-0" style={{ borderColor: "var(--panel-border)" }}>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="nutri-ink font-medium">{f.alimento.nombre}</span>
+                      <span className="nutri-muted capitalize">{f.momento}</span>
+                    </div>
+                    <div className="nutri-muted">{f.gramos} g · {Math.round(f.aporteKcal)} kcal ({f.pctKcal.toFixed(0)}% del día) · {Math.round(f.aporteProteina)} g prot ({f.pctProteina.toFixed(0)}% del día)</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}
@@ -2842,6 +2989,7 @@ function NutriApp({ pacienteId, salir }) {
   const [log, setLog] = useState(() => { try { const s = localStorage.getItem("nutriapp_log_" + hoyISO()); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [tab, setTab] = useState("perfil");
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
+  const [mostrarReporte, setMostrarReporte] = useState(false);
   const [fechaDesdeHistorial, setFechaDesdeHistorial] = useState(null);
   const [errorSync, setErrorSync] = useState("");
   const [enLinea, setEnLinea] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
@@ -3033,12 +3181,16 @@ function NutriApp({ pacienteId, salir }) {
   ];
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
+  if (mostrarReporte) return <PantallaReporte requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarReporte(false)} />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
       <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
         <span className="nutri-serif text-white text-lg">NutriClínica</span>
-        <button onClick={() => setMostrarHistorial(true)} className="text-white flex items-center gap-1 text-xs"><IconHistorial size={18} /> Historial</button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setMostrarReporte(true)} className="text-white flex items-center gap-1 text-xs"><IconReporte size={18} /> Reporte</button>
+          <button onClick={() => setMostrarHistorial(true)} className="text-white flex items-center gap-1 text-xs"><IconHistorial size={18} /> Historial</button>
+        </div>
       </header>
       {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "#F6E7C7", color: "#5A4A1E" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
       {errorSync && (
