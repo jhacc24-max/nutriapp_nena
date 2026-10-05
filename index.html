@@ -3021,8 +3021,55 @@ function GraficoComparacion({ filas, etiquetaA, etiquetaB }) {
   );
 }
 
+/* Fila de un peso registrado con acciones para corregirlo (valor y/o fecha) o eliminarlo.
+   Se usa en el Panel y en el reporte de evolución del peso. onCorregir devuelve un texto de
+   error (por ejemplo, fecha duplicada) o null si se guardó. */
+function FilaPesoCorregible({ p, delta, onCorregir, onEliminar, plantilla = "1.4fr 1fr 1.2fr auto" }) {
+  const [editando, setEditando] = useState(false);
+  const [peso, setPeso] = useState(String(p.pesoKg));
+  const [fecha, setFecha] = useState(p.fecha);
+  const [error, setError] = useState("");
+  const borde = { borderBottom: "1px solid var(--panel-border)" };
+  const iniciar = () => { setPeso(String(p.pesoKg)); setFecha(p.fecha); setError(""); setEditando(true); };
+  const guardar = () => {
+    const v = Number(String(peso).replace(",", "."));
+    if (!(v >= 20 && v <= 300)) { setError("Ingresa un peso entre 20 y 300 kg."); return; }
+    if (!fecha || fecha > hoyISO()) { setError("La fecha no puede estar vacía ni ser futura."); return; }
+    const err = onCorregir(p.fecha, { pesoKg: Math.round(v * 10) / 10, fecha });
+    if (err) setError(err); else setEditando(false);
+  };
+  const eliminar = () => { if (window.confirm(`¿Eliminar el peso de ${n1(p.pesoKg)} kg del ${fechaCortaLima(p.fecha)}? Esta acción no se puede deshacer.`)) onEliminar(p.fecha); };
+  if (editando) {
+    return (
+      <div className="py-2" style={borde}>
+        <div className="flex gap-2 mb-2">
+          <input type="date" max={hoyISO()} value={fecha} onChange={(e) => setFecha(e.target.value)} className="flex-1 rounded-lg nutri-chip px-2 py-1.5 text-xs bg-white nutri-ink" />
+          <input type="number" step="0.1" value={peso} onChange={(e) => setPeso(e.target.value)} onFocus={(e) => e.target.select()} className="w-24 rounded-lg nutri-chip px-2 py-1.5 text-xs bg-white nutri-ink text-right" aria-label="Peso en kg" />
+          <span className="self-center text-xs nutri-muted">kg</span>
+        </div>
+        {error && <p className="text-[11px] nutri-warn mb-2">{error}</p>}
+        <div className="flex gap-2">
+          <button onClick={guardar} className="flex-1 nutri-brand text-white rounded-lg py-1.5 text-xs">Guardar</button>
+          <button onClick={() => setEditando(false)} className="flex-1 nutri-chip nutri-ink rounded-lg py-1.5 text-xs">Cancelar</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="grid items-center text-xs py-1.5" style={{ gridTemplateColumns: plantilla, ...borde }}>
+      <span className="nutri-ink capitalize">{fechaCortaLima(p.fecha)}</span>
+      <span className="text-right nutri-ink font-medium">{n1(p.pesoKg)} kg</span>
+      <span className={`text-right ${delta === null ? "nutri-muted" : delta < 0 ? "nutri-warn" : "nutri-ink"}`}>{delta === null ? "-" : `${delta > 0 ? "+" : ""}${n1(delta)} kg`}</span>
+      <span className="flex items-center gap-3 pl-3">
+        <button onClick={iniciar} title="Corregir" aria-label="Corregir peso" className="nutri-brand-text"><IconEdit size={14} /></button>
+        <button onClick={eliminar} title="Eliminar" aria-label="Eliminar peso" className="nutri-warn"><IconTrash size={14} /></button>
+      </span>
+    </div>
+  );
+}
+
 /* ---------- Pantalla: evolución del peso ---------- */
-function ReportePeso({ perfil, pesos, onVolver }) {
+function ReportePeso({ perfil, pesos, corregirPeso, eliminarPeso, onVolver }) {
   const [rango, setRango] = useState("todo");
   const opciones = [["1m", "1 mes", 30], ["3m", "3 meses", 90], ["6m", "6 meses", 180], ["todo", "Todo", null]];
   const dias = opciones.find((o) => o[0] === rango)[2];
@@ -3074,17 +3121,11 @@ function ReportePeso({ perfil, pesos, onVolver }) {
             </div>
             <div className="nutri-panel rounded-2xl p-4">
               <span className="text-sm font-medium nutri-ink block mb-2">Registros ({serie.length})</span>
-              <div className="grid text-[11px] nutri-muted pb-1" style={{ gridTemplateColumns: "1.4fr 1fr 1.2fr", borderBottom: "1px solid var(--panel-border)" }}><span>Fecha</span><span className="text-right">Peso</span><span className="text-right">Cambio</span></div>
+              <p className="text-[11px] nutri-muted mb-2">Si un peso está mal, corrígelo con el lápiz o elimínalo con la papelera.</p>
+              <div className="grid text-[11px] nutri-muted pb-1" style={{ gridTemplateColumns: "1.4fr 1fr 1.2fr auto", borderBottom: "1px solid var(--panel-border)" }}><span>Fecha</span><span className="text-right">Peso</span><span className="text-right">Cambio</span><span className="pl-3" style={{ minWidth: 50 }}></span></div>
               {[...serie].reverse().map((p) => {
                 const prev = ordenados[indice[p.fecha] - 1];
-                const d = prev ? p.pesoKg - prev.pesoKg : null;
-                return (
-                  <div key={p.fecha + p.id} className="grid text-xs py-1.5" style={{ gridTemplateColumns: "1.4fr 1fr 1.2fr", borderBottom: "1px solid var(--panel-border)" }}>
-                    <span className="nutri-ink capitalize">{fechaCortaLima(p.fecha)}</span>
-                    <span className="text-right nutri-ink">{n1(p.pesoKg)} kg</span>
-                    <span className={`text-right ${d === null ? "nutri-muted" : d < 0 ? "nutri-warn" : "nutri-ink"}`}>{d === null ? "-" : `${d > 0 ? "+" : ""}${n1(d)} kg`}</span>
-                  </div>
-                );
+                return <FilaPesoCorregible key={p.fecha} p={p} delta={prev ? p.pesoKg - prev.pesoKg : null} onCorregir={corregirPeso} onEliminar={eliminarPeso} />;
               })}
             </div>
           </>
@@ -3192,10 +3233,10 @@ function ReporteComparar({ requerimiento, pacienteId, pesos, onVolver }) {
 }
 
 /* ---------- Menú de reportes ---------- */
-function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, medicamentos, onCerrar }) {
+function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, corregirPeso, eliminarPeso, medicamentos, onCerrar }) {
   const [vista, setVista] = useState(null);
   const volver = () => setVista(null);
-  if (vista === "peso") return <ReportePeso perfil={perfil} pesos={pesos} onVolver={volver} />;
+  if (vista === "peso") return <ReportePeso perfil={perfil} pesos={pesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} onVolver={volver} />;
   if (vista === "comparar") return <ReporteComparar requerimiento={requerimiento} pacienteId={pacienteId} pesos={pesos} onVolver={volver} />;
   if (vista === "totales") return <ReporteTotales requerimiento={requerimiento} pacienteId={pacienteId} onVolver={volver} />;
   if (vista === "detalle") return <ReporteDetalle requerimiento={requerimiento} pacienteId={pacienteId} onVolver={volver} />;
@@ -3279,7 +3320,7 @@ function AlertaInicioDia({ requerimiento }) {
   );
 }
 
-function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, aguaMl, registrarAgua }) {
+function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, corregirPeso, eliminarPeso, aguaMl, registrarAgua }) {
   const totales = calcularTotalesLog(log);
   const sugerencias = useMemo(() => generarSugerencias(requerimiento, totales, perfil, log), [requerimiento, totales, perfil, log]);
   const [pesoInput, setPesoInput] = useState("");
@@ -3328,24 +3369,17 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, a
         {ultimoPeso && (
           <p className="text-xs nutri-muted">Último registro: {ultimoPeso.pesoKg} kg ({ultimoPeso.fecha}){deltaPeso !== null && <> · {deltaPeso >= 0 ? "+" : ""}{deltaPeso.toFixed(1)} kg desde el registro anterior</>}</p>
         )}
-        {pesosOrdenados.length > 1 && (
+        {pesosOrdenados.length > 0 && (
           <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--panel-border)" }}>
-            <span className="text-xs font-medium nutri-ink block mb-2">Historial de pesos</span>
-            <div className="space-y-1.5">
+            <span className="text-xs font-medium nutri-ink block mb-1">Historial de pesos</span>
+            <p className="text-[11px] nutri-muted mb-1">Si te equivocaste al registrar un peso, corrígelo (lápiz) o elimínalo (papelera).</p>
+            <div>
               {[...pesosOrdenados].reverse().slice(0, 10).map((p, i, arr) => {
                 const anterior = arr[i + 1];
-                const delta = anterior ? p.pesoKg - anterior.pesoKg : null;
-                return (
-                  <div key={p.id || p.fecha} className="flex items-center justify-between text-xs">
-                    <span className="nutri-muted">{p.fecha}</span>
-                    <span className="nutri-ink font-medium">{p.pesoKg} kg</span>
-                    <span className={delta === null ? "nutri-muted" : delta > 0 ? "nutri-warn" : delta < 0 ? "nutri-brand-text" : "nutri-muted"}>
-                      {delta === null ? "—" : `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} kg`}
-                    </span>
-                  </div>
-                );
+                return <FilaPesoCorregible key={p.fecha} p={p} delta={anterior ? p.pesoKg - anterior.pesoKg : null} onCorregir={corregirPeso} onEliminar={eliminarPeso} />;
               })}
             </div>
+            <p className="text-[11px] nutri-muted mt-1">Para ver todo el historial y la evolución, ve a Reportes › Evolución del peso.</p>
           </div>
         )}
         {requerimiento.riesgoNutricionalMayor && (
@@ -4256,6 +4290,21 @@ function NutriApp({ pacienteId, salir }) {
     setPesos((prev) => { const otros = prev.filter((p) => p.fecha !== fecha); return [...otros, { id: `peso_${Date.now()}`, fecha, pesoKg }].sort((a, b) => a.fecha.localeCompare(b.fecha)); });
     setPerfil((p) => ({ ...p, pesoKg }));
   }, []);
+  /* Corregir o eliminar un peso mal registrado. Se identifica por fecha (hay un solo peso por día).
+     El peso del perfil (que alimenta IMC y requerimientos) se vuelve a alinear con el registro
+     más reciente que quede, y el arreglo completo se sincroniza con el espacio compartido. */
+  const corregirPeso = useCallback((fechaOriginal, { pesoKg, fecha }) => {
+    if (fecha !== fechaOriginal && pesos.some((p) => p.fecha === fecha)) return "Ya hay un peso registrado en esa fecha.";
+    const nuevos = pesos.map((p) => (p.fecha === fechaOriginal ? { ...p, pesoKg, fecha } : p)).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    setPesos(nuevos);
+    if (nuevos.length) setPerfil((pf) => ({ ...pf, pesoKg: nuevos[nuevos.length - 1].pesoKg }));
+    return null;
+  }, [pesos]);
+  const eliminarPeso = useCallback((fechaOriginal) => {
+    const nuevos = pesos.filter((p) => p.fecha !== fechaOriginal);
+    setPesos(nuevos);
+    if (nuevos.length) setPerfil((pf) => ({ ...pf, pesoKg: nuevos[nuevos.length - 1].pesoKg }));
+  }, [pesos]);
   /* Hidratación de hoy: clave por fecha (igual que el log de alimentos), así se reinicia sola
      cada día sin necesidad de lógica adicional. El adulto mayor tiene el reflejo de sed
      disminuido, por eso vale la pena registrar el agua igual que la comida y no asumir que "si no
@@ -4458,7 +4507,7 @@ function NutriApp({ pacienteId, salir }) {
   ];
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
-  if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
+  if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
@@ -4478,7 +4527,7 @@ function NutriApp({ pacienteId, salir }) {
       )}
       {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
       {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
-      {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
+      {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
       {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
       {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto nutri-panel border-t flex" style={{ borderColor: "var(--panel-border)" }}>
