@@ -3021,6 +3021,124 @@ function GraficoComparacion({ filas, etiquetaA, etiquetaB }) {
   );
 }
 
+/* Interpreta texto pegado con varios pesos, una línea por registro. Acepta fechas AAAA-MM-DD,
+   DD/MM/AAAA, DD-MM-AAAA, DD.MM.AAAA (y año de 2 dígitos), separadores espacio, coma, punto y
+   coma o tabulación, decimales con punto o coma y unidades kg/lb por línea (si no se indica, se
+   usa la unidad elegida). Devuelve las líneas válidas y las que no se pudieron interpretar. */
+function fechaCalendarioValida(y, m, d) {
+  const t = new Date(Date.UTC(y, m - 1, d));
+  return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d;
+}
+function parsearPesos(texto, unidadPorDefecto) {
+  const validos = [], errores = [];
+  texto.split(/\r?\n/).forEach((crudo, i) => {
+    let linea = crudo.trim();
+    if (!linea) return;
+    let y, m, d, resto = linea, hallada = false;
+    let mt = linea.match(/(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+    if (mt) { y = +mt[1]; m = +mt[2]; d = +mt[3]; hallada = true; resto = linea.replace(mt[0], " "); }
+    else {
+      mt = linea.match(/(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4}|\d{2})(?!\d)/);
+      if (mt) { d = +mt[1]; m = +mt[2]; y = mt[3].length === 2 ? 2000 + +mt[3] : +mt[3]; hallada = true; resto = linea.replace(mt[0], " "); }
+    }
+    if (!hallada) { errores.push({ n: i + 1, txt: crudo, motivo: "No se encontró una fecha (usa AAAA-MM-DD o DD/MM/AAAA)" }); return; }
+    if (!fechaCalendarioValida(y, m, d)) { errores.push({ n: i + 1, txt: crudo, motivo: "La fecha no existe" }); return; }
+    const fecha = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const mp = resto.match(/(\d+(?:[.,]\d+)?)\s*(kg|kgs|kilos?|lb|lbs|libras?)?/i);
+    if (!mp) { errores.push({ n: i + 1, txt: crudo, motivo: "No se encontró el peso" }); return; }
+    const num = parseFloat(mp[1].replace(",", "."));
+    const u = mp[2] ? (/^l/i.test(mp[2]) ? "lb" : "kg") : unidadPorDefecto;
+    const kg = Math.round((u === "lb" ? num * 0.45359237 : num) * 10) / 10;
+    if (!(kg >= 20 && kg <= 300)) { errores.push({ n: i + 1, txt: crudo, motivo: `Peso fuera de rango (${n1(kg)} kg; debe estar entre 20 y 300)` }); return; }
+    if (fecha > hoyISO()) { errores.push({ n: i + 1, txt: crudo, motivo: "La fecha es futura" }); return; }
+    validos.push({ fecha, pesoKg: kg, n: i + 1 });
+  });
+  // dos líneas con la misma fecha: gana la última
+  const ultimo = {}; validos.forEach((v) => { ultimo[v.fecha] = v; });
+  return { validos: Object.values(ultimo).sort((a, b) => a.fecha.localeCompare(b.fecha)), errores, repetidos: validos.length - Object.keys(ultimo).length };
+}
+
+/* Formulario para registrar un peso: fecha (hoy por defecto, con atajos Hoy/Ayer/Hace 1 semana y
+   selector de fecha), unidad kg o lb (se guarda siempre en kg), aviso si ya hay un peso ese día
+   (con opción de reemplazar) y carga de varios pesos de una vez. */
+function RegistroPeso({ perfil, agregarPeso, importarPesos }) {
+  const [unidad, setUnidad] = useState("kg");
+  const [fecha, setFecha] = useState(hoyISO());
+  const [valor, setValor] = useState("");
+  const [msg, setMsg] = useState(null);
+  const [conflicto, setConflicto] = useState(null);
+  const [masivo, setMasivo] = useState(false);
+  const [texto, setTexto] = useState("");
+  const [reemplazar, setReemplazar] = useState(false);
+  const hoy = hoyISO();
+  const num = Number(String(valor).replace(",", "."));
+  const kgPrevisto = num > 0 ? Math.round((unidad === "lb" ? num * 0.45359237 : num) * 10) / 10 : null;
+  const analisis = useMemo(() => (masivo && texto.trim() ? parsearPesos(texto, unidad) : null), [masivo, texto, unidad]);
+  const atajos = [["Hoy", hoy], ["Ayer", fechaISOOffset(1)], ["Hace 1 semana", fechaISOOffset(7)]];
+
+  const registrar = (forzar) => {
+    if (!(kgPrevisto > 0)) { setMsg({ tipo: "error", txt: "Ingresa el peso." }); return; }
+    const r = agregarPeso(fecha, kgPrevisto, { reemplazar: forzar === true });
+    if (r.error) { setMsg({ tipo: "error", txt: r.error }); setConflicto(null); return; }
+    if (r.conflicto) { setConflicto({ existente: r.conflicto, pesoKg: kgPrevisto }); setMsg(null); return; }
+    setMsg({ tipo: "ok", txt: `✓ ${r.reemplazado ? "Peso reemplazado" : "Peso registrado"}: ${n1(kgPrevisto)} kg el ${fechaCortaLima(fecha)}.` });
+    setConflicto(null); setValor(""); setFecha(hoy);
+  };
+  const importar = () => {
+    const r = importarPesos(analisis.validos, reemplazar);
+    setMsg({ tipo: "ok", txt: `✓ Importación lista: ${r.agregados} agregado${r.agregados === 1 ? "" : "s"}${r.reemplazados ? `, ${r.reemplazados} reemplazado${r.reemplazados === 1 ? "" : "s"}` : ""}${r.omitidos ? `, ${r.omitidos} omitido${r.omitidos === 1 ? "" : "s"} (ya existía un peso ese día)` : ""}.` });
+    setTexto(""); setMasivo(false);
+  };
+
+  return (
+    <div className="mb-2">
+      <div className="flex items-center gap-1.5 mb-2">
+        <span className="text-xs nutri-muted mr-1">Unidad</span>
+        {["kg", "lb"].map((u) => (
+          <button key={u} onClick={() => setUnidad(u)} className={`rounded-full px-3 py-1 text-xs nutri-chip ${unidad === u ? "nutri-chip-active" : "bg-white nutri-ink"}`}>{u}</button>
+        ))}
+      </div>
+      <div className="flex gap-1.5 flex-wrap mb-2">
+        {atajos.map(([l, f]) => (
+          <button key={l} onClick={() => { setFecha(f); setConflicto(null); }} className={`rounded-full px-3 py-1 text-xs nutri-chip ${fecha === f ? "nutri-chip-active" : "bg-white nutri-ink"}`}>{l}</button>
+        ))}
+      </div>
+      <div className="flex gap-2 mb-1">
+        <input type="date" max={hoy} value={fecha} onChange={(e) => { if (e.target.value) { setFecha(e.target.value); setConflicto(null); } }} aria-label="Fecha del peso" className="flex-1 min-w-0 rounded-lg nutri-chip px-2 py-2 text-sm bg-white nutri-ink" />
+        <input type="number" step="0.1" inputMode="decimal" value={valor} onChange={(e) => { setValor(e.target.value); setConflicto(null); }} onFocus={(e) => e.target.select()} placeholder={`Peso (${unidad})`} aria-label={`Peso en ${unidad}`} className="w-28 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink text-right" />
+        <button onClick={() => registrar(false)} disabled={!valor} className="nutri-brand text-white rounded-lg px-4 text-sm disabled:opacity-40">Registrar</button>
+      </div>
+      <p className="text-[11px] nutri-muted mb-1">{fecha === hoy ? "Se registrará con la fecha de hoy." : `Se registrará con la fecha ${fechaCortaLima(fecha)}.`}{unidad === "lb" && kgPrevisto ? ` Equivale a ${n1(kgPrevisto)} kg.` : ""} Peso actual: {n1(perfil.pesoKg)} kg.</p>
+      {conflicto && (
+        <div className="nutri-panel rounded-lg p-3 my-2">
+          <p className="text-xs nutri-ink mb-2">Ya hay un peso de <b>{n1(conflicto.existente.pesoKg)} kg</b> el {fechaCortaLima(conflicto.existente.fecha)}. ¿Reemplazarlo por <b>{n1(conflicto.pesoKg)} kg</b>?</p>
+          <div className="flex gap-2">
+            <button onClick={() => registrar(true)} className="flex-1 nutri-brand text-white rounded-lg py-1.5 text-xs">Reemplazar</button>
+            <button onClick={() => setConflicto(null)} className="flex-1 nutri-chip nutri-ink rounded-lg py-1.5 text-xs">Cancelar</button>
+          </div>
+        </div>
+      )}
+      {msg && <p className={`text-xs my-1 ${msg.tipo === "error" ? "nutri-warn" : ""}`} style={msg.tipo === "ok" ? { color: "#3E8E5A" } : undefined}>{msg.txt}</p>}
+
+      <button onClick={() => setMasivo((v) => !v)} className="text-xs nutri-brand-text underline mt-1">{masivo ? "Ocultar carga de varios pesos" : "Cargar varios pesos de una vez"}</button>
+      {masivo && (
+        <div className="nutri-panel rounded-lg p-3 mt-2">
+          <p className="text-[11px] nutri-muted mb-2">Una línea por peso, con fecha y peso. Ejemplos: <span className="nutri-ink">2026-09-01 52.4</span> · <span className="nutri-ink">01/09/2026, 52,4 kg</span> · <span className="nutri-ink">1-9-26 115 lb</span>. Se usa la unidad elegida arriba si la línea no la indica.</p>
+          <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} placeholder={"2026-09-01 52.4\n08/09/2026 52.0\n15-09-2026 51.8 kg"} className="w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
+          <label className="flex items-center gap-2 text-xs nutri-ink my-2"><input type="checkbox" checked={reemplazar} onChange={(e) => setReemplazar(e.target.checked)} /> Reemplazar si ya hay un peso en esa fecha</label>
+          {analisis && (
+            <div className="text-xs mb-2">
+              <p className="nutri-ink">{analisis.validos.length} peso{analisis.validos.length === 1 ? "" : "s"} válido{analisis.validos.length === 1 ? "" : "s"}{analisis.repetidos ? ` (${analisis.repetidos} línea${analisis.repetidos === 1 ? "" : "s"} repetida${analisis.repetidos === 1 ? "" : "s"} de un mismo día: se usa la última)` : ""}{analisis.errores.length ? ` · ${analisis.errores.length} con error` : ""}</p>
+              {analisis.errores.map((e) => <p key={e.n} className="nutri-warn">Línea {e.n}: {e.motivo}</p>)}
+            </div>
+          )}
+          <button onClick={importar} disabled={!analisis || analisis.validos.length === 0} className="w-full nutri-brand text-white rounded-lg py-2 text-sm disabled:opacity-40">{analisis && analisis.validos.length ? `Importar ${analisis.validos.length} peso${analisis.validos.length === 1 ? "" : "s"}` : "Importar"}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* Fila de un peso registrado con acciones para corregirlo (valor y/o fecha) o eliminarlo.
    Se usa en el Panel y en el reporte de evolución del peso. onCorregir devuelve un texto de
    error (por ejemplo, fecha duplicada) o null si se guardó. */
@@ -3069,8 +3187,9 @@ function FilaPesoCorregible({ p, delta, onCorregir, onEliminar, plantilla = "1.4
 }
 
 /* ---------- Pantalla: evolución del peso ---------- */
-function ReportePeso({ perfil, pesos, corregirPeso, eliminarPeso, onVolver }) {
+function ReportePeso({ perfil, pesos, agregarPeso, importarPesos, corregirPeso, eliminarPeso, onVolver }) {
   const [rango, setRango] = useState("todo");
+  const [agregando, setAgregando] = useState(false);
   const opciones = [["1m", "1 mes", 30], ["3m", "3 meses", 90], ["6m", "6 meses", 180], ["todo", "Todo", null]];
   const dias = opciones.find((o) => o[0] === rango)[2];
   const ordenados = useMemo(() => [...pesos].sort((a, b) => a.fecha.localeCompare(b.fecha)), [pesos]);
@@ -3091,6 +3210,10 @@ function ReportePeso({ perfil, pesos, corregirPeso, eliminarPeso, onVolver }) {
       <EncabezadoReporte titulo="Evolución del peso" onVolver={onVolver} />
       <div className="px-5 pt-6 pb-24">
         <p className="text-sm nutri-muted mb-3">Todos los pesos registrados y cómo han cambiado en el tiempo.</p>
+        <div className="nutri-panel rounded-2xl p-4 mb-4">
+          <button onClick={() => setAgregando((v) => !v)} className="w-full flex items-center justify-between text-sm font-medium nutri-ink"><span>Agregar un peso (hoy o de una fecha pasada)</span><span className="nutri-brand-text">{agregando || pesos.length === 0 ? "−" : "+"}</span></button>
+          {(agregando || pesos.length === 0) && <div className="mt-3"><RegistroPeso perfil={perfil} agregarPeso={agregarPeso} importarPesos={importarPesos} /></div>}
+        </div>
         <div className="flex gap-1.5 flex-wrap mb-4">
           {opciones.map(([k, l]) => (
             <button key={k} onClick={() => setRango(k)} className={`rounded-full px-3 py-1.5 text-xs nutri-chip ${rango === k ? "nutri-chip-active" : "bg-white nutri-ink"}`}>{l}</button>
@@ -3233,10 +3356,10 @@ function ReporteComparar({ requerimiento, pacienteId, pesos, onVolver }) {
 }
 
 /* ---------- Menú de reportes ---------- */
-function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, corregirPeso, eliminarPeso, medicamentos, onCerrar }) {
+function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, agregarPeso, importarPesos, corregirPeso, eliminarPeso, medicamentos, onCerrar }) {
   const [vista, setVista] = useState(null);
   const volver = () => setVista(null);
-  if (vista === "peso") return <ReportePeso perfil={perfil} pesos={pesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} onVolver={volver} />;
+  if (vista === "peso") return <ReportePeso perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} onVolver={volver} />;
   if (vista === "comparar") return <ReporteComparar requerimiento={requerimiento} pacienteId={pacienteId} pesos={pesos} onVolver={volver} />;
   if (vista === "totales") return <ReporteTotales requerimiento={requerimiento} pacienteId={pacienteId} onVolver={volver} />;
   if (vista === "detalle") return <ReporteDetalle requerimiento={requerimiento} pacienteId={pacienteId} onVolver={volver} />;
@@ -3320,17 +3443,15 @@ function AlertaInicioDia({ requerimiento }) {
   );
 }
 
-function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, corregirPeso, eliminarPeso, aguaMl, registrarAgua }) {
+function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, importarPesos, corregirPeso, eliminarPeso, aguaMl, registrarAgua }) {
   const totales = calcularTotalesLog(log);
   const sugerencias = useMemo(() => generarSugerencias(requerimiento, totales, perfil, log), [requerimiento, totales, perfil, log]);
-  const [pesoInput, setPesoInput] = useState("");
   const resumenSemanal = useMemo(() => resumenCumplimiento(7, requerimiento), [requerimiento, log]);
   const resumenMensual = useMemo(() => resumenCumplimiento(30, requerimiento), [requerimiento, log]);
   const pesosOrdenados = [...pesos].sort((a, b) => a.fecha.localeCompare(b.fecha));
   const ultimoPeso = pesosOrdenados[pesosOrdenados.length - 1];
   const pesoAnterior = pesosOrdenados[pesosOrdenados.length - 2];
   const deltaPeso = ultimoPeso && pesoAnterior ? ultimoPeso.pesoKg - pesoAnterior.pesoKg : null;
-  const confirmarPeso = () => { const v = Number(pesoInput); if (v > 0) { registrarPeso(v); setPesoInput(""); } };
   const fila = (label, val, max, unidad, colorClass) => (
     <div className="mb-4">
       <div className="flex justify-between text-xs mb-1.5"><span className="nutri-ink font-medium">{label}</span><span className="nutri-muted">{Math.round(val)} / {Math.round(max)} {unidad}</span></div>
@@ -3361,11 +3482,8 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, registrarPeso, c
 
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-2 mb-2"><span className="nutri-brand-text"><IconActivity size={15} /></span><span className="text-sm font-medium nutri-ink">Control de peso</span></div>
-        <p className="text-xs nutri-muted mb-3">Registra el peso cada vez que lo pesen (semanalmente) para ver la tendencia.</p>
-        <div className="flex gap-2 mb-2">
-          <input type="number" value={pesoInput} onChange={(e) => setPesoInput(e.target.value)} placeholder={`Peso actual (${perfil.pesoKg} kg)`} className="flex-1 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink"  onFocus={(e) => e.target.select()} />
-          <button onClick={confirmarPeso} disabled={!pesoInput} className="nutri-brand text-white rounded-lg px-4 text-sm disabled:opacity-40">Registrar</button>
-        </div>
+        <p className="text-xs nutri-muted mb-3">Registra el peso cada vez que lo pesen (semanalmente) para ver la tendencia. También puedes registrar uno de una fecha pasada.</p>
+        <RegistroPeso perfil={perfil} agregarPeso={agregarPeso} importarPesos={importarPesos} />
         {ultimoPeso && (
           <p className="text-xs nutri-muted">Último registro: {ultimoPeso.pesoKg} kg ({ultimoPeso.fecha}){deltaPeso !== null && <> · {deltaPeso >= 0 ? "+" : ""}{deltaPeso.toFixed(1)} kg desde el registro anterior</>}</p>
         )}
@@ -4285,11 +4403,35 @@ function NutriApp({ pacienteId, salir }) {
 
   const [pesos, setPesos] = useState(() => { try { const s = localStorage.getItem("nutriapp_pesos"); return s ? JSON.parse(s) : []; } catch { return []; } });
   useEffect(() => { try { localStorage.setItem("nutriapp_pesos", JSON.stringify(pesos)); } catch {} }, [pesos]);
-  const registrarPeso = useCallback((pesoKg) => {
-    const fecha = hoyISO();
-    setPesos((prev) => { const otros = prev.filter((p) => p.fecha !== fecha); return [...otros, { id: `peso_${Date.now()}`, fecha, pesoKg }].sort((a, b) => a.fecha.localeCompare(b.fecha)); });
-    setPerfil((p) => ({ ...p, pesoKg }));
-  }, []);
+  /* Registrar un peso en cualquier fecha (hoy o pasada). Hay un solo peso por día: si ya existe
+     uno en esa fecha devuelve { conflicto } para que la pantalla pida confirmación y vuelva a
+     llamar con reemplazar. El peso del perfil (IMC, requerimientos) siempre queda alineado con el
+     registro MÁS RECIENTE, así que cargar un peso antiguo no lo altera. */
+  const alinearPerfilConPesos = (nuevos) => { if (nuevos.length) setPerfil((pf) => ({ ...pf, pesoKg: nuevos[nuevos.length - 1].pesoKg })); };
+  const agregarPeso = useCallback((fecha, pesoKg, { reemplazar = false } = {}) => {
+    if (!(pesoKg >= 20 && pesoKg <= 300)) return { error: "Ingresa un peso entre 20 y 300 kg." };
+    if (!fecha || fecha > hoyISO()) return { error: "La fecha no puede estar vacía ni ser futura." };
+    const existente = pesos.find((p) => p.fecha === fecha);
+    if (existente && !reemplazar) return { conflicto: existente };
+    const nuevos = [...pesos.filter((p) => p.fecha !== fecha), { id: `peso_${Date.now()}`, fecha, pesoKg }].sort((a, b) => a.fecha.localeCompare(b.fecha));
+    setPesos(nuevos);
+    alinearPerfilConPesos(nuevos);
+    return { ok: true, reemplazado: !!existente };
+  }, [pesos]);
+  /* Carga masiva (varios pesos de una vez). Si hay dos del mismo día en la lista, gana el último. */
+  const importarPesos = useCallback((lista, reemplazar) => {
+    const porFecha = {}; pesos.forEach((p) => { porFecha[p.fecha] = p; });
+    let agregados = 0, reemplazados = 0, omitidos = 0;
+    lista.forEach((it, i) => {
+      if (porFecha[it.fecha] && !reemplazar) { omitidos++; return; }
+      if (porFecha[it.fecha]) reemplazados++; else agregados++;
+      porFecha[it.fecha] = { id: `peso_${Date.now()}_${i}`, fecha: it.fecha, pesoKg: it.pesoKg };
+    });
+    const nuevos = Object.values(porFecha).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    setPesos(nuevos);
+    alinearPerfilConPesos(nuevos);
+    return { agregados, reemplazados, omitidos };
+  }, [pesos]);
   /* Corregir o eliminar un peso mal registrado. Se identifica por fecha (hay un solo peso por día).
      El peso del perfil (que alimenta IMC y requerimientos) se vuelve a alinear con el registro
      más reciente que quede, y el arreglo completo se sincroniza con el espacio compartido. */
@@ -4297,13 +4439,13 @@ function NutriApp({ pacienteId, salir }) {
     if (fecha !== fechaOriginal && pesos.some((p) => p.fecha === fecha)) return "Ya hay un peso registrado en esa fecha.";
     const nuevos = pesos.map((p) => (p.fecha === fechaOriginal ? { ...p, pesoKg, fecha } : p)).sort((a, b) => a.fecha.localeCompare(b.fecha));
     setPesos(nuevos);
-    if (nuevos.length) setPerfil((pf) => ({ ...pf, pesoKg: nuevos[nuevos.length - 1].pesoKg }));
+    alinearPerfilConPesos(nuevos);
     return null;
   }, [pesos]);
   const eliminarPeso = useCallback((fechaOriginal) => {
     const nuevos = pesos.filter((p) => p.fecha !== fechaOriginal);
     setPesos(nuevos);
-    if (nuevos.length) setPerfil((pf) => ({ ...pf, pesoKg: nuevos[nuevos.length - 1].pesoKg }));
+    alinearPerfilConPesos(nuevos);
   }, [pesos]);
   /* Hidratación de hoy: clave por fecha (igual que el log de alimentos), así se reinicia sola
      cada día sin necesidad de lógica adicional. El adulto mayor tiene el reflejo de sed
@@ -4507,7 +4649,7 @@ function NutriApp({ pacienteId, salir }) {
   ];
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
-  if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
+  if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
@@ -4527,7 +4669,7 @@ function NutriApp({ pacienteId, salir }) {
       )}
       {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
       {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
-      {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} registrarPeso={registrarPeso} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
+      {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
       {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
       {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto nutri-panel border-t flex" style={{ borderColor: "var(--panel-border)" }}>
