@@ -1822,146 +1822,670 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
    como en gráfico (barras de magnitud, una por alimento). Reusa la navegación de semana/día de
    Registro y Menú (ya corregida para calcular "hoy" en huso horario de Lima, no el del
    dispositivo), y obtenerLogFecha para leer el registro de cualquier fecha, local o en la nube. */
-/* Genera y descarga el reporte diario como PDF (A4) directamente en el navegador con jsPDF:
-   gratis, sin servidor. Estructura pensada para leerse sin explicación: resumen del día vs. meta,
-   gráfico de barras de aporte por alimento (calorías y proteína) y detalle agrupado por comida
-   con subtotales. Si jsPDF no cargó (sin internet al abrir la app), avisa en vez de fallar. */
-function exportarReportePDF({ fecha, filas, totales, requerimiento }) {
-  const jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
-  if (!jsPDFCtor) { alert("No se pudo cargar el generador de PDF. Revisa tu conexión a internet y recarga la app."); return; }
-  const doc = new jsPDFCtor({ unit: "mm", format: "a4" });
-  const W = 210, H = 297, M = 15, ANCHO = W - 2 * M;
-  const verde = [20, 67, 60], naranja = [217, 108, 63], dorado = [199, 154, 61], gris = [107, 114, 104], tinta = [30, 36, 31], pista = [231, 227, 214];
-  const fechaLarga = new Date(fecha + "T12:00:00Z").toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "America/Lima" });
-  const n0 = (v) => String(Math.round(v));
-  const pct = (v) => `${Math.round(v)}%`;
-  let y = 0;
+/* =====================================================================================
+   REPORTES
+   Menú de reportes con tres opciones:
+   1) Totales por día (con gráficas) · 2) Detalle por alimento (una hoja por día) ·
+   3) Resumen clínico para el médico (tendencias, cumplimiento, hallazgos).
+   Todo se calcula en el navegador y los PDF se generan con jsPDF (gratis, sin servidor).
+   Las fechas siempre se interpretan en huso horario de Lima (ver fechaLimaISO/getLunes).
+   ===================================================================================== */
+const COLOR_PDF = { verde: [20, 67, 60], naranja: [217, 108, 63], dorado: [199, 154, 61], azul: [78, 112, 137], carb: [108, 143, 99], gris: [107, 114, 104], tinta: [30, 36, 31], pista: [231, 227, 214], rojo: [178, 59, 59] };
+const NOMBRE_MOMENTO_CAP = { desayuno: "Desayuno", almuerzo: "Almuerzo", cena: "Cena", colacion: "Colación" };
+const LEYENDA_PDF = "Información orientativa; no reemplaza la indicación de tu nutricionista o médico.";
 
-  const encabezadoPagina = () => {
-    doc.setFillColor(...verde); doc.rect(0, 0, W, 22, "F");
+function fechaLargaLima(fechaISO) {
+  const s = new Date(fechaISO + "T12:00:00Z").toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "America/Lima" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function fechaCortaLima(fechaISO) {
+  return new Date(fechaISO + "T12:00:00Z").toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: "America/Lima" }).replace(/\./g, "");
+}
+function etiquetaEjeLima(fechaISO) {
+  const d = new Date(fechaISO + "T12:00:00Z");
+  return {
+    w: d.toLocaleDateString("es-ES", { weekday: "narrow", timeZone: "America/Lima" }).toUpperCase(),
+    n: d.toLocaleDateString("es-ES", { day: "numeric", timeZone: "America/Lima" }),
+  };
+}
+const rangoFechasISO = (n) => Array.from({ length: n }, (_, i) => fechaISOOffset(n - 1 - i));
+const n0 = (v) => String(Math.round(v));
+const n1 = (v) => String(Math.round(v * 10) / 10);
+const pctTxt = (v) => `${Math.round(v)}%`;
+
+/* Aporte de cada alimento de un día (kcal y proteína) y su % sobre el total del día. */
+function filasDelDia(items) {
+  const totales = calcularTotalesLog(items);
+  const filas = items.map((it) => {
+    const a = calcularTotalesItem(it.alimento, it.gramos);
+    return {
+      ...it,
+      aporteKcal: a.kcal,
+      aporteProteina: a.proteinasG,
+      pctKcal: totales.kcal > 0 ? (a.kcal / totales.kcal) * 100 : 0,
+      pctProteina: totales.proteinasG > 0 ? (a.proteinasG / totales.proteinasG) * 100 : 0,
+    };
+  });
+  return { totales, filas };
+}
+
+function useRegistrosRango(pacienteId, dias) {
+  const [datos, setDatos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  useEffect(() => {
+    let activo = true;
+    setCargando(true);
+    Promise.all(rangoFechasISO(dias).map(async (fecha) => ({ fecha, items: await obtenerLogFecha(pacienteId, fecha) })))
+      .then((r) => { if (activo) { setDatos(r); setCargando(false); } });
+    return () => { activo = false; };
+  }, [pacienteId, dias]);
+  return { datos, cargando };
+}
+
+/* ---------- Resumen clínico (función pura: la usan la pantalla y el PDF) ---------- */
+function calcularResumenClinico({ datos, requerimiento, perfil, pesos }) {
+  const porDia = datos.filter((d) => d.items.length > 0).map((d) => ({ fecha: d.fecha, items: d.items, t: calcularTotalesLog(d.items) }));
+  const n = porDia.length;
+  const suma = (k) => porDia.reduce((s, d) => s + d.t[k], 0);
+  const prom = (k) => (n ? suma(k) / n : 0);
+  const promedios = { kcal: prom("kcal"), proteinasG: prom("proteinasG"), carbohidratosG: prom("carbohidratosG"), grasasG: prom("grasasG"), fibraG: prom("fibraG"), sodioMg: prom("sodioMg") };
+  const pct = (v, meta) => (meta > 0 ? (v / meta) * 100 : 0);
+  const pctMeta = { kcal: pct(promedios.kcal, requerimiento.get), proteinasG: pct(promedios.proteinasG, requerimiento.proteinasG), carbohidratosG: pct(promedios.carbohidratosG, requerimiento.carbohidratosG), grasasG: pct(promedios.grasasG, requerimiento.grasasG), fibraG: pct(promedios.fibraG, requerimiento.fibraG), sodioMg: pct(promedios.sodioMg, requerimiento.sodioMg) };
+  const protPorKg = perfil.pesoKg > 0 ? promedios.proteinasG / perfil.pesoKg : 0;
+
+  const kP = suma("proteinasG") * 4, kC = suma("carbohidratosG") * 4, kG = suma("grasasG") * 9;
+  const kTot = kP + kC + kG;
+  const distribucion = kTot > 0 ? { proteina: (kP / kTot) * 100, carbohidratos: (kC / kTot) * 100, grasas: (kG / kTot) * 100 } : null;
+  const objetivoDist = { proteina: requerimiento.proteinasPct, carbohidratos: requerimiento.carbohidratosPct, grasas: requerimiento.grasasPct };
+
+  const get = requerimiento.get;
+  const cumplimiento = {
+    diasKcalOk: porDia.filter((d) => get > 0 && Math.abs(d.t.kcal - get) / get <= 0.1).length,
+    diasKcalBajo: porDia.filter((d) => get > 0 && d.t.kcal < get * 0.8).length,
+    diasProteinaOk: porDia.filter((d) => requerimiento.proteinasG > 0 && d.t.proteinasG >= requerimiento.proteinasG * 0.9).length,
+    diasSodioExcedido: porDia.filter((d) => requerimiento.sodioMg > 0 && d.t.sodioMg > requerimiento.sodioMg).length,
+  };
+
+  const porMomento = MEAL_DEFS.map((m) => {
+    const ts = porDia.map((d) => calcularTotalesLog(d.items.filter((it) => it.momento === m.key)));
+    const avgK = n ? ts.reduce((s, t) => s + t.kcal, 0) / n : 0;
+    const avgP = n ? ts.reduce((s, t) => s + t.proteinasG, 0) / n : 0;
+    const objetivo = get * m.pct;
+    return { key: m.key, label: m.label, avgKcal: avgK, avgProteina: avgP, objetivoKcal: objetivo, pctObjetivo: objetivo > 0 ? (avgK / objetivo) * 100 : 0 };
+  });
+
+  const agg = {};
+  porDia.forEach((d) => d.items.forEach((it) => {
+    const a = calcularTotalesItem(it.alimento, it.gramos);
+    const x = (agg[it.alimento.nombre] = agg[it.alimento.nombre] || { nombre: it.alimento.nombre, gramos: 0, kcal: 0, proteina: 0, veces: 0 });
+    x.gramos += it.gramos; x.kcal += a.kcal; x.proteina += a.proteinasG; x.veces += 1;
+  }));
+  const kcalTotal = suma("kcal"), protTotal = suma("proteinasG");
+  const lista = Object.values(agg).map((x) => ({ ...x, pctKcal: kcalTotal > 0 ? (x.kcal / kcalTotal) * 100 : 0, pctProteina: protTotal > 0 ? (x.proteina / protTotal) * 100 : 0 }));
+  const topKcal = [...lista].sort((a, b) => b.kcal - a.kcal).slice(0, 5);
+  const topProteina = [...lista].sort((a, b) => b.proteina - a.proteina).slice(0, 5);
+
+  const inicio = datos.length ? datos[0].fecha : "";
+  const serie = (pesos || []).filter((p) => p.fecha >= inicio).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const peso = { serie, delta: null, deltaPct: null };
+  if (serie.length >= 2) {
+    peso.delta = serie[serie.length - 1].pesoKg - serie[0].pesoKg;
+    peso.deltaPct = serie[0].pesoKg > 0 ? (peso.delta / serie[0].pesoKg) * 100 : null;
+  }
+
+  const alertas = [];
+  const add = (sev, txt) => alertas.push({ sev, txt });
+  const total = datos.length;
+  if (n === 0) return { n, total, promedios, pctMeta, protPorKg, distribucion, objetivoDist, cumplimiento, porMomento, topKcal, topProteina, peso, alertas, porDia };
+  if (n < Math.ceil(total * 0.5)) add("media", `Solo hay registro de alimentos en ${n} de ${total} días: interpretar los promedios con cautela.`);
+  if (pctMeta.kcal < 70) add("alta", `Ingesta energética promedio de ${n0(promedios.kcal)} kcal/día (${pctTxt(pctMeta.kcal)} de la meta de ${n0(get)} kcal): déficit sostenido.`);
+  else if (pctMeta.kcal < 90) add("media", `Ingesta energética promedio de ${n0(promedios.kcal)} kcal/día (${pctTxt(pctMeta.kcal)} de la meta): por debajo de lo previsto.`);
+  else if (pctMeta.kcal > 115) add("media", `Ingesta energética promedio de ${n0(promedios.kcal)} kcal/día (${pctTxt(pctMeta.kcal)} de la meta): por encima de lo previsto.`);
+  if (cumplimiento.diasKcalBajo > 0 && pctMeta.kcal >= 70) add("info", `${cumplimiento.diasKcalBajo} de ${n} días con menos del 80% de la meta calórica.`);
+  if (pctMeta.proteinasG < 70) add("alta", `Proteína promedio de ${n1(promedios.proteinasG)} g/día (${pctTxt(pctMeta.proteinasG)} de la meta de ${n0(requerimiento.proteinasG)} g; ${n1(protPorKg)} g/kg).`);
+  else if (pctMeta.proteinasG < 90) add("media", `Proteína promedio de ${n1(promedios.proteinasG)} g/día (${pctTxt(pctMeta.proteinasG)} de la meta; ${n1(protPorKg)} g/kg).`);
+  if (requerimiento.esAdultoMayor && protPorKg < 1.0) add("media", `Aporte proteico de ${n1(protPorKg)} g/kg/día: por debajo de 1.0-1.2 g/kg recomendado en adultos mayores (guías ESPEN).`);
+  if (promedios.sodioMg > requerimiento.sodioMg) add(requerimiento.restricciones.limitarSodio ? "alta" : "media", `Sodio promedio de ${n0(promedios.sodioMg)} mg/día, sobre el límite de ${n0(requerimiento.sodioMg)} mg${requerimiento.restricciones.limitarSodio ? " (el paciente tiene restricción de sodio)" : ""}.`);
+  else if (cumplimiento.diasSodioExcedido >= Math.ceil(n * 0.3)) add("info", `Sodio por encima del límite en ${cumplimiento.diasSodioExcedido} de ${n} días.`);
+  if (pctMeta.fibraG < 70) add("info", `Fibra promedio de ${n1(promedios.fibraG)} g/día (${pctTxt(pctMeta.fibraG)} de la meta de ${n0(requerimiento.fibraG)} g).`);
+  if (peso.deltaPct !== null) {
+    const a = serie[0].pesoKg, b = serie[serie.length - 1].pesoKg;
+    if (peso.deltaPct <= -5) add("alta", `Pérdida de peso de ${n1(Math.abs(peso.deltaPct))}% en el período (${n1(a)} kg a ${n1(b)} kg): clínicamente significativa.`);
+    else if (peso.deltaPct <= -2) add("media", `Pérdida de peso de ${n1(Math.abs(peso.deltaPct))}% en el período (${n1(a)} kg a ${n1(b)} kg).`);
+    else if (peso.deltaPct >= 3) add("info", `Aumento de peso de ${n1(peso.deltaPct)}% en el período (${n1(a)} kg a ${n1(b)} kg).`);
+  }
+  const rn = requerimiento.riesgoNutricionalMayor;
+  if (rn && rn.nivel !== "bajo") add(rn.nivel === "alto" ? "alta" : "media", `Riesgo nutricional ${rn.nivel} en adulto mayor (IMC ${rn.imc.toFixed(1)}, ${rn.categoriaIMC}${rn.mna ? `; MNA-SF ${rn.mna.puntaje}/14` : ""}).`);
+  porMomento.forEach((m) => { if (m.objetivoKcal > 0 && m.pctObjetivo < 60) add("info", `${m.label}: cubre en promedio solo el ${pctTxt(m.pctObjetivo)} de lo previsto (${n0(m.avgKcal)} de ${n0(m.objetivoKcal)} kcal); es una oportunidad para fortificar.`); });
+  const des = porMomento.find((m) => m.key === "desayuno");
+  if (requerimiento.esAdultoMayor && des && des.avgProteina < 15) add("info", `El desayuno aporta ${n1(des.avgProteina)} g de proteína en promedio; conviene repartir 25-30 g por comida principal.`);
+  if (cumplimiento.diasKcalOk >= Math.ceil(n * 0.7)) add("ok", `Buen cumplimiento calórico: ${cumplimiento.diasKcalOk} de ${n} días dentro de ±10% de la meta.`);
+  if (cumplimiento.diasProteinaOk >= Math.ceil(n * 0.7)) add("ok", `Buen cumplimiento proteico: ${cumplimiento.diasProteinaOk} de ${n} días con al menos 90% de la meta.`);
+  const orden = { alta: 0, media: 1, info: 2, ok: 3 };
+  alertas.sort((a, b) => orden[a.sev] - orden[b.sev]);
+  return { n, total, promedios, pctMeta, protPorKg, distribucion, objetivoDist, cumplimiento, porMomento, topKcal, topProteina, peso, alertas, porDia };
+}
+
+/* ---------- Primitivas de PDF (lienzo A4 con encabezado, paginación y pie) ---------- */
+function crearLienzoPDF(titulo, subtitulo) {
+  const C = window.jspdf && window.jspdf.jsPDF;
+  if (!C) { alert("No se pudo cargar el generador de PDF. Revisa tu conexión a internet y recarga la app."); return null; }
+  const doc = new C({ unit: "mm", format: "a4" });
+  const L = { doc, W: 210, H: 297, M: 15, ANCHO: 180, y: 30, titulo, subtitulo };
+  L.encabezado = () => {
+    doc.setFillColor(...COLOR_PDF.verde); doc.rect(0, 0, L.W, 22, "F");
     doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-    doc.text("NutriClínica · Reporte diario", M, 11);
+    doc.text(L.titulo, L.M, 11);
     doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text(fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1), M, 17.5);
-    y = 30;
+    doc.text(L.subtitulo || "", L.M, 17.5);
+    L.y = 30;
   };
-  const asegurar = (alto) => { if (y + alto > H - 18) { doc.addPage(); encabezadoPagina(); } };
-  const titulo = (txt) => {
-    asegurar(14);
-    doc.setTextColor(...verde); doc.setFont("helvetica", "bold"); doc.setFontSize(12);
-    doc.text(txt, M, y); y += 2;
-    doc.setDrawColor(...verde); doc.setLineWidth(0.4); doc.line(M, y, W - M, y); y += 6;
+  L.asegurar = (alto) => {
+    if (L.y + alto > L.H - 18) { doc.addPage(); L.encabezado(); return true; }
+    return false;
   };
-
-  encabezadoPagina();
-
-  // Resumen: dos tarjetas (calorías / proteína) con total, meta y % de cumplimiento
-  const pctKcal = requerimiento.get > 0 ? (totales.kcal / requerimiento.get) * 100 : 0;
-  const pctProt = requerimiento.proteinasG > 0 ? (totales.proteinasG / requerimiento.proteinasG) * 100 : 0;
-  const tarjeta = (x, nombre, valor, unidad, meta, p, color) => {
-    const w = (ANCHO - 6) / 2;
-    doc.setDrawColor(...pista); doc.setLineWidth(0.3); doc.roundedRect(x, y, w, 30, 2, 2);
-    doc.setTextColor(...gris); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-    doc.text(nombre, x + 4, y + 6);
-    doc.setTextColor(...tinta); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
-    doc.text(`${valor} ${unidad}`, x + 4, y + 15);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(...gris);
-    doc.text(`Meta diaria: ${meta} ${unidad} · Cumplido: ${pct(p)}`, x + 4, y + 21);
-    doc.setFillColor(...pista); doc.roundedRect(x + 4, y + 24, w - 8, 2.5, 1, 1, "F");
-    doc.setFillColor(...color); doc.roundedRect(x + 4, y + 24, Math.max(0.1, (w - 8) * Math.min(p, 100) / 100), 2.5, 1, 1, "F");
+  L.seccion = (txt) => {
+    L.asegurar(14);
+    doc.setTextColor(...COLOR_PDF.verde); doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+    doc.text(txt, L.M, L.y); L.y += 2;
+    doc.setDrawColor(...COLOR_PDF.verde); doc.setLineWidth(0.4); doc.line(L.M, L.y, L.W - L.M, L.y); L.y += 6;
   };
-  tarjeta(M, "CALORÍAS TOTALES DEL DÍA", n0(totales.kcal), "kcal", n0(requerimiento.get), pctKcal, naranja);
-  tarjeta(M + (ANCHO - 6) / 2 + 6, "PROTEÍNA TOTAL DEL DÍA", n0(totales.proteinasG), "g", n0(requerimiento.proteinasG), pctProt, dorado);
-  y += 38;
-
-  // Gráfico de barras por alimento (una serie por gráfico, ordenado de mayor a menor)
-  const grafico = (tituloTxt, lista, clave, pctClave, unidad, color) => {
-    asegurar(Math.min(lista.length * 7 + 24, H - 60));
-    titulo(tituloTxt);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...gris);
-    doc.text("Cada barra muestra qué porcentaje del total del día aportó ese alimento.", M, y); y += 5;
-    const colNombre = 62, colValor = 38, anchoBarra = ANCHO - colNombre - colValor - 4;
-    lista.forEach((f) => {
-      asegurar(9);
-      doc.setTextColor(...tinta); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-      const nombre = `${f.alimento.nombre} (${f.gramos} g)`;
-      doc.text(doc.splitTextToSize(nombre, colNombre - 2)[0], M, y + 3.2);
-      const bx = M + colNombre;
-      doc.setFillColor(...pista); doc.roundedRect(bx, y, anchoBarra, 4, 1, 1, "F");
-      doc.setFillColor(...color); doc.roundedRect(bx, y, Math.max(0.6, anchoBarra * Math.min(f[pctClave], 100) / 100), 4, 1, 1, "F");
-      doc.setFont("helvetica", "bold"); doc.setTextColor(...tinta);
-      doc.text(`${n0(f[clave])} ${unidad} · ${pct(f[pctClave])}`, W - M, y + 3.2, { align: "right" });
-      y += 7;
-    });
-    y += 4;
+  L.nota = (txt) => {
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...COLOR_PDF.gris);
+    doc.splitTextToSize(txt, L.ANCHO).forEach((ln) => { L.asegurar(4); doc.text(ln, L.M, L.y); L.y += 3.8; });
+    L.y += 1;
   };
-  const porKcal = [...filas].sort((a, b) => b.aporteKcal - a.aporteKcal);
-  const porProt = [...filas].sort((a, b) => b.aporteProteina - a.aporteProteina);
-  grafico("Aporte de calorías por alimento", porKcal, "aporteKcal", "pctKcal", "kcal", naranja);
-  grafico("Aporte de proteína por alimento", porProt, "aporteProteina", "pctProteina", "g", dorado);
+  L.finalizar = (archivo, leyenda) => {
+    const paginas = doc.getNumberOfPages();
+    for (let i = 1; i <= paginas; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...COLOR_PDF.gris);
+      doc.text(leyenda || LEYENDA_PDF, L.M, L.H - 8);
+      doc.text(`Página ${i} de ${paginas}`, L.W - L.M, L.H - 8, { align: "right" });
+    }
+    doc.save(archivo);
+  };
+  L.encabezado();
+  return L;
+}
 
-  // Detalle agrupado por comida, con subtotales
-  titulo("Detalle por comida");
-  const cols = { nombre: M, g: M + 78, kcal: M + 100, pk: M + 122, prot: M + 146, pp: W - M };
+function pdfTarjeta(L, x, w, nombre, valor, detalle, p, color) {
+  const { doc } = L, y = L.y;
+  doc.setDrawColor(...COLOR_PDF.pista); doc.setLineWidth(0.3); doc.roundedRect(x, y, w, 30, 2, 2);
+  doc.setTextColor(...COLOR_PDF.gris); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+  doc.text(nombre, x + 4, y + 6);
+  doc.setTextColor(...COLOR_PDF.tinta); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+  doc.text(valor, x + 4, y + 15);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...COLOR_PDF.gris);
+  doc.text(detalle, x + 4, y + 21);
+  doc.setFillColor(...COLOR_PDF.pista); doc.roundedRect(x + 4, y + 24, w - 8, 2.5, 1, 1, "F");
+  doc.setFillColor(...color); doc.roundedRect(x + 4, y + 24, Math.max(0.1, (w - 8) * Math.min(Math.max(p, 0), 100) / 100), 2.5, 1, 1, "F");
+}
+
+/* Tabla simple con encabezado repetido en cada página. columnas: [{ t, w, a: "l"|"r" }] */
+function pdfTabla(L, columnas, filas, opciones = {}) {
+  const { doc } = L;
+  const anchoTotal = columnas.reduce((s, c) => s + c.w, 0);
   const cabecera = () => {
-    doc.setFillColor(...pista); doc.rect(M, y - 4, ANCHO, 6, "F");
-    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...tinta);
-    doc.text("Alimento", cols.nombre + 1, y);
-    doc.text("Cantidad", cols.g, y, { align: "right" });
-    doc.text("Calorías", cols.kcal, y, { align: "right" });
-    doc.text("% del día", cols.pk, y, { align: "right" });
-    doc.text("Proteína", cols.prot, y, { align: "right" });
-    doc.text("% del día", cols.pp, y, { align: "right" });
-    y += 6;
+    doc.setFillColor(...COLOR_PDF.pista); doc.rect(L.M, L.y - 4, anchoTotal, 6, "F");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...COLOR_PDF.tinta);
+    let x = L.M;
+    columnas.forEach((c) => { c.a === "r" ? doc.text(c.t, x + c.w - 1.5, L.y, { align: "right" }) : doc.text(c.t, x + 1.5, L.y); x += c.w; });
+    L.y += 6;
+  };
+  L.asegurar(14); cabecera();
+  filas.forEach((f) => {
+    if (L.asegurar(7)) cabecera();
+    doc.setFont("helvetica", f.negrita ? "bold" : "normal"); doc.setFontSize(8.5); doc.setTextColor(...COLOR_PDF.tinta);
+    let x = L.M;
+    columnas.forEach((c, i) => {
+      const txt = String(f.celdas[i] ?? "");
+      c.a === "r" ? doc.text(txt, x + c.w - 1.5, L.y, { align: "right" }) : doc.text(doc.splitTextToSize(txt, c.w - 3)[0], x + 1.5, L.y);
+      x += c.w;
+    });
+    L.y += opciones.alto || 5.2;
+  });
+  L.y += 3;
+}
+
+/* Gráfico de barras por día con línea de meta (una sola serie: la magnitud es lo que se compara). */
+function pdfGraficoBarras(L, { titulo, datos, meta, color, unidad }) {
+  const { doc } = L;
+  L.asegurar(62); L.seccion(titulo);
+  const x0 = L.M + 11, w = L.ANCHO - 11, y0 = L.y + 4, h = 36;
+  const maxDato = Math.max(...datos.map((d) => d.valor || 0), meta || 0, 1);
+  const techo = maxDato * 1.1;
+  const yy = (v) => y0 + h - (v / techo) * h;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...COLOR_PDF.gris); doc.setLineWidth(0.15); doc.setDrawColor(...COLOR_PDF.pista);
+  [0, 0.5, 1].forEach((f) => { const v = (maxDato) * f; doc.line(x0, yy(v), x0 + w, yy(v)); doc.text(n0(v), x0 - 1.5, yy(v) + 1, { align: "right" }); });
+  const paso = w / datos.length, bw = Math.min(9, paso * 0.62), mostrarValores = datos.length <= 14, cada = Math.ceil(datos.length / 15);
+  datos.forEach((d, i) => {
+    const bx = x0 + paso * i + (paso - bw) / 2;
+    if (d.valor > 0) {
+      doc.setFillColor(...color); doc.rect(bx, yy(d.valor), bw, y0 + h - yy(d.valor), "F");
+      if (mostrarValores) { doc.setFontSize(6.5); doc.setTextColor(...COLOR_PDF.tinta); doc.text(n0(d.valor), bx + bw / 2, yy(d.valor) - 1, { align: "center" }); }
+    }
+    if (i % cada === 0) {
+      const e = etiquetaEjeLima(d.fecha);
+      doc.setFontSize(6.5); doc.setTextColor(...COLOR_PDF.gris);
+      doc.text(e.w, bx + bw / 2, y0 + h + 3.2, { align: "center" }); doc.text(e.n, bx + bw / 2, y0 + h + 6.2, { align: "center" });
+    }
+  });
+  if (meta > 0) {
+    doc.setDrawColor(...COLOR_PDF.tinta); doc.setLineWidth(0.3); doc.setLineDashPattern([1.6, 1.2], 0);
+    doc.line(x0, yy(meta), x0 + w, yy(meta)); doc.setLineDashPattern([], 0);
+    doc.setFontSize(7); doc.setTextColor(...COLOR_PDF.tinta); doc.setFont("helvetica", "bold");
+    doc.text(`Meta: ${n0(meta)} ${unidad}`, x0 + w, yy(meta) - 1.2, { align: "right" });
+  }
+  L.y = y0 + h + 11;
+}
+
+/* Evolución del peso (línea con puntos; etiquetas directas en los extremos). */
+function pdfGraficoPeso(L, serie) {
+  const { doc } = L;
+  L.asegurar(56); L.seccion("Evolución del peso");
+  if (serie.length < 2) { L.nota(serie.length === 1 ? `Solo hay un registro de peso en el período (${n1(serie[0].pesoKg)} kg el ${fechaCortaLima(serie[0].fecha)}); se necesitan al menos dos para ver tendencia.` : "No hay registros de peso en el período."); return; }
+  const x0 = L.M + 11, w = L.ANCHO - 16, y0 = L.y + 5, h = 30;
+  const vals = serie.map((p) => p.pesoKg), mn = Math.min(...vals) - 0.5, mx = Math.max(...vals) + 0.5;
+  const t0 = new Date(serie[0].fecha + "T12:00:00Z").getTime(), t1 = new Date(serie[serie.length - 1].fecha + "T12:00:00Z").getTime();
+  const px = (f) => x0 + (t1 > t0 ? ((new Date(f + "T12:00:00Z").getTime() - t0) / (t1 - t0)) * w : 0);
+  const py = (v) => y0 + h - ((v - mn) / (mx - mn)) * h;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(...COLOR_PDF.gris); doc.setLineWidth(0.15); doc.setDrawColor(...COLOR_PDF.pista);
+  [mn, (mn + mx) / 2, mx].forEach((v) => { doc.line(x0, py(v), x0 + w, py(v)); doc.text(n1(v), x0 - 1.5, py(v) + 1, { align: "right" }); });
+  doc.setDrawColor(...COLOR_PDF.azul); doc.setLineWidth(0.5);
+  serie.forEach((p, i) => { if (i > 0) doc.line(px(serie[i - 1].fecha), py(serie[i - 1].pesoKg), px(p.fecha), py(p.pesoKg)); });
+  doc.setFillColor(...COLOR_PDF.azul);
+  serie.forEach((p, i) => {
+    doc.circle(px(p.fecha), py(p.pesoKg), 0.9, "F");
+    if (serie.length <= 8 || i === 0 || i === serie.length - 1) { doc.setFontSize(7); doc.setTextColor(...COLOR_PDF.tinta); doc.text(`${n1(p.pesoKg)} kg`, px(p.fecha), py(p.pesoKg) - 2, { align: i === 0 ? "left" : i === serie.length - 1 ? "right" : "center" }); }
+  });
+  doc.setFontSize(7); doc.setTextColor(...COLOR_PDF.gris);
+  doc.text(fechaCortaLima(serie[0].fecha), x0, y0 + h + 4); doc.text(fechaCortaLima(serie[serie.length - 1].fecha), x0 + w, y0 + h + 4, { align: "right" });
+  L.y = y0 + h + 9;
+}
+
+/* Barra apilada 100% (macronutrientes: real vs objetivo) con leyenda siempre visible. */
+function pdfBarraMacros(L, real, objetivo) {
+  const { doc } = L;
+  L.asegurar(44); L.seccion("Distribución de la energía por macronutriente");
+  const colores = [COLOR_PDF.dorado, COLOR_PDF.carb, COLOR_PDF.azul], nombres = ["Proteínas", "Carbohidratos", "Grasas"];
+  const dibujar = (etq, d, yb) => {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...COLOR_PDF.tinta); doc.text(etq, L.M, yb + 5);
+    const vals = [d.proteina, d.carbohidratos, d.grasas], bx0 = L.M + 28, bw = L.ANCHO - 28;
+    const total = vals.reduce((s, v) => s + v, 0) || 1; let x = bx0;
+    vals.forEach((v, i) => {
+      const ancho = (v / total) * bw;
+      doc.setFillColor(...colores[i]); doc.rect(x, yb, Math.max(ancho - 0.5, 0.1), 7, "F");
+      if (ancho > 13) { doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(255, 255, 255); doc.text(pctTxt(v), x + ancho / 2, yb + 4.8, { align: "center" }); }
+      x += ancho;
+    });
+  };
+  dibujar("Consumido", real, L.y); dibujar("Objetivo", objetivo, L.y + 10);
+  let lx = L.M + 28; const ly = L.y + 24;
+  nombres.forEach((nm, i) => {
+    doc.setFillColor(...colores[i]); doc.rect(lx, ly - 2.6, 3, 3, "F");
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...COLOR_PDF.tinta); doc.text(nm, lx + 4.5, ly);
+    lx += 40;
+  });
+  L.y += 31;
+}
+
+/* ---------- PDF 1: totales por día ---------- */
+function exportarTotalesPDF({ datos, requerimiento }) {
+  const dias = datos.map((d) => ({ fecha: d.fecha, ...filasDelDia(d.items), hay: d.items.length > 0 }));
+  const con = dias.filter((d) => d.hay);
+  const L = crearLienzoPDF("NutriClínica · Totales por día", `Del ${fechaCortaLima(datos[0].fecha)} al ${fechaCortaLima(datos[datos.length - 1].fecha)} (${datos.length} días)`);
+  if (!L) return;
+  const n = con.length;
+  const prom = (k) => (n ? con.reduce((s, d) => s + d.totales[k], 0) / n : 0);
+  const pK = requerimiento.get > 0 ? (prom("kcal") / requerimiento.get) * 100 : 0, pP = requerimiento.proteinasG > 0 ? (prom("proteinasG") / requerimiento.proteinasG) * 100 : 0;
+  const wc = (L.ANCHO - 6) / 2;
+  pdfTarjeta(L, L.M, wc, "PROMEDIO DIARIO DE CALORÍAS", `${n0(prom("kcal"))} kcal`, `Meta: ${n0(requerimiento.get)} kcal · ${pctTxt(pK)} de la meta`, pK, COLOR_PDF.naranja);
+  pdfTarjeta(L, L.M + wc + 6, wc, "PROMEDIO DIARIO DE PROTEÍNA", `${n0(prom("proteinasG"))} g`, `Meta: ${n0(requerimiento.proteinasG)} g · ${pctTxt(pP)} de la meta`, pP, COLOR_PDF.dorado);
+  L.y += 36;
+  L.nota(`Días con registro de alimentos: ${n} de ${datos.length}. Los promedios consideran solo los días con registro.`); L.y += 4;
+  pdfGraficoBarras(L, { titulo: "Calorías por día", datos: dias.map((d) => ({ fecha: d.fecha, valor: d.hay ? d.totales.kcal : 0 })), meta: requerimiento.get, color: COLOR_PDF.naranja, unidad: "kcal" });
+  pdfGraficoBarras(L, { titulo: "Proteína por día", datos: dias.map((d) => ({ fecha: d.fecha, valor: d.hay ? d.totales.proteinasG : 0 })), meta: requerimiento.proteinasG, color: COLOR_PDF.dorado, unidad: "g" });
+  L.seccion("Detalle por día");
+  pdfTabla(L,
+    [{ t: "Fecha", w: 40 }, { t: "Calorías", w: 26, a: "r" }, { t: "% meta", w: 20, a: "r" }, { t: "Proteína", w: 26, a: "r" }, { t: "% meta", w: 20, a: "r" }, { t: "Carbohid.", w: 24, a: "r" }, { t: "Grasas", w: 24, a: "r" }],
+    dias.map((d) => ({ celdas: d.hay ? [fechaCortaLima(d.fecha), `${n0(d.totales.kcal)} kcal`, pctTxt(requerimiento.get > 0 ? (d.totales.kcal / requerimiento.get) * 100 : 0), `${n0(d.totales.proteinasG)} g`, pctTxt(requerimiento.proteinasG > 0 ? (d.totales.proteinasG / requerimiento.proteinasG) * 100 : 0), `${n0(d.totales.carbohidratosG)} g`, `${n0(d.totales.grasasG)} g`] : [fechaCortaLima(d.fecha), "Sin registro", "", "", "", "", ""] })));
+  L.finalizar(`reporte_totales_${datos[0].fecha}_a_${datos[datos.length - 1].fecha}.pdf`);
+}
+
+/* ---------- PDF 2: detalle por alimento, una hoja por día ---------- */
+function dibujarHojaDia(L, dia, requerimiento) {
+  const { doc, M, W, ANCHO } = L;
+  const { totales, filas } = dia;
+  const pK = requerimiento.get > 0 ? (totales.kcal / requerimiento.get) * 100 : 0, pP = requerimiento.proteinasG > 0 ? (totales.proteinasG / requerimiento.proteinasG) * 100 : 0;
+  const wc = (ANCHO - 6) / 2;
+  pdfTarjeta(L, M, wc, "CALORÍAS TOTALES DEL DÍA", `${n0(totales.kcal)} kcal`, `Meta diaria: ${n0(requerimiento.get)} kcal · Cumplido: ${pctTxt(pK)}`, pK, COLOR_PDF.naranja);
+  pdfTarjeta(L, M + wc + 6, wc, "PROTEÍNA TOTAL DEL DÍA", `${n0(totales.proteinasG)} g`, `Meta diaria: ${n0(requerimiento.proteinasG)} g · Cumplido: ${pctTxt(pP)}`, pP, COLOR_PDF.dorado);
+  L.y += 38;
+  L.nota("Cada barra muestra qué porcentaje del total del día aportó ese alimento (calorías a la izquierda, proteína a la derecha)."); L.y += 3;
+  const cx = { nom: M + 2, cant: M + 70, kcal: M + 88, bk: M + 91, pk: M + 128, prot: M + 146, bp: M + 149, pp: W - M };
+  const cabecera = () => {
+    doc.setFillColor(...COLOR_PDF.pista); doc.rect(M, L.y - 4, ANCHO, 6, "F");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...COLOR_PDF.tinta);
+    doc.text("Alimento", cx.nom, L.y); doc.text("Cantidad", cx.cant, L.y, { align: "right" });
+    doc.text("Calorías", cx.kcal, L.y, { align: "right" }); doc.text("% de las calorías del día", cx.bk, L.y);
+    doc.text("Proteína", cx.prot, L.y, { align: "right" }); doc.text("% de la proteína", cx.bp, L.y);
+    L.y += 6;
   };
   cabecera();
-  const nombresMomento = { desayuno: "Desayuno", almuerzo: "Almuerzo", cena: "Cena", colacion: "Colación" };
+  const barra = (x, ancho, p, color) => {
+    doc.setFillColor(...COLOR_PDF.pista); doc.roundedRect(x, L.y - 3, ancho, 3.2, 0.8, 0.8, "F");
+    doc.setFillColor(...color); doc.roundedRect(x, L.y - 3, Math.max(0.5, ancho * Math.min(p, 100) / 100), 3.2, 0.8, 0.8, "F");
+  };
   MOMENTOS_KEYS.forEach((m) => {
     const grupo = filas.filter((f) => f.momento === m);
     if (grupo.length === 0) return;
-    const subK = grupo.reduce((s, f) => s + f.aporteKcal, 0), subP = grupo.reduce((s, f) => s + f.aporteProteina, 0);
-    asegurar(16);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...verde);
-    doc.text(`${nombresMomento[m]} — ${n0(subK)} kcal · ${n0(subP)} g de proteína`, M + 1, y); y += 5;
-    doc.setFont("helvetica", "normal"); doc.setTextColor(...tinta);
-    grupo.forEach((f) => {
-      asegurar(7);
-      doc.setFontSize(8.5);
-      doc.text(doc.splitTextToSize(f.alimento.nombre, 74)[0], cols.nombre + 3, y);
-      doc.text(`${f.gramos} g`, cols.g, y, { align: "right" });
-      doc.text(`${n0(f.aporteKcal)} kcal`, cols.kcal, y, { align: "right" });
-      doc.text(pct(f.pctKcal), cols.pk, y, { align: "right" });
-      doc.text(`${n0(f.aporteProteina)} g`, cols.prot, y, { align: "right" });
-      doc.text(pct(f.pctProteina), cols.pp, y, { align: "right" });
-      y += 5.5;
+    const sk = grupo.reduce((s, f) => s + f.aporteKcal, 0), sp = grupo.reduce((s, f) => s + f.aporteProteina, 0);
+    if (L.asegurar(16)) cabecera();
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...COLOR_PDF.verde);
+    doc.text(`${NOMBRE_MOMENTO_CAP[m]} — ${n0(sk)} kcal · ${n0(sp)} g de proteína`, M + 1, L.y); L.y += 5;
+    grupo.sort((a, b) => b.aporteKcal - a.aporteKcal).forEach((f) => {
+      if (L.asegurar(6)) cabecera();
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...COLOR_PDF.tinta);
+      doc.text(doc.splitTextToSize(f.alimento.nombre, 54)[0], cx.nom + 2, L.y);
+      doc.text(`${f.gramos} g`, cx.cant, L.y, { align: "right" });
+      doc.text(`${n0(f.aporteKcal)} kcal`, cx.kcal, L.y, { align: "right" });
+      barra(cx.bk, 24, f.pctKcal, COLOR_PDF.naranja); doc.text(pctTxt(f.pctKcal), cx.pk, L.y, { align: "right" });
+      doc.text(`${n0(f.aporteProteina)} g`, cx.prot, L.y, { align: "right" });
+      barra(cx.bp, 17, f.pctProteina, COLOR_PDF.dorado); doc.text(pctTxt(f.pctProteina), cx.pp, L.y, { align: "right" });
+      L.y += 5.4;
     });
-    y += 2;
+    L.y += 1.5;
   });
-  asegurar(10);
-  doc.setDrawColor(...verde); doc.setLineWidth(0.4); doc.line(M, y - 3, W - M, y - 3);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...tinta);
-  doc.text("TOTAL DEL DÍA", cols.nombre + 1, y + 1);
-  doc.text(`${n0(totales.kcal)} kcal`, cols.kcal, y + 1, { align: "right" });
-  doc.text("100%", cols.pk, y + 1, { align: "right" });
-  doc.text(`${n0(totales.proteinasG)} g`, cols.prot, y + 1, { align: "right" });
-  doc.text("100%", cols.pp, y + 1, { align: "right" });
-
-  // Pie de página con numeración
-  const paginas = doc.getNumberOfPages();
-  for (let i = 1; i <= paginas; i++) {
-    doc.setPage(i);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...gris);
-    doc.text("Información orientativa; no reemplaza la indicación de tu nutricionista o médico.", M, H - 8);
-    doc.text(`Página ${i} de ${paginas}`, W - M, H - 8, { align: "right" });
-  }
-  doc.save(`reporte_nutriclinica_${fecha}.pdf`);
+  if (L.asegurar(10)) cabecera();
+  doc.setDrawColor(...COLOR_PDF.verde); doc.setLineWidth(0.4); doc.line(M, L.y - 3, W - M, L.y - 3);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(...COLOR_PDF.tinta);
+  doc.text("TOTAL DEL DÍA", cx.nom, L.y + 1);
+  doc.text(`${n0(totales.kcal)} kcal`, cx.kcal, L.y + 1, { align: "right" }); doc.text("100%", cx.pk, L.y + 1, { align: "right" });
+  doc.text(`${n0(totales.proteinasG)} g`, cx.prot, L.y + 1, { align: "right" }); doc.text("100%", cx.pp, L.y + 1, { align: "right" });
+  L.y += 8;
 }
 
-function PantallaReporte({ requerimiento, pacienteId, onCerrar }) {
+function exportarDetallePDF({ dias, requerimiento }) {
+  const L = crearLienzoPDF("NutriClínica · Reporte diario", fechaLargaLima(dias[0].fecha));
+  if (!L) return;
+  dias.forEach((d, i) => {
+    if (i > 0) { L.doc.addPage(); L.subtitulo = fechaLargaLima(d.fecha); L.encabezado(); }
+    dibujarHojaDia(L, d, requerimiento);
+  });
+  L.finalizar(dias.length === 1 ? `reporte_diario_${dias[0].fecha}.pdf` : `reporte_detalle_${dias[0].fecha}_a_${dias[dias.length - 1].fecha}.pdf`);
+}
+
+/* ---------- PDF 3: resumen clínico para el médico ---------- */
+const OBJETIVO_TXT = { perdida: "Pérdida de peso", mantenimiento: "Mantenimiento", ganancia_muscular: "Ganancia muscular" };
+const SEVERIDAD_TXT = { alta: "PRIORIDAD ALTA", media: "A VIGILAR", info: "INFORMATIVO", ok: "FAVORABLE" };
+
+function exportarClinicoPDF({ datos, requerimiento, perfil, medicamentos, resumen }) {
+  const r = resumen;
+  const L = crearLienzoPDF("NutriClínica · Resumen clínico", `Período: ${fechaCortaLima(datos[0].fecha)} al ${fechaCortaLima(datos[datos.length - 1].fecha)} (${datos.length} días)`);
+  if (!L) return;
+  const { doc, M, ANCHO } = L;
+  const imc = calcularIMC(perfil.pesoKg, perfil.tallaCm);
+
+  L.seccion("Paciente y prescripción");
+  const linea = (k, v) => {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(...COLOR_PDF.tinta);
+    const parrafo = doc.splitTextToSize(v, ANCHO - 38);
+    L.asegurar(parrafo.length * 4 + 2);
+    doc.text(k, M, L.y);
+    doc.setFont("helvetica", "normal"); parrafo.forEach((ln) => { doc.text(ln, M + 38, L.y); L.y += 4; });
+    L.y += 0.8;
+  };
+  linea("Datos", `${perfil.edad} años · ${perfil.sexo === "femenino" ? "Femenino" : "Masculino"} · ${n1(perfil.pesoKg)} kg · ${perfil.tallaCm} cm · IMC ${imc ? imc.toFixed(1) : "-"}`);
+  linea("Objetivo", `${OBJETIVO_TXT[perfil.objetivo] || perfil.objetivo} · Actividad ${perfil.actividad}`);
+  linea("Metas diarias", `${n0(requerimiento.get)} kcal${requerimiento.prescripcionActiva ? " (prescripción médica)" : " (calculadas por la app)"} · Proteína ${n0(requerimiento.proteinasG)} g · Carbohidratos ${n0(requerimiento.carbohidratosG)} g · Grasas ${n0(requerimiento.grasasG)} g · Fibra ${n0(requerimiento.fibraG)} g · Sodio máx. ${n0(requerimiento.sodioMg)} mg`);
+  linea("Condiciones", requerimiento.condicionesActivas.length ? requerimiento.condicionesActivas.map((c) => c.nombre).join(", ") : "Ninguna registrada");
+  linea("Medicamentos", medicamentos.length ? medicamentos.map((m) => `${m.nombre}${m.dosis ? " " + m.dosis : ""}${m.frecuencia ? " (" + m.frecuencia + ")" : ""}`).join("; ") : "Ninguno registrado");
+  linea("Suplementos", requerimiento.suplementos.length ? requerimiento.suplementos.map((s) => `${s.nombre} ${s.vecesDia}x/día (${n0(s.kcal)} kcal, ${n1(s.proteinaG)} g prot. por toma)`).join("; ") : "Ninguno registrado");
+  L.y += 3;
+
+  if (r.n === 0) { L.seccion("Sin datos"); L.nota("No hay alimentos registrados en el período seleccionado."); L.finalizar(`resumen_clinico_${datos[0].fecha}_a_${datos[datos.length - 1].fecha}.pdf`); return; }
+
+  L.seccion("Resumen del período (promedio de los días con registro)");
+  const wc = (ANCHO - 6) / 2;
+  pdfTarjeta(L, M, wc, "CALORÍAS PROMEDIO / DÍA", `${n0(r.promedios.kcal)} kcal`, `Meta: ${n0(requerimiento.get)} kcal · ${pctTxt(r.pctMeta.kcal)} de la meta`, r.pctMeta.kcal, COLOR_PDF.naranja);
+  pdfTarjeta(L, M + wc + 6, wc, "PROTEÍNA PROMEDIO / DÍA", `${n1(r.promedios.proteinasG)} g`, `Meta: ${n0(requerimiento.proteinasG)} g · ${pctTxt(r.pctMeta.proteinasG)} · ${n1(r.protPorKg)} g/kg`, r.pctMeta.proteinasG, COLOR_PDF.dorado);
+  L.y += 36;
+  L.nota(`Días con registro: ${r.n} de ${r.total}. Días con calorías dentro de ±10% de la meta: ${r.cumplimiento.diasKcalOk}. Días con proteína >= 90% de la meta: ${r.cumplimiento.diasProteinaOk}. Días con sodio sobre el límite: ${r.cumplimiento.diasSodioExcedido}.`); L.y += 3;
+  pdfTabla(L,
+    [{ t: "Nutriente", w: 40 }, { t: "Promedio / día", w: 40, a: "r" }, { t: "Meta", w: 40, a: "r" }, { t: "% de la meta", w: 40, a: "r" }, { t: "Estado", w: 20 }],
+    [
+      ["Calorías", `${n0(r.promedios.kcal)} kcal`, `${n0(requerimiento.get)} kcal`, r.pctMeta.kcal],
+      ["Proteína", `${n1(r.promedios.proteinasG)} g`, `${n0(requerimiento.proteinasG)} g`, r.pctMeta.proteinasG],
+      ["Carbohidratos", `${n1(r.promedios.carbohidratosG)} g`, `${n0(requerimiento.carbohidratosG)} g`, r.pctMeta.carbohidratosG],
+      ["Grasas", `${n1(r.promedios.grasasG)} g`, `${n0(requerimiento.grasasG)} g`, r.pctMeta.grasasG],
+      ["Fibra", `${n1(r.promedios.fibraG)} g`, `${n0(requerimiento.fibraG)} g`, r.pctMeta.fibraG],
+      ["Sodio (límite)", `${n0(r.promedios.sodioMg)} mg`, `${n0(requerimiento.sodioMg)} mg`, r.pctMeta.sodioMg],
+    ].map(([nom, prom, meta, p]) => ({ celdas: [nom, prom, meta, pctTxt(p), nom.startsWith("Sodio") ? (p > 100 ? "Excede" : "Dentro") : (p < 80 ? "Bajo" : p > 120 ? "Alto" : "Adecuado")] })));
+
+  L.seccion("Hallazgos para la decisión clínica");
+  if (r.alertas.length === 0) L.nota("No se detectaron hallazgos relevantes con los criterios automáticos de la app.");
+  const colorSev = { alta: COLOR_PDF.rojo, media: COLOR_PDF.dorado, info: COLOR_PDF.azul, ok: COLOR_PDF.carb };
+  r.alertas.forEach((a) => {
+    const lineas = doc.splitTextToSize(a.txt, ANCHO - 34);
+    L.asegurar(lineas.length * 4.2 + 3);
+    doc.setFillColor(...colorSev[a.sev]); doc.roundedRect(M, L.y - 3.2, 28, 4.6, 1, 1, "F");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(6.5); doc.setTextColor(255, 255, 255); doc.text(SEVERIDAD_TXT[a.sev], M + 14, L.y, { align: "center" });
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...COLOR_PDF.tinta);
+    lineas.forEach((ln, i) => { doc.text(ln, M + 31, L.y + i * 4.2); });
+    L.y += lineas.length * 4.2 + 2.2;
+  });
+  L.y += 2;
+
+  pdfGraficoBarras(L, { titulo: "Calorías por día", datos: datos.map((d) => ({ fecha: d.fecha, valor: d.items.length ? calcularTotalesLog(d.items).kcal : 0 })), meta: requerimiento.get, color: COLOR_PDF.naranja, unidad: "kcal" });
+  pdfGraficoBarras(L, { titulo: "Proteína por día", datos: datos.map((d) => ({ fecha: d.fecha, valor: d.items.length ? calcularTotalesLog(d.items).proteinasG : 0 })), meta: requerimiento.proteinasG, color: COLOR_PDF.dorado, unidad: "g" });
+  pdfGraficoPeso(L, r.peso.serie);
+  if (r.distribucion) pdfBarraMacros(L, r.distribucion, r.objetivoDist);
+
+  L.seccion("Cumplimiento por comida (promedio diario)");
+  pdfTabla(L,
+    [{ t: "Comida", w: 34 }, { t: "Calorías prom.", w: 38, a: "r" }, { t: "Previsto", w: 34, a: "r" }, { t: "% de lo previsto", w: 40, a: "r" }, { t: "Proteína prom.", w: 34, a: "r" }],
+    r.porMomento.map((m) => ({ celdas: [m.label, `${n0(m.avgKcal)} kcal`, `${n0(m.objetivoKcal)} kcal`, pctTxt(m.pctObjetivo), `${n1(m.avgProteina)} g`] })));
+
+  L.seccion("Alimentos que más aportan en el período");
+  pdfTabla(L,
+    [{ t: "Por calorías", w: 56 }, { t: "Total", w: 26, a: "r" }, { t: "% del total", w: 20, a: "r" }, { t: "Veces", w: 14, a: "r" }, { t: "Por proteína", w: 48 }, { t: "% total", w: 16, a: "r" }],
+    r.topKcal.map((k, i) => ({ celdas: [k.nombre, `${n0(k.kcal)} kcal`, pctTxt(k.pctKcal), `${k.veces}`, r.topProteina[i] ? r.topProteina[i].nombre : "", r.topProteina[i] ? pctTxt(r.topProteina[i].pctProteina) : ""] })));
+  L.nota("Los hallazgos se generan con criterios automáticos (porcentaje de la meta, tendencia de peso, guías generales) y son un apoyo para la consulta: la decisión clínica corresponde al profesional tratante.");
+  L.finalizar(`resumen_clinico_${datos[0].fecha}_a_${datos[datos.length - 1].fecha}.pdf`);
+}
+
+/* ---------- Componentes de pantalla ---------- */
+function EncabezadoReporte({ titulo, onVolver, etiqueta = "Volver" }) {
+  return (
+    <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
+      <span className="nutri-serif text-white text-lg">{titulo}</span>
+      <button onClick={onVolver} className="text-white flex items-center gap-1 text-xs"><IconX size={16} /> {etiqueta}</button>
+    </header>
+  );
+}
+
+function SelectorRango({ valor, onCambio, opciones = [7, 14, 30] }) {
+  return (
+    <div className="flex gap-1.5 mb-3">
+      {opciones.map((o) => (
+        <button key={o} onClick={() => onCambio(o)} className={`rounded-full px-3 py-1.5 text-xs nutri-chip ${valor === o ? "nutri-chip-active" : "bg-white nutri-ink"}`}>Últimos {o} días</button>
+      ))}
+    </div>
+  );
+}
+
+/* Gráfico de barras por día con línea de meta (SVG, sin librerías). Una sola serie por gráfico;
+   la meta se rotula directamente y cada barra tiene su valor como tooltip nativo. */
+function GraficoBarrasDias({ datos, meta, unidad, color, titulo }) {
+  const W = 360, H = 176, ml = 36, mr = 8, mt = 16, mb = 30;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  const maxDato = Math.max(...datos.map((d) => d.valor || 0), meta || 0, 1);
+  const techo = maxDato * 1.1;
+  const yy = (v) => mt + ih - (v / techo) * ih;
+  const paso = iw / datos.length, bw = Math.min(26, paso * 0.62), cada = Math.ceil(datos.length / 15), mostrarValores = datos.length <= 14;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`${titulo}: ${datos.map((d) => `${fechaCortaLima(d.fecha)} ${Math.round(d.valor || 0)} ${unidad}`).join(", ")}`}>
+      {[0, 0.5, 1].map((f) => (
+        <g key={f}>
+          <line x1={ml} x2={W - mr} y1={yy(maxDato * f)} y2={yy(maxDato * f)} style={{ stroke: "var(--panel-border)" }} strokeWidth="0.7" />
+          <text x={ml - 4} y={yy(maxDato * f) + 3} textAnchor="end" fontSize="9" style={{ fill: "var(--muted)" }}>{Math.round(maxDato * f)}</text>
+        </g>
+      ))}
+      {datos.map((d, i) => {
+        const bx = ml + paso * i + (paso - bw) / 2;
+        const e = etiquetaEjeLima(d.fecha);
+        return (
+          <g key={d.fecha}>
+            {d.valor > 0 && (
+              <rect x={bx} y={yy(d.valor)} width={bw} height={mt + ih - yy(d.valor)} rx="3" fill={color}>
+                <title>{`${fechaCortaLima(d.fecha)}: ${Math.round(d.valor)} ${unidad}`}</title>
+              </rect>
+            )}
+            {mostrarValores && d.valor > 0 && <text x={bx + bw / 2} y={yy(d.valor) - 3} textAnchor="middle" fontSize="8.5" style={{ fill: "var(--ink)" }}>{Math.round(d.valor)}</text>}
+            {i % cada === 0 && (
+              <>
+                <text x={bx + bw / 2} y={H - mb + 12} textAnchor="middle" fontSize="9" style={{ fill: "var(--muted)" }}>{e.w}</text>
+                <text x={bx + bw / 2} y={H - mb + 23} textAnchor="middle" fontSize="9" style={{ fill: "var(--muted)" }}>{e.n}</text>
+              </>
+            )}
+          </g>
+        );
+      })}
+      {meta > 0 && (
+        <g>
+          <line x1={ml} x2={W - mr} y1={yy(meta)} y2={yy(meta)} strokeDasharray="4 3" strokeWidth="1.2" style={{ stroke: "var(--ink)" }} />
+          <text x={W - mr} y={yy(meta) - 4} textAnchor="end" fontSize="9" fontWeight="600" style={{ fill: "var(--ink)" }}>{`Meta: ${Math.round(meta)} ${unidad}`}</text>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+function GraficoPeso({ serie }) {
+  const W = 360, H = 150, ml = 36, mr = 14, mt = 16, mb = 24;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  const vals = serie.map((p) => p.pesoKg), mn = Math.min(...vals) - 0.5, mx = Math.max(...vals) + 0.5;
+  const t0 = new Date(serie[0].fecha + "T12:00:00Z").getTime(), t1 = new Date(serie[serie.length - 1].fecha + "T12:00:00Z").getTime();
+  const px = (f) => ml + (t1 > t0 ? ((new Date(f + "T12:00:00Z").getTime() - t0) / (t1 - t0)) * iw : 0);
+  const py = (v) => mt + ih - ((v - mn) / (mx - mn)) * ih;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Evolución del peso: ${serie.map((p) => `${fechaCortaLima(p.fecha)} ${p.pesoKg} kg`).join(", ")}`}>
+      {[mn, (mn + mx) / 2, mx].map((v, i) => (
+        <g key={i}>
+          <line x1={ml} x2={W - mr} y1={py(v)} y2={py(v)} style={{ stroke: "var(--panel-border)" }} strokeWidth="0.7" />
+          <text x={ml - 4} y={py(v) + 3} textAnchor="end" fontSize="9" style={{ fill: "var(--muted)" }}>{n1(v)}</text>
+        </g>
+      ))}
+      <polyline fill="none" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" style={{ stroke: "var(--accent-fat)" }} points={serie.map((p) => `${px(p.fecha)},${py(p.pesoKg)}`).join(" ")} />
+      {serie.map((p, i) => (
+        <g key={p.fecha}>
+          <circle cx={px(p.fecha)} cy={py(p.pesoKg)} r="3.5" style={{ fill: "var(--accent-fat)", stroke: "var(--panel-bg)" }} strokeWidth="1.5"><title>{`${fechaCortaLima(p.fecha)}: ${p.pesoKg} kg`}</title></circle>
+          {(serie.length <= 8 || i === 0 || i === serie.length - 1) && <text x={px(p.fecha)} y={py(p.pesoKg) - 8} textAnchor={i === 0 ? "start" : i === serie.length - 1 ? "end" : "middle"} fontSize="9" style={{ fill: "var(--ink)" }}>{`${n1(p.pesoKg)} kg`}</text>}
+        </g>
+      ))}
+      <text x={ml} y={H - 6} fontSize="9" style={{ fill: "var(--muted)" }}>{fechaCortaLima(serie[0].fecha)}</text>
+      <text x={W - mr} y={H - 6} textAnchor="end" fontSize="9" style={{ fill: "var(--muted)" }}>{fechaCortaLima(serie[serie.length - 1].fecha)}</text>
+    </svg>
+  );
+}
+
+/* Barra apilada 100% con tres macronutrientes y leyenda siempre visible. */
+function BarraMacros({ etiqueta, d }) {
+  const colores = ["var(--accent-protein)", "var(--accent-carb)", "var(--accent-fat)"];
+  const vals = [d.proteina, d.carbohidratos, d.grasas];
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <span className="text-xs nutri-muted w-16 shrink-0">{etiqueta}</span>
+      <div className="flex-1 flex h-6 rounded overflow-hidden" style={{ gap: 2 }}>
+        {vals.map((v, i) => (
+          <div key={i} style={{ width: `${v}%`, background: colores[i] }} className="flex items-center justify-center text-[10px] text-white font-medium" title={`${pctTxt(v)}`}>{v >= 12 ? pctTxt(v) : ""}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EtiquetaSeveridad({ sev }) {
+  const estilos = {
+    alta: { background: "var(--warn)", color: "#fff" },
+    media: { background: "#C79A3D", color: "#fff" },
+    info: { background: "var(--accent-fat)", color: "#fff" },
+    ok: { background: "#3E8E5A", color: "#fff" },
+  };
+  return <span className="text-[10px] font-semibold rounded px-1.5 py-0.5 shrink-0 mt-0.5" style={estilos[sev]}>{SEVERIDAD_TXT[sev]}</span>;
+}
+
+/* ---------- Pantalla: totales por día ---------- */
+function ReporteTotales({ requerimiento, pacienteId, onVolver }) {
+  const [dias, setDias] = useState(7);
+  const { datos, cargando } = useRegistrosRango(pacienteId, dias);
+  const res = useMemo(() => datos.map((d) => ({ fecha: d.fecha, ...filasDelDia(d.items), hay: d.items.length > 0 })), [datos]);
+  const con = res.filter((d) => d.hay);
+  const prom = (k) => (con.length ? con.reduce((s, d) => s + d.totales[k], 0) / con.length : 0);
+  const pK = requerimiento.get > 0 ? (prom("kcal") / requerimiento.get) * 100 : 0, pP = requerimiento.proteinasG > 0 ? (prom("proteinasG") / requerimiento.proteinasG) * 100 : 0;
+  return (
+    <div className="min-h-screen max-w-md mx-auto relative">
+      <EncabezadoReporte titulo="Totales por día" onVolver={onVolver} />
+      <div className="px-5 pt-6 pb-24">
+        <p className="text-sm nutri-muted mb-3">Calorías y proteína de cada día frente a tu meta, con gráficas.</p>
+        <SelectorRango valor={dias} onCambio={setDias} />
+        {cargando ? <p className="text-sm nutri-muted">Cargando...</p> : con.length === 0 ? <p className="text-sm nutri-muted">No hay alimentos registrados en este período.</p> : (
+          <>
+            <button onClick={() => exportarTotalesPDF({ datos, requerimiento })} className="w-full nutri-brand text-white rounded-lg py-2.5 text-sm mb-4 flex items-center justify-center gap-1.5"><IconReporte size={16} /> Exportar a PDF</button>
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div className="nutri-panel rounded-2xl p-4 text-center">
+                <div className="text-[11px] nutri-muted">Promedio de calorías</div>
+                <div className="nutri-serif text-2xl nutri-ink">{n0(prom("kcal"))}</div>
+                <div className="text-[11px] nutri-muted">kcal · {pctTxt(pK)} de la meta</div>
+                <BarraNutriente valor={prom("kcal")} meta={requerimiento.get} />
+              </div>
+              <div className="nutri-panel rounded-2xl p-4 text-center">
+                <div className="text-[11px] nutri-muted">Promedio de proteína</div>
+                <div className="nutri-serif text-2xl nutri-ink">{n0(prom("proteinasG"))}g</div>
+                <div className="text-[11px] nutri-muted">{pctTxt(pP)} de la meta</div>
+                <BarraNutriente valor={prom("proteinasG")} meta={requerimiento.proteinasG} />
+              </div>
+            </div>
+            <p className="text-[11px] nutri-muted mb-4">Días con registro: {con.length} de {res.length}. Los promedios solo cuentan esos días.</p>
+            <div className="nutri-panel rounded-2xl p-4 mb-5">
+              <span className="text-sm font-medium nutri-ink block mb-1">Calorías por día</span>
+              <GraficoBarrasDias titulo="Calorías por día" datos={res.map((d) => ({ fecha: d.fecha, valor: d.hay ? d.totales.kcal : 0 }))} meta={requerimiento.get} unidad="kcal" color="var(--accent-energy)" />
+            </div>
+            <div className="nutri-panel rounded-2xl p-4 mb-5">
+              <span className="text-sm font-medium nutri-ink block mb-1">Proteína por día</span>
+              <GraficoBarrasDias titulo="Proteína por día" datos={res.map((d) => ({ fecha: d.fecha, valor: d.hay ? d.totales.proteinasG : 0 }))} meta={requerimiento.proteinasG} unidad="g" color="var(--accent-protein)" />
+            </div>
+            <div className="nutri-panel rounded-2xl p-4">
+              <span className="text-sm font-medium nutri-ink block mb-2">Detalle por día</span>
+              <div className="grid text-[11px] nutri-muted pb-1" style={{ gridTemplateColumns: "1.3fr 1fr 1fr", borderBottom: "1px solid var(--panel-border)" }}><span>Fecha</span><span className="text-right">Calorías</span><span className="text-right">Proteína</span></div>
+              {[...res].reverse().map((d) => (
+                <div key={d.fecha} className="grid text-xs py-1.5" style={{ gridTemplateColumns: "1.3fr 1fr 1fr", borderBottom: "1px solid var(--panel-border)" }}>
+                  <span className="nutri-ink capitalize">{fechaCortaLima(d.fecha)}</span>
+                  {d.hay ? (
+                    <>
+                      <span className="text-right nutri-ink">{n0(d.totales.kcal)} <span className="nutri-muted">({pctTxt(requerimiento.get > 0 ? (d.totales.kcal / requerimiento.get) * 100 : 0)})</span></span>
+                      <span className="text-right nutri-ink">{n0(d.totales.proteinasG)} g <span className="nutri-muted">({pctTxt(requerimiento.proteinasG > 0 ? (d.totales.proteinasG / requerimiento.proteinasG) * 100 : 0)})</span></span>
+                    </>
+                  ) : <span className="text-right nutri-muted col-span-2" style={{ gridColumn: "span 2" }}>Sin registro</span>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Pantalla: detalle por alimento (un día en pantalla; PDF de un día o de varios) ---------- */
+function ReporteDetalle({ requerimiento, pacienteId, onVolver }) {
   const [semanaOffset, setSemanaOffset] = useState(0);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(hoyISO());
   const [items, setItems] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [rangoPDF, setRangoPDF] = useState(7);
+  const [exportando, setExportando] = useState(false);
 
   const hoy = hoyISO();
   const diasSemana = useMemo(() => { const l = getLunes(new Date()); l.setUTCDate(l.getUTCDate() + semanaOffset * 7); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setUTCDate(d.getUTCDate() + i); return d; }); }, [semanaOffset]);
@@ -1973,31 +2497,27 @@ function PantallaReporte({ requerimiento, pacienteId, onCerrar }) {
     return () => { activo = false; };
   }, [fechaSeleccionada, pacienteId]);
 
-  const totales = useMemo(() => calcularTotalesLog(items), [items]);
-  const filas = useMemo(() => items.map((it) => {
-    const aporte = calcularTotalesItem(it.alimento, it.gramos);
-    return {
-      ...it,
-      aporteKcal: aporte.kcal,
-      aporteProteina: aporte.proteinasG,
-      pctKcal: totales.kcal > 0 ? (aporte.kcal / totales.kcal) * 100 : 0,
-      pctProteina: totales.proteinasG > 0 ? (aporte.proteinasG / totales.proteinasG) * 100 : 0,
-    };
-  }), [items, totales]);
+  const { totales, filas } = useMemo(() => filasDelDia(items), [items]);
   const filasPorKcal = useMemo(() => [...filas].sort((a, b) => b.aporteKcal - a.aporteKcal), [filas]);
   const filasPorProteina = useMemo(() => [...filas].sort((a, b) => b.aporteProteina - a.aporteProteina), [filas]);
-
   const pctMetaKcal = requerimiento.get > 0 ? Math.round((totales.kcal / requerimiento.get) * 100) : 0;
   const pctMetaProteina = requerimiento.proteinasG > 0 ? Math.round((totales.proteinasG / requerimiento.proteinasG) * 100) : 0;
 
+  const exportarVariosDias = async () => {
+    setExportando(true);
+    try {
+      const datos = await Promise.all(rangoFechasISO(rangoPDF).map(async (fecha) => ({ fecha, items: await obtenerLogFecha(pacienteId, fecha) })));
+      const dias = datos.filter((d) => d.items.length > 0).map((d) => ({ fecha: d.fecha, ...filasDelDia(d.items) }));
+      if (dias.length === 0) { alert("No hay alimentos registrados en ese período."); return; }
+      exportarDetallePDF({ dias, requerimiento });
+    } finally { setExportando(false); }
+  };
+
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
-      <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
-        <span className="nutri-serif text-white text-lg">Reporte diario</span>
-        <button onClick={onCerrar} className="text-white flex items-center gap-1 text-xs"><IconX size={16} /> Cerrar</button>
-      </header>
+      <EncabezadoReporte titulo="Detalle por alimento" onVolver={onVolver} />
       <div className="px-5 pt-6 pb-24">
-        <p className="text-sm nutri-muted mb-4">Aporte calórico y proteico total del día, con el detalle de cada alimento.</p>
+        <p className="text-sm nutri-muted mb-4">Aporte calórico y proteico de cada alimento del día, con su porcentaje sobre el total.</p>
 
         <div className="flex items-center justify-between mb-2">
           <button onClick={() => setSemanaOffset((s) => s - 1)} className="text-xs nutri-brand-text">‹ Semana anterior</button>
@@ -2017,14 +2537,21 @@ function PantallaReporte({ requerimiento, pacienteId, onCerrar }) {
           })}
         </div>
 
+        <div className="nutri-panel rounded-2xl p-4 mb-5">
+          <span className="text-sm font-medium nutri-ink block mb-1">PDF de varios días</span>
+          <p className="text-xs nutri-muted mb-2">Una hoja por día con el detalle de cada alimento, en gráficos y números.</p>
+          <SelectorRango valor={rangoPDF} onCambio={setRangoPDF} opciones={[7, 14, 30]} />
+          <button onClick={exportarVariosDias} disabled={exportando} className="w-full nutri-chip nutri-ink rounded-lg py-2 text-sm flex items-center justify-center gap-1.5 disabled:opacity-40"><IconReporte size={15} /> {exportando ? "Preparando..." : `Exportar ${rangoPDF} días a PDF`}</button>
+        </div>
+
         {cargando ? (
           <p className="text-sm nutri-muted">Cargando...</p>
         ) : items.length === 0 ? (
           <p className="text-sm nutri-muted">No hay alimentos registrados en esta fecha.</p>
         ) : (
           <>
-            <button onClick={() => exportarReportePDF({ fecha: fechaSeleccionada, filas: filasPorKcal, totales, requerimiento })} className="w-full nutri-brand text-white rounded-lg py-2.5 text-sm mb-4 flex items-center justify-center gap-1.5">
-              <IconReporte size={16} /> Exportar a PDF
+            <button onClick={() => exportarDetallePDF({ dias: [{ fecha: fechaSeleccionada, totales, filas: filasPorKcal }], requerimiento })} className="w-full nutri-brand text-white rounded-lg py-2.5 text-sm mb-4 flex items-center justify-center gap-1.5">
+              <IconReporte size={16} /> Exportar este día a PDF
             </button>
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="nutri-panel rounded-2xl p-4 text-center">
@@ -2085,6 +2612,155 @@ function PantallaReporte({ requerimiento, pacienteId, onCerrar }) {
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Pantalla: resumen clínico para el médico ---------- */
+function ReporteClinico({ requerimiento, pacienteId, perfil, pesos, medicamentos, onVolver }) {
+  const [dias, setDias] = useState(14);
+  const { datos, cargando } = useRegistrosRango(pacienteId, dias);
+  const r = useMemo(() => calcularResumenClinico({ datos, requerimiento, perfil, pesos }), [datos, requerimiento, perfil, pesos]);
+  const imc = calcularIMC(perfil.pesoKg, perfil.tallaCm);
+  const serieDia = (clave) => datos.map((d) => ({ fecha: d.fecha, valor: d.items.length ? calcularTotalesLog(d.items)[clave] : 0 }));
+  return (
+    <div className="min-h-screen max-w-md mx-auto relative">
+      <EncabezadoReporte titulo="Resumen clínico" onVolver={onVolver} />
+      <div className="px-5 pt-6 pb-24">
+        <p className="text-sm nutri-muted mb-3">Pensado para la consulta: cumplimiento de metas, tendencias, peso y hallazgos que ayudan a decidir.</p>
+        <SelectorRango valor={dias} onCambio={setDias} opciones={[7, 14, 30, 90]} />
+        {cargando ? <p className="text-sm nutri-muted">Cargando...</p> : (
+          <>
+            <button onClick={() => exportarClinicoPDF({ datos, requerimiento, perfil, medicamentos, resumen: r })} className="w-full nutri-brand text-white rounded-lg py-2.5 text-sm mb-4 flex items-center justify-center gap-1.5"><IconReporte size={16} /> Exportar a PDF para el médico</button>
+
+            <div className="nutri-panel rounded-2xl p-4 mb-5">
+              <span className="text-sm font-medium nutri-ink block mb-2">Paciente y prescripción</span>
+              <div className="text-xs nutri-muted space-y-1">
+                <div><span className="nutri-ink">{perfil.edad} años · {perfil.sexo === "femenino" ? "Femenino" : "Masculino"} · {n1(perfil.pesoKg)} kg · {perfil.tallaCm} cm</span>{imc ? ` · IMC ${imc.toFixed(1)}` : ""}</div>
+                <div>Objetivo: <span className="nutri-ink">{OBJETIVO_TXT[perfil.objetivo] || perfil.objetivo}</span></div>
+                <div>Metas: <span className="nutri-ink">{n0(requerimiento.get)} kcal · {n0(requerimiento.proteinasG)} g proteína</span>{requerimiento.prescripcionActiva ? " (prescripción médica)" : ""}</div>
+                <div>Condiciones: <span className="nutri-ink">{requerimiento.condicionesActivas.length ? requerimiento.condicionesActivas.map((c) => c.nombre).join(", ") : "ninguna registrada"}</span></div>
+                <div>Medicamentos: <span className="nutri-ink">{medicamentos.length ? medicamentos.map((m) => m.nombre).join(", ") : "ninguno registrado"}</span></div>
+                <div>Suplementos: <span className="nutri-ink">{requerimiento.suplementos.length ? requerimiento.suplementos.map((s) => `${s.nombre} ${s.vecesDia}x/día`).join(", ") : "ninguno registrado"}</span></div>
+              </div>
+            </div>
+
+            {r.n === 0 ? <p className="text-sm nutri-muted">No hay alimentos registrados en este período.</p> : (
+              <>
+                <div className="grid grid-cols-2 gap-3 mb-2">
+                  <div className="nutri-panel rounded-2xl p-4 text-center">
+                    <div className="text-[11px] nutri-muted">Calorías promedio/día</div>
+                    <div className="nutri-serif text-2xl nutri-ink">{n0(r.promedios.kcal)}</div>
+                    <div className="text-[11px] nutri-muted">{pctTxt(r.pctMeta.kcal)} de la meta</div>
+                    <BarraNutriente valor={r.promedios.kcal} meta={requerimiento.get} />
+                  </div>
+                  <div className="nutri-panel rounded-2xl p-4 text-center">
+                    <div className="text-[11px] nutri-muted">Proteína promedio/día</div>
+                    <div className="nutri-serif text-2xl nutri-ink">{n1(r.promedios.proteinasG)}g</div>
+                    <div className="text-[11px] nutri-muted">{pctTxt(r.pctMeta.proteinasG)} · {n1(r.protPorKg)} g/kg</div>
+                    <BarraNutriente valor={r.promedios.proteinasG} meta={requerimiento.proteinasG} />
+                  </div>
+                </div>
+                <p className="text-[11px] nutri-muted mb-4">Registro en {r.n} de {r.total} días · calorías en ±10% de la meta: {r.cumplimiento.diasKcalOk} días · proteína ≥90%: {r.cumplimiento.diasProteinaOk} días · sodio sobre el límite: {r.cumplimiento.diasSodioExcedido} días.</p>
+
+                <div className="nutri-panel rounded-2xl p-4 mb-5">
+                  <span className="text-sm font-medium nutri-ink block mb-2">Hallazgos para la decisión clínica</span>
+                  {r.alertas.length === 0 ? <p className="text-xs nutri-muted">No se detectaron hallazgos relevantes con los criterios automáticos.</p> : (
+                    <ul className="space-y-2">
+                      {r.alertas.map((a, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs nutri-ink"><EtiquetaSeveridad sev={a.sev} /><span>{a.txt}</span></li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="nutri-panel rounded-2xl p-4 mb-5">
+                  <span className="text-sm font-medium nutri-ink block mb-1">Calorías por día</span>
+                  <GraficoBarrasDias titulo="Calorías por día" datos={serieDia("kcal")} meta={requerimiento.get} unidad="kcal" color="var(--accent-energy)" />
+                </div>
+                <div className="nutri-panel rounded-2xl p-4 mb-5">
+                  <span className="text-sm font-medium nutri-ink block mb-1">Proteína por día</span>
+                  <GraficoBarrasDias titulo="Proteína por día" datos={serieDia("proteinasG")} meta={requerimiento.proteinasG} unidad="g" color="var(--accent-protein)" />
+                </div>
+
+                <div className="nutri-panel rounded-2xl p-4 mb-5">
+                  <span className="text-sm font-medium nutri-ink block mb-2">Evolución del peso</span>
+                  {r.peso.serie.length >= 2 ? (
+                    <>
+                      <GraficoPeso serie={r.peso.serie} />
+                      {r.peso.delta !== null && <p className="text-xs nutri-muted mt-1">Variación en el período: <span className="nutri-ink">{r.peso.delta >= 0 ? "+" : ""}{n1(r.peso.delta)} kg</span>{r.peso.deltaPct !== null ? ` (${r.peso.deltaPct >= 0 ? "+" : ""}${n1(r.peso.deltaPct)}%)` : ""}</p>}
+                    </>
+                  ) : <p className="text-xs nutri-muted">{r.peso.serie.length === 1 ? "Solo hay un registro de peso en el período; se necesitan al menos dos para ver tendencia." : "No hay registros de peso en el período. Registra el peso cada semana en el Panel."}</p>}
+                </div>
+
+                {r.distribucion && (
+                  <div className="nutri-panel rounded-2xl p-4 mb-5">
+                    <span className="text-sm font-medium nutri-ink block mb-2">Distribución de la energía</span>
+                    <BarraMacros etiqueta="Consumido" d={r.distribucion} />
+                    <BarraMacros etiqueta="Objetivo" d={r.objetivoDist} />
+                    <div className="flex gap-3 text-[11px] nutri-muted mt-1">
+                      <span><span style={{ color: "var(--accent-protein)" }}>■</span> Proteínas</span>
+                      <span><span style={{ color: "var(--accent-carb)" }}>■</span> Carbohidratos</span>
+                      <span><span style={{ color: "var(--accent-fat)" }}>■</span> Grasas</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="nutri-panel rounded-2xl p-4 mb-5">
+                  <span className="text-sm font-medium nutri-ink block mb-2">Cumplimiento por comida</span>
+                  {r.porMomento.map((m) => (
+                    <div key={m.key} className="mb-2">
+                      <div className="flex items-center justify-between text-xs mb-1"><span className="nutri-ink">{m.label}</span><span className="nutri-muted">{n0(m.avgKcal)} de {n0(m.objetivoKcal)} kcal · {pctTxt(m.pctObjetivo)}</span></div>
+                      <BarraNutriente valor={m.avgKcal} meta={m.objetivoKcal} />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="nutri-panel rounded-2xl p-4">
+                  <span className="text-sm font-medium nutri-ink block mb-2">Alimentos que más aportan</span>
+                  <div className="text-[11px] nutri-muted mb-1">Calorías</div>
+                  {r.topKcal.map((k) => <div key={k.nombre} className="flex justify-between text-xs py-0.5"><span className="nutri-ink">{k.nombre}</span><span className="nutri-muted">{n0(k.kcal)} kcal · {pctTxt(k.pctKcal)}</span></div>)}
+                  <div className="text-[11px] nutri-muted mt-2 mb-1">Proteína</div>
+                  {r.topProteina.map((k) => <div key={k.nombre} className="flex justify-between text-xs py-0.5"><span className="nutri-ink">{k.nombre}</span><span className="nutri-muted">{n0(k.proteina)} g · {pctTxt(k.pctProteina)}</span></div>)}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Menú de reportes ---------- */
+function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, medicamentos, onCerrar }) {
+  const [vista, setVista] = useState(null);
+  const volver = () => setVista(null);
+  if (vista === "totales") return <ReporteTotales requerimiento={requerimiento} pacienteId={pacienteId} onVolver={volver} />;
+  if (vista === "detalle") return <ReporteDetalle requerimiento={requerimiento} pacienteId={pacienteId} onVolver={volver} />;
+  if (vista === "clinico") return <ReporteClinico requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} medicamentos={medicamentos} onVolver={volver} />;
+  const opciones = [
+    { key: "totales", titulo: "Totales por día", desc: "Calorías y proteína de cada día frente a tu meta, con gráficas. Elige los últimos 7, 14 o 30 días.", icono: IconActivity },
+    { key: "detalle", titulo: "Detalle por alimento", desc: "Qué comiste, cuánto y cuánto aportó cada alimento (kcal y proteína, con porcentajes). PDF con una hoja por día.", icono: IconUtensils },
+    { key: "clinico", titulo: "Resumen clínico para el médico", desc: "Cumplimiento de metas, tendencias, evolución del peso y hallazgos para apoyar la decisión en la consulta.", icono: IconPill },
+  ];
+  return (
+    <div className="min-h-screen max-w-md mx-auto relative">
+      <EncabezadoReporte titulo="Reportes" onVolver={onCerrar} etiqueta="Cerrar" />
+      <div className="px-5 pt-6 pb-24">
+        <p className="text-sm nutri-muted mb-4">Elige qué reporte quieres ver o exportar a PDF.</p>
+        <div className="space-y-3">
+          {opciones.map(({ key, titulo, desc, icono: Ico }) => (
+            <button key={key} onClick={() => setVista(key)} className="w-full text-left nutri-panel rounded-2xl p-4 flex items-start gap-3">
+              <span className="nutri-brand-text mt-0.5"><Ico size={22} /></span>
+              <span>
+                <span className="block text-sm font-medium nutri-ink mb-0.5">{titulo}</span>
+                <span className="block text-xs nutri-muted leading-relaxed">{desc}</span>
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -3320,14 +3996,14 @@ function NutriApp({ pacienteId, salir }) {
   ];
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
-  if (mostrarReporte) return <PantallaReporte requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarReporte(false)} />;
+  if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
       <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
         <span className="nutri-serif text-white text-lg">NutriClínica</span>
         <div className="flex items-center gap-3">
-          <button onClick={() => setMostrarReporte(true)} className="text-white flex items-center gap-1 text-xs"><IconReporte size={18} /> Reporte</button>
+          <button onClick={() => setMostrarReporte(true)} className="text-white flex items-center gap-1 text-xs"><IconReporte size={18} /> Reportes</button>
           <button onClick={() => setMostrarHistorial(true)} className="text-white flex items-center gap-1 text-xs"><IconHistorial size={18} /> Historial</button>
         </div>
       </header>
