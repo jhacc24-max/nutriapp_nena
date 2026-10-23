@@ -181,3 +181,8 @@ Pega aquí la tabla que exporta el selector ("Lista para 09-ICONOS"):
   - **Vitaminas:** osito de goma de un color por vitamina con el nombre en el pecho (A, B1, B2, B3, B5, B6, B12, C, D, E, K; folato = B9).
   - **Minerales:** cubo con el símbolo químico y el número atómico (Ca, Fe, Mg, P, K, Zn, Se, Cu, Mn y Na para sodio).
   - Uso en React: `<IconoAlimento alimento={f} size={40} />` (o `clave="vit_c"`). Aparece en el buscador (30 px), el alimento seleccionado (44 px, con pop), el registro del día (40 px), el menú (34 px) y el detalle por alimento (26 px). Animación al tocar: `icon-pop`; bebidas, lácteos y envases: `icon-jelly`.
+- **Ícono de la app (2026-10-23, 🎨 en revisión):** el usuario descartó el ícono actual (recuadro blanco con pulso). Tres propuestas en `iconos/app/propuestas-icono.html` (SVG en `propuestas-icono.js`), cada una con vista en inicio, tamaños 96–24 px, máscara redonda de Android, pantalla de carga y animación de apertura:
+  1. **Mano que cuida** (idea del usuario): la N forma una mano (pulgar, palma en la diagonal, tres dedos) que sostiene un corazón con hoja.
+  2. **Hoja latido:** dos hojas forman un corazón cruzado por una línea de latido.
+  3. **N de cubiertos:** tenedor + hoja + cuchara forman la N, sobre fondo claro.
+  - Al elegir: exportar `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (con zona segura), `apple-touch-icon.png` y `favicon-32.png`, y cambiar `name` del manifest a "NutriApp" (hoy dice "NutriClínica" y es lo que se lee en la pantalla de carga de Android).
