@@ -466,7 +466,7 @@ const enter = reduce ? { opacity: 1 } : { opacity: 1, y: 0 };
 
 | Ajuste | Valor en esta app | Motivo |
 |---|---|---|
-| nivel_de_movimiento | {{expresivo}} | |
-| Animación "firma" de la app | {{Ej.: StockZap → `scan-line` + `count-up` del stock}} | |
-| Animaciones desactivadas | {{}} | |
-| Animaciones extra | {{}} | |
+| nivel_de_movimiento | expresivo | Pedido del usuario: app con mucho movimiento |
+| Animación "firma" de la app | Latido (`icon-beat`) en los íconos de la barra + `label-slide` | Identidad de salud / nutrición |
+| Animaciones desactivadas | Ninguna; todas se detienen con "reducir movimiento" | |
+| Animaciones extra | Entrada escalonada con `nutriSube` y transición de pantalla según la dirección de la pestaña. Pendiente: revisar `press-scale`, `tap-dot`, `skeleton-shimmer` y `count-up` contra el checklist §9 | |

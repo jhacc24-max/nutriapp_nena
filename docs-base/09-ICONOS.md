@@ -171,4 +171,7 @@ Pega aquí la tabla que exporta el selector ("Lista para 09-ICONOS"):
 | {{Inicio}} | `home` | `{{house}}` | Navegación |
 
 ## 8. Cambios respecto a la base
-{{}}
+
+- Barra de navegación: Heroicons v2 **sólidos** con degradado multicolor y animación de latido, por pedido expreso del usuario (la base pide Lineal en la barra, con relleno solo en el activo). Los íconos inactivos se ven atenuados.
+- Heroicons no trae íconos de comida, pulso ni agua; para contenido nutricional la base recomienda Phosphor. Pendiente de decidir si se migra.
+- Set actual de la barra: Perfil (usuario), Registro (portapapeles), Panel (gráfico circular), Menú (calendario), Opciones (engranaje).

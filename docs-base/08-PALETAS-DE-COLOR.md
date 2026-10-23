@@ -1,8 +1,8 @@
 ---
 documento: Paletas de color — plantilla por color, modo claro y oscuro
 version_base: 1.0
-app: "{{NOMBRE_APP}}"
-paleta_elegida: "{{marino | azul | indigo | violeta | rosa | rojo | naranja | ambar | verde | esmeralda | turquesa | cian | cafe | pizarra}}"
+app: "NutriClínica / NutriApp"
+paleta_elegida: "turquesa"
 ultima_actualizacion: "{{AAAA-MM-DD}}"
 ---
 
@@ -463,7 +463,7 @@ Cada categoría tiene 3 valores:
 
 | Ajuste | Valor |
 |---|---|
-| Paleta elegida | {{}} |
+| Paleta elegida | turquesa (por defecto; el usuario puede cambiarla entre las 14 en Opciones → Apariencia → Paleta de color) |
 | ¿Modo oscuro habilitado? | sí (base) / no |
 | Color secundario (opcional, solo para gráficos o etiquetas) | {{otra paleta, tono 500}} |
-| Excepciones | {{}} |
+| Excepciones | La app usa `body[data-paleta]` y `body[data-tema="oscuro"]` (guardados en localStorage) en lugar de `data-palette` / `data-theme`; los roles se asignan a las variables que la app ya usaba (`--panel-bg`, `--ink`, `--brand`…). Estructura aplicada: encabezado y título en degradado `--hero`→`--hero-2`, hoja redondeada sobre el encabezado, tarjeta héroe oscura en el Panel y barra flotante. |
