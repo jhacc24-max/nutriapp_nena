@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="theme-color" content="#0F766E" />
+<meta name="theme-color" content="#004A46" />
 <title>NutriClínica</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,30 +16,96 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
-  /* ---------- Paleta "Teal clínico" (versión exacta para modo claro y oscuro) ----------
-     Marca: #0F766E (teal profundo). Texto blanco sobre la marca: 5.5:1 (claro) y 7.9:1 (oscuro).
-     --brand-soft es el fondo de la pastilla activa del menú; --brand-text es el color de texto/
-     icono de marca sobre superficies (cumple ≥4.5:1 en ambos temas). */
-  :root {
-    --bg: #F0F6F4; --ink: #12201D; --muted: #587068;
-    --panel-bg: #FFFFFF; --panel-border: #D2E2DD; --input-bg: #FFFFFF;
-    --brand: #0F766E; --brand-text: #0B625B; --brand-soft: #D5EFEA; --brand-glow: rgba(15,118,110,.28);
+  /* ---------- Paletas (estructura del documento "paletas") ----------
+     Cada paleta define 11 tonos (--tone-50 … --tone-950) y los mismos roles en modo claro y oscuro:
+     --bg · --surface · --tint · --selected · --hero / --hero-2 (degradado oscuro) · --on-hero · --on-hero-soft ·
+     --accent · --on-accent · --text · --text-2 · --border · --nav · --nav-active · --on-nav-active · --img-1a…3b (pares de degradado).
+     Se elige con body[data-paleta]; el modo con body[data-tema="oscuro"]. Por defecto: Turquesa. */
+  /* Turquesa */
+  body[data-paleta="turquesa"] { --tone-50:#EBFBF9; --tone-100:#D6F4F1; --tone-200:#B3E7E1; --tone-300:#82D2CA; --tone-400:#43B6AD; --tone-500:#009991; --tone-600:#007D76; --tone-700:#00635D; --tone-800:#004A46; --tone-900:#003330; --tone-950:#001F1D; --bg:#EDF9F7; --surface:#FFFFFF; --tint:#D6F4F1; --selected:#B3E7E1; --hero:#003330; --hero-2:#004A46; --on-hero:#FFFFFF; --on-hero-soft:#82D2CA; --accent:#007D76; --on-accent:#FFFFFF; --text:#0C1917; --text-2:#546866; --border:#D6E1DF; --nav:#FFFFFF; --nav-active:#003330; --on-nav-active:#FFFFFF; --img-1a:#D6F4F1; --img-1b:#43B6AD; --img-2a:#B3E7E1; --img-2b:#007D76; --img-3a:#82D2CA; --img-3b:#004A46 }
+  body[data-paleta="turquesa"][data-tema="oscuro"] { --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76; --on-hero:#FFFFFF; --on-hero-soft:#B3E7E1; --accent:#43B6AD; --on-accent:#111318; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --nav:#102624; --nav-active:#009991; --on-nav-active:#111318; --img-1a:#00635D; --img-1b:#43B6AD; --img-2a:#004A46; --img-2b:#009991; --img-3a:#003330; --img-3b:#007D76; color-scheme: dark }
+  /* Esmeralda */
+  body[data-paleta="esmeralda"] { --tone-50:#EBFCF3; --tone-100:#D6F6E5; --tone-200:#B3E9CE; --tone-300:#82D5AF; --tone-400:#42BA8A; --tone-500:#009D6D; --tone-600:#008058; --tone-700:#006645; --tone-800:#004C33; --tone-900:#003522; --tone-950:#002013; --bg:#EFF8F3; --surface:#FFFFFF; --tint:#D6F6E5; --selected:#B3E9CE; --hero:#003522; --hero-2:#004C33; --on-hero:#FFFFFF; --on-hero-soft:#82D5AF; --accent:#008058; --on-accent:#FFFFFF; --text:#0E1914; --text-2:#57685F; --border:#D7E1DC; --nav:#FFFFFF; --nav-active:#003522; --on-nav-active:#FFFFFF; --img-1a:#D6F6E5; --img-1b:#42BA8A; --img-2a:#B3E9CE; --img-2b:#008058; --img-3a:#82D5AF; --img-3b:#004C33 }
+  body[data-paleta="esmeralda"][data-tema="oscuro"] { --bg:#05120B; --surface:#0C1E16; --tint:#03301F; --selected:#004C33; --hero:#006645; --hero-2:#008058; --on-hero:#FFFFFF; --on-hero-soft:#B3E9CE; --accent:#42BA8A; --on-accent:#111318; --text:#EBF4EF; --text-2:#98AAA0; --border:#20322A; --nav:#14261E; --nav-active:#009D6D; --on-nav-active:#111318; --img-1a:#006645; --img-1b:#42BA8A; --img-2a:#004C33; --img-2b:#009D6D; --img-3a:#003522; --img-3b:#008058; color-scheme: dark }
+  /* Verde */
+  body[data-paleta="verde"] { --tone-50:#EDFCED; --tone-100:#DAF6DA; --tone-200:#BAEABA; --tone-300:#8FD591; --tone-400:#5BBA61; --tone-500:#219F35; --tone-600:#008321; --tone-700:#006818; --tone-800:#004F10; --tone-900:#003608; --tone-950:#002103; --bg:#F1F8F1; --surface:#FFFFFF; --tint:#DAF6DA; --selected:#BAEABA; --hero:#003608; --hero-2:#004F10; --on-hero:#FFFFFF; --on-hero-soft:#8FD591; --accent:#008321; --on-accent:#FFFFFF; --text:#111811; --text-2:#5B675B; --border:#D9E0D9; --nav:#FFFFFF; --nav-active:#003608; --on-nav-active:#FFFFFF; --img-1a:#DAF6DA; --img-1b:#5BBA61; --img-2a:#BAEABA; --img-2b:#008321; --img-3a:#8FD591; --img-3b:#004F10 }
+  body[data-paleta="verde"][data-tema="oscuro"] { --bg:#081108; --surface:#111D11; --tint:#0D3010; --selected:#004F10; --hero:#006818; --hero-2:#008321; --on-hero:#FFFFFF; --on-hero-soft:#BAEABA; --accent:#5BBA61; --on-accent:#111318; --text:#EDF4ED; --text-2:#9CA99C; --border:#253225; --nav:#192519; --nav-active:#219F35; --on-nav-active:#111318; --img-1a:#006818; --img-1b:#5BBA61; --img-2a:#004F10; --img-2b:#219F35; --img-3a:#003608; --img-3b:#008321; color-scheme: dark }
+  /* Cian */
+  body[data-paleta="cian"] { --tone-50:#EBFAFF; --tone-100:#D3F3FF; --tone-200:#AAE6FB; --tone-300:#72D0EF; --tone-400:#11B3DB; --tone-500:#0093B5; --tone-600:#007894; --tone-700:#005F76; --tone-800:#00475A; --tone-900:#00313E; --tone-950:#001D27; --bg:#EEF8FC; --surface:#FFFFFF; --tint:#D3F3FF; --selected:#AAE6FB; --hero:#00313E; --hero-2:#00475A; --on-hero:#FFFFFF; --on-hero-soft:#72D0EF; --accent:#007894; --on-accent:#FFFFFF; --text:#0D181C; --text-2:#55676D; --border:#D6E0E4; --nav:#FFFFFF; --nav-active:#00313E; --on-nav-active:#FFFFFF; --img-1a:#D3F3FF; --img-1b:#11B3DB; --img-2a:#AAE6FB; --img-2b:#007894; --img-3a:#72D0EF; --img-3b:#00475A }
+  body[data-paleta="cian"][data-tema="oscuro"] { --bg:#031116; --surface:#081C23; --tint:#002D39; --selected:#00475A; --hero:#005F76; --hero-2:#007894; --on-hero:#FFFFFF; --on-hero-soft:#AAE6FB; --accent:#11B3DB; --on-accent:#111318; --text:#EAF4F8; --text-2:#95A8AF; --border:#1D3138; --nav:#11252C; --nav-active:#0093B5; --on-nav-active:#111318; --img-1a:#005F76; --img-1b:#11B3DB; --img-2a:#00475A; --img-2b:#0093B5; --img-3a:#00313E; --img-3b:#007894; color-scheme: dark }
+  /* Azul */
+  body[data-paleta="azul"] { --tone-50:#F2F7FF; --tone-100:#E1EEFF; --tone-200:#C3DDFF; --tone-300:#96C4FF; --tone-400:#5AA3FF; --tone-500:#0782F8; --tone-600:#0069CD; --tone-700:#0053A5; --tone-800:#003E7E; --tone-900:#002A59; --tone-950:#001939; --bg:#F0F6FE; --surface:#FFFFFF; --tint:#E1EEFF; --selected:#C3DDFF; --hero:#002A59; --hero-2:#003E7E; --on-hero:#FFFFFF; --on-hero-soft:#96C4FF; --accent:#0069CD; --on-accent:#FFFFFF; --text:#11161E; --text-2:#5A6471; --border:#D9DFE6; --nav:#FFFFFF; --nav-active:#002A59; --on-nav-active:#FFFFFF; --img-1a:#E1EEFF; --img-1b:#5AA3FF; --img-2a:#C3DDFF; --img-2b:#0069CD; --img-3a:#96C4FF; --img-3b:#003E7E }
+  body[data-paleta="azul"][data-tema="oscuro"] { --bg:#070F19; --surface:#101A27; --tint:#09274C; --selected:#003E7E; --hero:#0053A5; --hero-2:#0069CD; --on-hero:#FFFFFF; --on-hero-soft:#C3DDFF; --accent:#5AA3FF; --on-accent:#111318; --text:#EDF2FA; --text-2:#9BA6B4; --border:#242F3C; --nav:#18222F; --nav-active:#0782F8; --on-nav-active:#111318; --img-1a:#0053A5; --img-1b:#5AA3FF; --img-2a:#003E7E; --img-2b:#0782F8; --img-3a:#002A59; --img-3b:#0069CD; color-scheme: dark }
+  /* Azul marino */
+  body[data-paleta="marino"] { --tone-50:#F2F7FF; --tone-100:#E3EDFF; --tone-200:#C8DCFF; --tone-300:#A3C2F9; --tone-400:#7BA1E7; --tone-500:#5883D2; --tone-600:#4269B4; --tone-700:#305394; --tone-800:#213D73; --tone-900:#132954; --tone-950:#071738; --bg:#F1F6FE; --surface:#FFFFFF; --tint:#E3EDFF; --selected:#C8DCFF; --hero:#132954; --hero-2:#213D73; --on-hero:#FFFFFF; --on-hero-soft:#A3C2F9; --accent:#4269B4; --on-accent:#FFFFFF; --text:#12161E; --text-2:#5C6471; --border:#DADEE6; --nav:#FFFFFF; --nav-active:#132954; --on-nav-active:#FFFFFF; --img-1a:#E3EDFF; --img-1b:#7BA1E7; --img-2a:#C8DCFF; --img-2b:#4269B4; --img-3a:#A3C2F9; --img-3b:#213D73 }
+  body[data-paleta="marino"][data-tema="oscuro"] { --bg:#090E19; --surface:#121927; --tint:#1A2740; --selected:#213D73; --hero:#305394; --hero-2:#4269B4; --on-hero:#FFFFFF; --on-hero-soft:#C8DCFF; --accent:#7BA1E7; --on-accent:#111318; --text:#EDF2FA; --text-2:#9CA5B4; --border:#262E3D; --nav:#1A2230; --nav-active:#5883D2; --on-nav-active:#111318; --img-1a:#305394; --img-1b:#7BA1E7; --img-2a:#213D73; --img-2b:#5883D2; --img-3a:#132954; --img-3b:#4269B4; color-scheme: dark }
+  /* Índigo */
+  body[data-paleta="indigo"] { --tone-50:#F4F6FF; --tone-100:#E7ECFF; --tone-200:#D0D9FF; --tone-300:#AFBCFF; --tone-400:#8797FF; --tone-500:#6570FF; --tone-600:#5056DE; --tone-700:#3E40B9; --tone-800:#2D2D91; --tone-900:#1D1B6C; --tone-950:#100B4A; --bg:#F3F5FE; --surface:#FFFFFF; --tint:#E7ECFF; --selected:#D0D9FF; --hero:#1D1B6C; --hero-2:#2D2D91; --on-hero:#FFFFFF; --on-hero-soft:#AFBCFF; --accent:#5056DE; --on-accent:#FFFFFF; --text:#14151E; --text-2:#5F6271; --border:#DBDEE6; --nav:#FFFFFF; --nav-active:#1D1B6C; --on-nav-active:#FFFFFF; --img-1a:#E7ECFF; --img-1b:#8797FF; --img-2a:#D0D9FF; --img-2b:#5056DE; --img-3a:#AFBCFF; --img-3b:#2D2D91 }
+  body[data-paleta="indigo"][data-tema="oscuro"] { --bg:#0B0D19; --surface:#151827; --tint:#1D224E; --selected:#2D2D91; --hero:#3E40B9; --hero-2:#5056DE; --on-hero:#FFFFFF; --on-hero-soft:#D0D9FF; --accent:#8797FF; --on-accent:#111318; --text:#EFF1FA; --text-2:#A0A4B4; --border:#292D3C; --nav:#1D2130; --nav-active:#6570FF; --on-nav-active:#111318; --img-1a:#3E40B9; --img-1b:#8797FF; --img-2a:#2D2D91; --img-2b:#6570FF; --img-3a:#1D1B6C; --img-3b:#5056DE; color-scheme: dark }
+  /* Violeta */
+  body[data-paleta="violeta"] { --tone-50:#F8F5FF; --tone-100:#EFE9FF; --tone-200:#DFD3FF; --tone-300:#C9B2FF; --tone-400:#B085FF; --tone-500:#975EEF; --tone-600:#7D44CF; --tone-700:#6530AC; --tone-800:#4D2087; --tone-900:#360F63; --tone-950:#220344; --bg:#F6F4FD; --surface:#FFFFFF; --tint:#EFE9FF; --selected:#DFD3FF; --hero:#360F63; --hero-2:#4D2087; --on-hero:#FFFFFF; --on-hero-soft:#C9B2FF; --accent:#7D44CF; --on-accent:#FFFFFF; --text:#17141D; --text-2:#65616F; --border:#DFDCE5; --nav:#FFFFFF; --nav-active:#360F63; --on-nav-active:#FFFFFF; --img-1a:#EFE9FF; --img-1b:#B085FF; --img-2a:#DFD3FF; --img-2b:#7D44CF; --img-3a:#C9B2FF; --img-3b:#4D2087 }
+  body[data-paleta="violeta"][data-tema="oscuro"] { --bg:#100C17; --surface:#1B1725; --tint:#2D1D49; --selected:#4D2087; --hero:#6530AC; --hero-2:#7D44CF; --on-hero:#FFFFFF; --on-hero-soft:#DFD3FF; --accent:#B085FF; --on-accent:#111318; --text:#F2F0F9; --text-2:#A6A2B2; --border:#2F2B3B; --nav:#231F2E; --nav-active:#975EEF; --on-nav-active:#111318; --img-1a:#6530AC; --img-1b:#B085FF; --img-2a:#4D2087; --img-2b:#975EEF; --img-3a:#360F63; --img-3b:#7D44CF; color-scheme: dark }
+  /* Rosa */
+  body[data-paleta="rosa"] { --tone-50:#FFF3F8; --tone-100:#FFE4F0; --tone-200:#FFC9E1; --tone-300:#FF9ECD; --tone-400:#EE6EB0; --tone-500:#D64295; --tone-600:#B6267B; --tone-700:#951263; --tone-800:#74034B; --tone-900:#520034; --tone-950:#34001F; --bg:#FDF3F7; --surface:#FFFFFF; --tint:#FFE4F0; --selected:#FFC9E1; --hero:#520034; --hero-2:#74034B; --on-hero:#FFFFFF; --on-hero-soft:#FF9ECD; --accent:#B6267B; --on-accent:#FFFFFF; --text:#1C1317; --text-2:#6E5E65; --border:#E5DBDF; --nav:#FFFFFF; --nav-active:#520034; --on-nav-active:#FFFFFF; --img-1a:#FFE4F0; --img-1b:#EE6EB0; --img-2a:#FFC9E1; --img-2b:#B6267B; --img-3a:#FF9ECD; --img-3b:#74034B }
+  body[data-paleta="rosa"][data-tema="oscuro"] { --bg:#160A10; --surface:#24141B; --tint:#42152D; --selected:#74034B; --hero:#951263; --hero-2:#B6267B; --on-hero:#FFFFFF; --on-hero-soft:#FFC9E1; --accent:#EE6EB0; --on-accent:#111318; --text:#F9EFF3; --text-2:#B19FA7; --border:#392830; --nav:#2C1C24; --nav-active:#D64295; --on-nav-active:#111318; --img-1a:#951263; --img-1b:#EE6EB0; --img-2a:#74034B; --img-2b:#D64295; --img-3a:#520034; --img-3b:#B6267B; color-scheme: dark }
+  /* Rojo */
+  body[data-paleta="rojo"] { --tone-50:#FFF4F3; --tone-100:#FFE6E4; --tone-200:#FFCDC8; --tone-300:#FFA59E; --tone-400:#FE6B66; --tone-500:#E83A3E; --tone-600:#C71826; --tone-700:#A30018; --tone-800:#7C000F; --tone-900:#580008; --tone-950:#380003; --bg:#FEF3F2; --surface:#FFFFFF; --tint:#FFE6E4; --selected:#FFCDC8; --hero:#580008; --hero-2:#7C000F; --on-hero:#FFFFFF; --on-hero-soft:#FFA59E; --accent:#C71826; --on-accent:#FFFFFF; --text:#1E1312; --text-2:#705E5C; --border:#E6DBDA; --nav:#FFFFFF; --nav-active:#580008; --on-nav-active:#FFFFFF; --img-1a:#FFE6E4; --img-1b:#FE6B66; --img-2a:#FFCDC8; --img-2b:#C71826; --img-3a:#FFA59E; --img-3b:#7C000F }
+  body[data-paleta="rojo"][data-tema="oscuro"] { --bg:#180A09; --surface:#251413; --tint:#471312; --selected:#7C000F; --hero:#A30018; --hero-2:#C71826; --on-hero:#FFFFFF; --on-hero-soft:#FFCDC8; --accent:#FE6B66; --on-accent:#111318; --text:#FAEFEE; --text-2:#B39F9D; --border:#3B2826; --nav:#2E1C1B; --nav-active:#E83A3E; --on-nav-active:#111318; --img-1a:#A30018; --img-1b:#FE6B66; --img-2a:#7C000F; --img-2b:#E83A3E; --img-3a:#580008; --img-3b:#C71826; color-scheme: dark }
+  /* Naranja */
+  body[data-paleta="naranja"] { --tone-50:#FFF4EF; --tone-100:#FFE7DC; --tone-200:#FFCFB7; --tone-300:#FFA97D; --tone-400:#F17D38; --tone-500:#D15D00; --tone-600:#AC4B00; --tone-700:#893B00; --tone-800:#682B00; --tone-900:#491C00; --tone-950:#2E0F00; --bg:#FDF4EF; --surface:#FFFFFF; --tint:#FFE7DC; --selected:#FFCFB7; --hero:#491C00; --hero-2:#682B00; --on-hero:#FFFFFF; --on-hero-soft:#FFA97D; --accent:#AC4B00; --on-accent:#FFFFFF; --text:#1D140F; --text-2:#6F5F58; --border:#E5DCD7; --nav:#FFFFFF; --nav-active:#491C00; --on-nav-active:#FFFFFF; --img-1a:#FFE7DC; --img-1b:#F17D38; --img-2a:#FFCFB7; --img-2b:#AC4B00; --img-3a:#FFA97D; --img-3b:#682B00 }
+  body[data-paleta="naranja"][data-tema="oscuro"] { --bg:#170B06; --surface:#24150E; --tint:#431A02; --selected:#682B00; --hero:#893B00; --hero-2:#AC4B00; --on-hero:#FFFFFF; --on-hero-soft:#FFCFB7; --accent:#F17D38; --on-accent:#111318; --text:#F9F0EB; --text-2:#B2A098; --border:#3A2A21; --nav:#2D1D15; --nav-active:#D15D00; --on-nav-active:#111318; --img-1a:#893B00; --img-1b:#F17D38; --img-2a:#682B00; --img-2b:#D15D00; --img-3a:#491C00; --img-3b:#AC4B00; color-scheme: dark }
+  /* Ámbar */
+  body[data-paleta="ambar"] { --tone-50:#FFF5E7; --tone-100:#FEEACC; --tone-200:#F7D5A2; --tone-300:#E9B869; --tone-400:#D3940A; --tone-500:#AE7900; --tone-600:#8E6200; --tone-700:#714D00; --tone-800:#563A00; --tone-900:#3C2700; --tone-950:#251600; --bg:#FAF5ED; --surface:#FFFFFF; --tint:#FEEACC; --selected:#F7D5A2; --hero:#3C2700; --hero-2:#563A00; --on-hero:#FFFFFF; --on-hero-soft:#E9B869; --accent:#8E6200; --on-accent:#FFFFFF; --text:#1B150D; --text-2:#6B6254; --border:#E2DDD5; --nav:#FFFFFF; --nav-active:#3C2700; --on-nav-active:#FFFFFF; --img-1a:#FEEACC; --img-1b:#D3940A; --img-2a:#F7D5A2; --img-2b:#8E6200; --img-3a:#E9B869; --img-3b:#563A00 }
+  body[data-paleta="ambar"][data-tema="oscuro"] { --bg:#140D04; --surface:#211809; --tint:#372300; --selected:#563A00; --hero:#714D00; --hero-2:#8E6200; --on-hero:#FFFFFF; --on-hero-soft:#F7D5A2; --accent:#D3940A; --on-accent:#111318; --text:#F6F1E9; --text-2:#ADA394; --border:#362C1D; --nav:#292011; --nav-active:#AE7900; --on-nav-active:#111318; --img-1a:#714D00; --img-1b:#D3940A; --img-2a:#563A00; --img-2b:#AE7900; --img-3a:#3C2700; --img-3b:#8E6200; color-scheme: dark }
+  /* Café */
+  body[data-paleta="cafe"] { --tone-50:#FCF5F1; --tone-100:#F7EAE2; --tone-200:#ECD6C8; --tone-300:#D9BAA5; --tone-400:#C0987E; --tone-500:#A67A5C; --tone-600:#8B6145; --tone-700:#704C33; --tone-800:#563823; --tone-900:#3C2515; --tone-950:#261508; --bg:#FBF4F1; --surface:#FFFFFF; --tint:#F7EAE2; --selected:#ECD6C8; --hero:#3C2515; --hero-2:#563823; --on-hero:#FFFFFF; --on-hero-soft:#D9BAA5; --accent:#8B6145; --on-accent:#FFFFFF; --text:#1B1511; --text-2:#6B615A; --border:#E3DDD9; --nav:#FFFFFF; --nav-active:#3C2515; --on-nav-active:#FFFFFF; --img-1a:#F7EAE2; --img-1b:#C0987E; --img-2a:#ECD6C8; --img-2b:#8B6145; --img-3a:#D9BAA5; --img-3b:#563823 }
+  body[data-paleta="cafe"][data-tema="oscuro"] { --bg:#140C08; --surface:#211710; --tint:#32241B; --selected:#563823; --hero:#704C33; --hero-2:#8B6145; --on-hero:#FFFFFF; --on-hero-soft:#ECD6C8; --accent:#C0987E; --on-accent:#111318; --text:#F7F0ED; --text-2:#ADA29B; --border:#362B24; --nav:#291F18; --nav-active:#A67A5C; --on-nav-active:#111318; --img-1a:#704C33; --img-1b:#C0987E; --img-2a:#563823; --img-2b:#A67A5C; --img-3a:#3C2515; --img-3b:#8B6145; color-scheme: dark }
+  /* Pizarra */
+  body[data-paleta="pizarra"] { --tone-50:#F5F7FA; --tone-100:#E9EDF3; --tone-200:#D4DBE5; --tone-300:#B7C2D0; --tone-400:#95A3B5; --tone-500:#77869A; --tone-600:#5F6D80; --tone-700:#4A5666; --tone-800:#36414E; --tone-900:#242C37; --tone-950:#141A22; --bg:#F4F6F9; --surface:#FFFFFF; --tint:#E9EDF3; --selected:#D4DBE5; --hero:#242C37; --hero-2:#36414E; --on-hero:#FFFFFF; --on-hero-soft:#B7C2D0; --accent:#5F6D80; --on-accent:#FFFFFF; --text:#141619; --text-2:#606468; --border:#DCDEE1; --nav:#FFFFFF; --nav-active:#242C37; --on-nav-active:#FFFFFF; --img-1a:#E9EDF3; --img-1b:#95A3B5; --img-2a:#D4DBE5; --img-2b:#5F6D80; --img-3a:#B7C2D0; --img-3b:#36414E }
+  body[data-paleta="pizarra"][data-tema="oscuro"] { --bg:#0C0F12; --surface:#161A1E; --tint:#23282E; --selected:#36414E; --hero:#4A5666; --hero-2:#5F6D80; --on-hero:#FFFFFF; --on-hero-soft:#D4DBE5; --accent:#95A3B5; --on-accent:#111318; --text:#F0F2F5; --text-2:#A1A5AA; --border:#2A2E33; --nav:#1E2226; --nav-active:#77869A; --on-nav-active:#111318; --img-1a:#4A5666; --img-1b:#95A3B5; --img-2a:#36414E; --img-2b:#77869A; --img-3a:#242C37; --img-3b:#5F6D80; color-scheme: dark }
+
+  /* Los roles de la paleta alimentan las variables que ya usa toda la app. */
+  body {
+    --panel-bg: var(--surface); --panel-border: var(--border); --input-bg: var(--surface);
+    --ink: var(--text); --muted: var(--text-2);
+    --brand: var(--tone-600); --brand-text: var(--tone-700); --brand-soft: var(--tint);
+    --brand-glow: color-mix(in srgb, var(--tone-500) 32%, transparent);
+    --track: var(--selected); --chip-border: var(--border); --chip-active-bg: var(--tone-600); --chip-active-text: #FFFFFF;
     --accent-energy: #D96C3F; --accent-protein: #C79A3D; --accent-carb: #6C8F63; --accent-fat: #4E7089;
     --warn: #B23B3B; --warn-bg: #F6E7E4;
-    --track: #DCE9E5; --chip-border: #BFD3CC; --chip-active-bg: #0F766E; --chip-active-text: #F4FBF9;
   }
   body[data-tema="oscuro"] {
-    --bg: #08171A; --ink: #E4F1EE; --muted: #8FAAA4;
-    --panel-bg: #0F2528; --panel-border: #1E3B3F; --input-bg: #153136;
-    --brand: #0E6B64; --brand-text: #5EDBC9; --brand-soft: #134A47; --brand-glow: rgba(94,219,201,.30);
+    --input-bg: color-mix(in srgb, var(--surface) 78%, white);
+    --brand-text: var(--accent);
     --accent-energy: #E08A57; --accent-protein: #D9B563; --accent-carb: #83B276; --accent-fat: #77A0C7;
     --warn: #E58080; --warn-bg: #3A2328;
-    --track: #17343A; --chip-border: #2A4A50; --chip-active-bg: #0F766E; --chip-active-text: #F4FBF9;
   }
   html { font-size: 18px; }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); transition: background 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); transition: background 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
   .nutri-serif { font-family: 'Fraunces', serif; }
-  .nutri-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); transition: background 0.3s, border-color 0.3s; }
+  .nutri-panel { background: linear-gradient(165deg, var(--panel-bg) 0%, color-mix(in srgb, var(--tint) 38%, var(--panel-bg)) 100%); border: 1px solid var(--panel-border); transition: border-color 0.3s; }
+  /* Cabecera y bandas de título: degradado oscuro (--hero → --hero-2) que se va aclarando; la hoja de contenido se monta encima con esquinas redondeadas. */
+  .nutri-header { background: linear-gradient(90deg, var(--hero), var(--hero-2)); color: var(--on-hero); transition: background .3s; }
+  .nutri-pagina { position: relative; }
+  .nutri-hero-titulo { --ink: var(--on-hero); --muted: var(--on-hero-soft); --brand-text: var(--on-hero); position: relative; overflow: hidden; padding: 22px 20px 56px;
+    background:
+      radial-gradient(110% 100% at 100% 0%, color-mix(in srgb, var(--tone-400) 46%, transparent) 0%, transparent 60%),
+      linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--tone-500) 55%, transparent) 100%),
+      linear-gradient(90deg, var(--hero), var(--hero-2)); transition: background .3s; }
+  .nutri-hero-titulo > p { margin-bottom: 0; }
+  .nutri-sheet { position: relative; z-index: 1; margin-top: -30px; border-radius: 30px 30px 0 0; min-height: 70vh;
+    background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--tint) 55%, var(--bg)) 100%);
+    box-shadow: 0 -14px 32px -22px rgba(0,0,0,.5); transition: background .3s; }
+  /* Tarjeta principal oscura (como la tarjeta "dark" del documento): redefine los colores de texto y pistas para que todo su contenido se adapte. */
+  .nutri-hero-card { position: relative; overflow: hidden; border-color: transparent;
+    --ink: var(--on-hero); --muted: var(--on-hero-soft); --brand-text: var(--on-hero);
+    --panel-border: color-mix(in srgb, var(--on-hero) 22%, transparent); --track: color-mix(in srgb, var(--on-hero) 22%, transparent);
+    --chip-border: color-mix(in srgb, var(--on-hero) 32%, transparent); --input-bg: color-mix(in srgb, var(--on-hero) 14%, transparent); --warn: #FFC2B8;
+    background:
+      radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--tone-300) 34%, transparent), transparent 62%),
+      linear-gradient(150deg, var(--hero) 0%, var(--hero-2) 68%, var(--tone-600) 100%); }
+  .nutri-swatch { width: 36px; height: 36px; border-radius: 50%; border: 0; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .28); transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s; }
+  .nutri-swatch[aria-pressed="true"] { transform: scale(1.14); box-shadow: inset 0 0 0 2px rgb(255 255 255 / .35), 0 0 0 3px var(--panel-bg), 0 0 0 5px var(--ink); }
   .nutri-ink { color: var(--ink); }
   .nutri-muted { color: var(--muted); }
   .nutri-brand { background: var(--brand); transition: background 0.3s; }
@@ -75,23 +141,26 @@
   @keyframes nutriSube { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   .nutri-pantalla-der { animation: nutriEntraDer .42s cubic-bezier(.22,1,.36,1) backwards; }
   .nutri-pantalla-izq { animation: nutriEntraIzq .42s cubic-bezier(.22,1,.36,1) backwards; }
-  .nutri-pantalla-der > * > *, .nutri-pantalla-izq > * > * { animation: nutriSube .5s cubic-bezier(.22,1,.36,1) backwards; }
-  .nutri-pantalla-der > * > *:nth-child(1), .nutri-pantalla-izq > * > *:nth-child(1) { animation-delay: .04s; }
-  .nutri-pantalla-der > * > *:nth-child(2), .nutri-pantalla-izq > * > *:nth-child(2) { animation-delay: .09s; }
-  .nutri-pantalla-der > * > *:nth-child(3), .nutri-pantalla-izq > * > *:nth-child(3) { animation-delay: .14s; }
-  .nutri-pantalla-der > * > *:nth-child(4), .nutri-pantalla-izq > * > *:nth-child(4) { animation-delay: .19s; }
-  .nutri-pantalla-der > * > *:nth-child(5), .nutri-pantalla-izq > * > *:nth-child(5) { animation-delay: .24s; }
-  .nutri-pantalla-der > * > *:nth-child(6), .nutri-pantalla-izq > * > *:nth-child(6) { animation-delay: .29s; }
-  .nutri-pantalla-der > * > *:nth-child(n+7), .nutri-pantalla-izq > * > *:nth-child(n+7) { animation-delay: .33s; }
+  .nutri-pantalla-der .nutri-sheet > *, .nutri-pantalla-izq .nutri-sheet > *, .nutri-pantalla-der .nutri-hero-titulo > *, .nutri-pantalla-izq .nutri-hero-titulo > * { animation: nutriSube .5s cubic-bezier(.22,1,.36,1) backwards; }
+  .nutri-hero-titulo > *:nth-child(1) { animation-delay: .02s !important; }
+  .nutri-hero-titulo > *:nth-child(2) { animation-delay: .07s !important; }
+  .nutri-sheet > *:nth-child(1) { animation-delay: .08s; }
+  .nutri-sheet > *:nth-child(2) { animation-delay: .13s; }
+  .nutri-sheet > *:nth-child(3) { animation-delay: .18s; }
+  .nutri-sheet > *:nth-child(4) { animation-delay: .23s; }
+  .nutri-sheet > *:nth-child(5) { animation-delay: .28s; }
+  .nutri-sheet > *:nth-child(6) { animation-delay: .33s; }
+  .nutri-sheet > *:nth-child(n+7) { animation-delay: .37s; }
 
   /* Barra inferior: cada ítem tiene su par de colores (--c1, --c2). La pastilla activa se expande con un
      degradado suave de esos colores y el nombre se desliza al costado del icono; el del menú anterior se recoge. */
-  .nutri-nav { background: color-mix(in srgb, var(--panel-bg) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 -10px 30px -18px var(--brand-glow); }
-  .nutri-nav-item { flex: 1 1 0; display: flex; align-items: center; justify-content: center; padding: 10px 2px 12px; color: var(--muted); transition: flex-grow .5s cubic-bezier(.22,1,.36,1), color .3s; min-width: 0; }
+  .nutri-nav { left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); margin: 0 auto; padding: 5px; z-index: 20; border-radius: 999px; background: var(--nav);
+    box-shadow: 0 14px 30px -12px rgba(8,16,30,.38), 0 0 0 1px var(--border); transition: background .3s, box-shadow .3s; }
+  .nutri-nav-item { flex: 1 1 0; display: flex; align-items: center; justify-content: center; padding: 0 2px; color: var(--muted); transition: flex-grow .5s cubic-bezier(.22,1,.36,1), color .3s; min-width: 0; }
   .nutri-nav-item.activo { flex-grow: 2.5; color: var(--ink); }
   .nutri-nav-pill { position: relative; display: flex; align-items: center; justify-content: center; height: 42px; min-width: 42px; padding: 0 9px; border-radius: 999px; transition: padding .5s cubic-bezier(.22,1,.36,1), box-shadow .4s; }
   .nutri-nav-pill::before { content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0; transition: opacity .4s;
-    background: linear-gradient(135deg, color-mix(in srgb, var(--c1) 26%, var(--panel-bg)), color-mix(in srgb, var(--c2) 16%, var(--panel-bg))); }
+    background: linear-gradient(135deg, color-mix(in srgb, var(--c1) 26%, var(--nav)), color-mix(in srgb, var(--c2) 16%, var(--nav))); }
   .nutri-nav-item.activo .nutri-nav-pill { padding: 0 14px 0 10px; box-shadow: 0 8px 18px -10px var(--c1); }
   .nutri-nav-item.activo .nutri-nav-pill::before { opacity: 1; }
   .nutri-nav-label { position: relative; display: inline-block; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap; font-size: 13px; font-weight: 600; letter-spacing: .01em; transform: translateX(-8px); transition: max-width .5s cubic-bezier(.22,1,.36,1), opacity .3s, margin .5s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1); }
@@ -118,7 +187,8 @@
   }
 </style>
 </head>
-<body>
+<body data-paleta="turquesa">
+<script>try{var b=document.body,pa=localStorage.getItem("nutriapp_paleta"),te=localStorage.getItem("nutriapp_tema");if(pa)b.setAttribute("data-paleta",pa);if(te)b.setAttribute("data-tema",te);}catch(e){}</script>
 <div id="root"></div>
 
 <script type="text/babel" data-presets="react">
@@ -147,6 +217,22 @@ function debounce(fn, ms) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 const { useState, useEffect, useMemo, useCallback, useRef } = React;
+const PALETAS = [
+  { id: "turquesa", nombre: "Turquesa", a: "#004A46", b: "#43B6AD" },
+  { id: "esmeralda", nombre: "Esmeralda", a: "#004C33", b: "#42BA8A" },
+  { id: "verde", nombre: "Verde", a: "#004F10", b: "#5BBA61" },
+  { id: "cian", nombre: "Cian", a: "#00475A", b: "#11B3DB" },
+  { id: "azul", nombre: "Azul", a: "#003E7E", b: "#5AA3FF" },
+  { id: "marino", nombre: "Azul marino", a: "#213D73", b: "#7BA1E7" },
+  { id: "indigo", nombre: "Índigo", a: "#2D2D91", b: "#8797FF" },
+  { id: "violeta", nombre: "Violeta", a: "#4D2087", b: "#B085FF" },
+  { id: "rosa", nombre: "Rosa", a: "#74034B", b: "#EE6EB0" },
+  { id: "rojo", nombre: "Rojo", a: "#7C000F", b: "#FE6B66" },
+  { id: "naranja", nombre: "Naranja", a: "#682B00", b: "#F17D38" },
+  { id: "ambar", nombre: "Ámbar", a: "#563A00", b: "#D3940A" },
+  { id: "cafe", nombre: "Café", a: "#563823", b: "#C0987E" },
+  { id: "pizarra", nombre: "Pizarra", a: "#36414E", b: "#95A3B5" },
+];
 
 /* ---------- Iconos SVG minimalistas (sin dependencias externas) ---------- */
 function Icon({ children, size = 18, className = "" }) {
@@ -1497,9 +1583,12 @@ function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom })
   const campo = (label, children) => <label className="block mb-4"><span className="text-sm nutri-muted block mb-1">{label}</span>{children}</label>;
   const inputCls = "w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink focus:outline-none focus:ring-2";
   return (
-    <div className="px-5 pt-6 pb-24">
-      <h1 className="nutri-serif text-2xl nutri-ink mb-1">Perfil nutricional</h1>
-      <p className="text-sm nutri-muted mb-6">Estos datos definen tus requerimientos energéticos y de macronutrientes.</p>
+    <div className="nutri-pagina">
+      <div className="nutri-hero-titulo">
+        <h1 className="nutri-serif text-2xl nutri-ink mb-1">Perfil nutricional</h1>
+        <p className="text-sm nutri-muted mb-6">Estos datos definen tus requerimientos energéticos y de macronutrientes.</p>
+      </div>
+      <div className="nutri-sheet px-5 pt-6 pb-24">
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="grid grid-cols-2 gap-3">
           {campo("Edad (años)", <input type="number" className={inputCls} value={perfil.edad} onChange={(e) => setPerfil((p) => ({ ...p, edad: Number(e.target.value) }))}  onFocus={(e) => e.target.select()} />)}
@@ -1525,6 +1614,7 @@ function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom })
         {mostrarForm && <FormularioCondicionNueva onCancelar={() => setMostrarForm(false)} onGuardar={(nueva) => { agregarCondicionCustom(nueva); setMostrarForm(false); toggleCondicion(nueva.id); }} />}
       </div>
       {perfil.edad >= EDAD_ADULTO_MAYOR && <CribadoGeriatrico perfil={perfil} setPerfil={setPerfil} />}
+      </div>
     </div>
   );
 }
@@ -1626,9 +1716,12 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const MOMENTOS = [{ key: "todos", label: "Todos" }, { key: "desayuno", label: "Desayuno" }, { key: "almuerzo", label: "Almuerzo" }, { key: "cena", label: "Cena" }, { key: "colacion", label: "Colación" }];
 
   return (
-    <div className="px-5 pt-6 pb-24">
-      <h1 className="nutri-serif text-2xl nutri-ink mb-1">Registro de alimentos</h1>
-      <p className="text-sm nutri-muted mb-3">Busca un alimento, indica el recipiente (si pesaste con él) y verás el cálculo al instante.</p>
+    <div className="nutri-pagina">
+      <div className="nutri-hero-titulo">
+        <h1 className="nutri-serif text-2xl nutri-ink mb-1">Registro de alimentos</h1>
+        <p className="text-sm nutri-muted mb-3">Busca un alimento, indica el recipiente (si pesaste con él) y verás el cálculo al instante.</p>
+      </div>
+      <div className="nutri-sheet px-5 pt-6 pb-24">
 
       <div className="flex items-center justify-between mb-2">
         <button onClick={() => setSemanaOffset((s) => s - 1)} className="text-xs nutri-brand-text">‹ Semana anterior</button>
@@ -1776,6 +1869,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
           </div>
         ))}
       </div>
+      </div>
     </div>
   );
 }
@@ -1838,7 +1932,7 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
 
   return (
     <div className="min-h-screen max-w-md mx-auto" style={{ background: "var(--bg)" }}>
-      <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 nutri-header px-5 py-4 flex items-center justify-between">
         <span className="nutri-serif text-white text-lg">Historial</span>
         <button onClick={onCerrar} className="text-white text-xl leading-none">✕</button>
       </header>
@@ -2389,7 +2483,7 @@ function exportarClinicoPDF({ datos, requerimiento, perfil, medicamentos, resume
 /* ---------- Componentes de pantalla ---------- */
 function EncabezadoReporte({ titulo, onVolver, etiqueta = "Volver" }) {
   return (
-    <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-10 nutri-header px-5 py-4 flex items-center justify-between">
       <span className="nutri-serif text-white text-lg">{titulo}</span>
       <button onClick={onVolver} className="text-white flex items-center gap-1 text-xs"><IconX size={16} /> {etiqueta}</button>
     </header>
@@ -3560,11 +3654,14 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
     </div>
   );
   return (
-    <div className="px-5 pt-6 pb-24">
-      <h1 className="nutri-serif text-2xl nutri-ink mb-1">Panel del día</h1>
-      <p className="text-sm nutri-muted mb-6">Ingesta consumida frente a tus requerimientos calculados.</p>
+    <div className="nutri-pagina">
+      <div className="nutri-hero-titulo">
+        <h1 className="nutri-serif text-2xl nutri-ink mb-1">Panel del día</h1>
+        <p className="text-sm nutri-muted mb-6">Ingesta consumida frente a tus requerimientos calculados.</p>
+      </div>
+      <div className="nutri-sheet px-5 pt-6 pb-24">
       <AlertaInicioDia requerimiento={requerimiento} />
-      <div className="nutri-panel rounded-2xl p-6 flex flex-col items-center mb-5">
+      <div className="nutri-panel nutri-hero-card rounded-2xl p-6 flex flex-col items-center mb-5">
         <GaugeRadial label="Calorías" valor={totales.kcal} meta={requerimiento.get} unidad="kcal" color="var(--accent-energy)" tamano="lg" modo="numero" />
         <div className="flex gap-4 mt-4 text-xs nutri-muted">
           {requerimiento.prescripcionActiva ? <span>Objetivo por prescripción médica</span> : <><span>GEB {requerimiento.geb} kcal</span><span>·</span><span>GET {requerimiento.get} kcal</span></>}
@@ -3693,6 +3790,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
         <span className="text-sm font-medium nutri-ink block mb-1">Cumplimiento de metas de hoy</span>
         <p className="text-xs nutri-muted mb-1">Cada anillo es un nutriente frente a tu meta diaria.</p>
         <PanelMetas totales={totales} requerimiento={requerimiento} log={log} />
+      </div>
       </div>
     </div>
   );
@@ -3941,12 +4039,15 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
   };
 
   return (
-    <div className="px-5 pt-6 pb-24">
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="nutri-serif text-2xl nutri-ink">Menú semanal</h1>
-        <button onClick={() => setVariacion((v) => v + 1)} className="flex items-center gap-1.5 text-xs nutri-brand-text font-medium"><IconRefresh size={13} /> Nueva variación</button>
+    <div className="nutri-pagina">
+      <div className="nutri-hero-titulo">
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="nutri-serif text-2xl nutri-ink">Menú semanal</h1>
+          <button onClick={() => setVariacion((v) => v + 1)} className="flex items-center gap-1.5 text-xs nutri-brand-text font-medium"><IconRefresh size={13} /> Nueva variación</button>
+        </div>
+        <p className="text-sm nutri-muted mb-4">Cambia automáticamente semana a semana (y por lo tanto mes a mes y año a año) para variar los alimentos.</p>
       </div>
-      <p className="text-sm nutri-muted mb-4">Cambia automáticamente semana a semana (y por lo tanto mes a mes y año a año) para variar los alimentos.</p>
+      <div className="nutri-sheet px-5 pt-6 pb-24">
 
       <SugeridorIngrediente requerimiento={requerimiento} />
 
@@ -4123,11 +4224,12 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
           </span>
         </div>
       )}
+      </div>
     </div>
   );
 }
 
-function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, pacienteId, salir, exportarBackup, restaurarBackup }) {
+function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, paleta, setPaleta, pacienteId, salir, exportarBackup, restaurarBackup }) {
   const [nuevoMed, setNuevoMed] = useState({ nombre: "", dosis: "", frecuencia: "" });
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState("");
@@ -4208,9 +4310,12 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
   const inputCls = "w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink";
 
   return (
-    <div className="px-5 pt-6 pb-24">
-      <h1 className="nutri-serif text-2xl nutri-ink mb-1">Opciones</h1>
-      <p className="text-sm nutri-muted mb-6">Configura tus recipientes de pesaje, medicamentos, prescripción médica y suplementos.</p>
+    <div className="nutri-pagina">
+      <div className="nutri-hero-titulo">
+        <h1 className="nutri-serif text-2xl nutri-ink mb-1">Opciones</h1>
+        <p className="text-sm nutri-muted mb-6">Configura tus recipientes de pesaje, medicamentos, prescripción médica y suplementos.</p>
+      </div>
+      <div className="nutri-sheet px-5 pt-6 pb-24">
 
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-2 mb-2"><IconActivity size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Respaldo de datos</span></div>
@@ -4241,6 +4346,17 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
           <div className="flex nutri-chip rounded-full overflow-hidden">
             <button onClick={() => setTema("claro")} className={`text-xs px-3 py-1.5 ${tema === "claro" ? "nutri-chip-active" : "nutri-ink"}`}>Claro</button>
             <button onClick={() => setTema("oscuro")} className={`text-xs px-3 py-1.5 ${tema === "oscuro" ? "nutri-chip-active" : "nutri-ink"}`}>Oscuro</button>
+          </div>
+        </div>
+        <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--panel-border)" }}>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs nutri-muted">Paleta de color</span>
+            <span className="text-xs nutri-ink font-medium">{(PALETAS.find((x) => x.id === paleta) || PALETAS[0]).nombre}</span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {PALETAS.map((x) => (
+              <button key={x.id} onClick={() => setPaleta(x.id)} aria-pressed={paleta === x.id} aria-label={`Paleta ${x.nombre}`} title={x.nombre} className="nutri-swatch" style={{ background: `linear-gradient(135deg, ${x.a}, ${x.b})` }} />
+            ))}
           </div>
         </div>
       </div>
@@ -4369,6 +4485,7 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
         </div>
 
         <p className="text-[11px] nutri-muted leading-relaxed">Esta información es orientativa y no reemplaza la indicación de tu médico o farmacéutico. Ante cualquier duda sobre interacciones fármaco-nutriente, consúltalo con un profesional de salud.</p>
+      </div>
       </div>
     </div>
   );
@@ -4501,6 +4618,11 @@ function NutriApp({ pacienteId, salir }) {
   const [prescripcion, setPrescripcion] = useState(() => { try { const s = localStorage.getItem("nutriapp_prescripcion"); return s ? JSON.parse(s) : PRESCRIPCION_DEFAULT; } catch { return PRESCRIPCION_DEFAULT; } });
   const [suplementos, setSuplementos] = useState(() => { try { const s = localStorage.getItem("nutriapp_suplementos"); return s ? JSON.parse(s) : SUPLEMENTOS_DEFAULT; } catch { return SUPLEMENTOS_DEFAULT; } });
   const [tema, setTema] = useState(() => { try { return localStorage.getItem("nutriapp_tema") || "claro"; } catch { return "claro"; } });
+  const [paleta, setPaleta] = useState(() => { try { const g = localStorage.getItem("nutriapp_paleta"); return PALETAS.some((x) => x.id === g) ? g : "turquesa"; } catch { return "turquesa"; } });
+  useEffect(() => {
+    try { localStorage.setItem("nutriapp_paleta", paleta); document.body.setAttribute("data-paleta", paleta); } catch {}
+    try { const c = getComputedStyle(document.body).getPropertyValue("--hero").trim(); const m = document.querySelector('meta[name="theme-color"]'); if (c && m) m.setAttribute("content", c); } catch {}
+  }, [paleta, tema]);
   useEffect(() => { try { localStorage.setItem("nutriapp_tema", tema); document.body.setAttribute("data-tema", tema); } catch {} }, [tema]);
 
   const [pesos, setPesos] = useState(() => { try { const s = localStorage.getItem("nutriapp_pesos"); return s ? JSON.parse(s) : []; } catch { return []; } });
@@ -4762,7 +4884,7 @@ function NutriApp({ pacienteId, salir }) {
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
-      <header className="sticky top-0 z-10 nutri-brand px-5 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 nutri-header px-5 py-4 flex items-center justify-between">
         <span className="nutri-serif text-white text-lg">NutriClínica</span>
         <div className="flex items-center gap-3">
           <button onClick={() => setMostrarReporte(true)} className="text-white flex items-center gap-1 text-xs"><IconReporte size={18} /> Reportes</button>
@@ -4781,9 +4903,9 @@ function NutriApp({ pacienteId, salir }) {
         {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
         {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
         {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
-        {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
+        {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       </div>
-      <nav className="nutri-nav fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t flex" style={{ borderColor: "var(--panel-border)" }} aria-label="Navegación principal">
+      <nav className="nutri-nav fixed flex max-w-md" aria-label="Navegación principal">
         <NavDefs />
         {TABS.map(({ key, label, icon: IconC, c }) => (
           <button key={key} onClick={() => setTab(key)} aria-label={label} aria-current={tab === key ? "page" : undefined} className={`nutri-nav-item ${tab === key ? "activo" : ""}`} style={{ "--c1": c[0], "--c2": c[1] }}>
