@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0F766E" />
 <title>NutriClínica</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,29 +16,33 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
+  /* ---------- Paleta "Teal clínico" (versión exacta para modo claro y oscuro) ----------
+     Marca: #0F766E (teal profundo). Texto blanco sobre la marca: 5.5:1 (claro) y 7.9:1 (oscuro).
+     --brand-soft es el fondo de la pastilla activa del menú; --brand-text es el color de texto/
+     icono de marca sobre superficies (cumple ≥4.5:1 en ambos temas). */
   :root {
-    --bg: #F4F2EC; --ink: #1E241F; --muted: #6B7268;
-    --panel-bg: #FFFFFF; --panel-border: #DDD8CC; --input-bg: #FFFFFF;
-    --brand: #14433C; --brand-text: #14433C;
+    --bg: #F0F6F4; --ink: #12201D; --muted: #587068;
+    --panel-bg: #FFFFFF; --panel-border: #D2E2DD; --input-bg: #FFFFFF;
+    --brand: #0F766E; --brand-text: #0B625B; --brand-soft: #D5EFEA; --brand-glow: rgba(15,118,110,.28);
     --accent-energy: #D96C3F; --accent-protein: #C79A3D; --accent-carb: #6C8F63; --accent-fat: #4E7089;
     --warn: #B23B3B; --warn-bg: #F6E7E4;
-    --track: #E7E3D6; --chip-border: #C9C3B2; --chip-active-bg: #14433C; --chip-active-text: #FDFBF6;
+    --track: #DCE9E5; --chip-border: #BFD3CC; --chip-active-bg: #0F766E; --chip-active-text: #F4FBF9;
   }
   body[data-tema="oscuro"] {
-    --bg: #0D1A2B; --ink: #E7EDF6; --muted: #8FA1BA;
-    --panel-bg: #142438; --panel-border: #24374F; --input-bg: #1B2C45;
-    --brand: #2E6F9E; --brand-text: #7FBBE8;
+    --bg: #08171A; --ink: #E4F1EE; --muted: #8FAAA4;
+    --panel-bg: #0F2528; --panel-border: #1E3B3F; --input-bg: #153136;
+    --brand: #0E6B64; --brand-text: #5EDBC9; --brand-soft: #134A47; --brand-glow: rgba(94,219,201,.30);
     --accent-energy: #E08A57; --accent-protein: #D9B563; --accent-carb: #83B276; --accent-fat: #77A0C7;
-    --warn: #E58080; --warn-bg: #3A2230;
-    --track: #1E3049; --chip-border: #2C4360; --chip-active-bg: #2E6F9E; --chip-active-text: #F4F8FC;
+    --warn: #E58080; --warn-bg: #3A2328;
+    --track: #17343A; --chip-border: #2A4A50; --chip-active-bg: #0F766E; --chip-active-text: #F4FBF9;
   }
   html { font-size: 18px; }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); transition: background 0.2s, color 0.2s; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); transition: background 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
   .nutri-serif { font-family: 'Fraunces', serif; }
-  .nutri-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); }
+  .nutri-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); transition: background 0.3s, border-color 0.3s; }
   .nutri-ink { color: var(--ink); }
   .nutri-muted { color: var(--muted); }
-  .nutri-brand { background: var(--brand); }
+  .nutri-brand { background: var(--brand); transition: background 0.3s; }
   .nutri-brand-text { color: var(--brand-text); }
   .nutri-accent-energy { background: var(--accent-energy); }
   .nutri-accent-protein { background: var(--accent-protein); }
@@ -49,12 +54,73 @@
   .nutri-chip { border: 1px solid var(--chip-border); }
   .nutri-chip-active { background: var(--chip-active-bg); color: var(--chip-active-text); border-color: var(--chip-active-bg); }
   body[data-tema="oscuro"] .bg-white { background: var(--input-bg) !important; }
-  body[data-tema="oscuro"] ::placeholder { color: #6B7F99; opacity: 1; }
+  body[data-tema="oscuro"] ::placeholder { color: #5F807A; opacity: 1; }
   .anillos-3d { perspective: 800px; }
   .anillos-3d-svg { transform: rotateX(26deg); transition: transform 0.35s cubic-bezier(.22,1,.36,1); transform-style: preserve-3d; touch-action: manipulation; }
   .anillos-3d:hover .anillos-3d-svg, .anillos-3d:active .anillos-3d-svg { transform: rotateX(8deg) scale(1.04); }
   @keyframes nutriFadeScale { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
   .nutri-fade-in { animation: nutriFadeScale 0.35s cubic-bezier(.22,1,.36,1); }
+
+  /* ---------- Movimiento ---------- */
+  /* Botones y chips: respuesta táctil al presionar y transición suave al cambiar de estado. */
+  button { transition: transform .18s cubic-bezier(.22,1,.36,1), background-color .25s, color .25s, border-color .25s, opacity .25s; }
+  button:active:not(:disabled) { transform: scale(.95); }
+  .nutri-chip { transition: background-color .25s, color .25s, border-color .25s, transform .18s cubic-bezier(.22,1,.36,1), box-shadow .25s; }
+  @keyframes nutriChipPop { 0% { transform: scale(.88); } 55% { transform: scale(1.07); } 100% { transform: scale(1); } }
+  .nutri-chip-active { animation: nutriChipPop .38s cubic-bezier(.22,1,.36,1); box-shadow: 0 4px 14px -6px var(--brand-glow); }
+
+  /* Pantallas: entran deslizándose desde el lado del menú al que vas, y sus bloques aparecen escalonados. */
+  @keyframes nutriEntraDer { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes nutriEntraIzq { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes nutriSube { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .nutri-pantalla-der { animation: nutriEntraDer .42s cubic-bezier(.22,1,.36,1) backwards; }
+  .nutri-pantalla-izq { animation: nutriEntraIzq .42s cubic-bezier(.22,1,.36,1) backwards; }
+  .nutri-pantalla-der > * > *, .nutri-pantalla-izq > * > * { animation: nutriSube .5s cubic-bezier(.22,1,.36,1) backwards; }
+  .nutri-pantalla-der > * > *:nth-child(1), .nutri-pantalla-izq > * > *:nth-child(1) { animation-delay: .04s; }
+  .nutri-pantalla-der > * > *:nth-child(2), .nutri-pantalla-izq > * > *:nth-child(2) { animation-delay: .09s; }
+  .nutri-pantalla-der > * > *:nth-child(3), .nutri-pantalla-izq > * > *:nth-child(3) { animation-delay: .14s; }
+  .nutri-pantalla-der > * > *:nth-child(4), .nutri-pantalla-izq > * > *:nth-child(4) { animation-delay: .19s; }
+  .nutri-pantalla-der > * > *:nth-child(5), .nutri-pantalla-izq > * > *:nth-child(5) { animation-delay: .24s; }
+  .nutri-pantalla-der > * > *:nth-child(6), .nutri-pantalla-izq > * > *:nth-child(6) { animation-delay: .29s; }
+  .nutri-pantalla-der > * > *:nth-child(n+7), .nutri-pantalla-izq > * > *:nth-child(n+7) { animation-delay: .33s; }
+
+  /* Barra inferior: la pastilla activa se expande y el nombre se desliza al costado del icono;
+     el del menú anterior se recoge. */
+  .nutri-nav { background: color-mix(in srgb, var(--panel-bg) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 -10px 30px -18px var(--brand-glow); }
+  .nutri-nav-item { flex: 1 1 0; display: flex; align-items: center; justify-content: center; padding: 10px 2px 12px; color: var(--muted); transition: flex-grow .5s cubic-bezier(.22,1,.36,1), color .3s; min-width: 0; }
+  .nutri-nav-item.activo { flex-grow: 2.5; color: var(--brand-text); }
+  .nutri-nav-pill { display: flex; align-items: center; justify-content: center; height: 40px; min-width: 40px; padding: 0 10px; border-radius: 999px; background: transparent; transition: background-color .35s, padding .5s cubic-bezier(.22,1,.36,1), box-shadow .35s; }
+  .nutri-nav-item.activo .nutri-nav-pill { background: var(--brand-soft); padding: 0 14px 0 11px; box-shadow: 0 6px 16px -8px var(--brand-glow); }
+  .nutri-nav-label { display: inline-block; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap; font-size: 13px; font-weight: 600; letter-spacing: .01em; transform: translateX(-8px); transition: max-width .5s cubic-bezier(.22,1,.36,1), opacity .3s, margin .5s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1); }
+  .nutri-nav-item.activo .nutri-nav-label { max-width: 90px; opacity: 1; margin-left: 7px; transform: translateX(0); transition-delay: 0s, .08s, 0s, 0s; }
+
+  /* Iconos: contorno cuando están inactivos; al activarse se rellenan con un tono suave y hacen un pequeño rebote. */
+  .ico-fill { fill: transparent; fill-opacity: 0; transition: fill .35s, fill-opacity .35s; }
+  .nutri-nav-item.activo .ico-fill { fill: currentColor; fill-opacity: .2; }
+  @keyframes nutriIcoPop { 0% { transform: scale(.7) rotate(-8deg); } 55% { transform: scale(1.18) rotate(3deg); } 100% { transform: scale(1) rotate(0); } }
+  .nutri-nav-item.activo .nutri-ico { animation: nutriIcoPop .55s cubic-bezier(.22,1,.36,1); }
+  .nutri-ico { overflow: visible; }
+  .ico-mov { transition: transform .55s cubic-bezier(.22,1,.36,1); transform-box: fill-box; transform-origin: center; }
+  /* Opciones: las perillas de los controles deslizantes se desplazan al activarse. */
+  .ico-knob { fill: var(--panel-bg); transition: fill .35s; }
+  .nutri-nav-item.activo .ico-knob { fill: var(--brand-soft); }
+  .nutri-nav-item.activo .ico-perilla-a { transform: translateX(-6px); }
+  .nutri-nav-item.activo .ico-perilla-b { transform: translateX(6px); }
+  .nutri-nav-item.activo .ico-perilla-c { transform: translateX(-5px); }
+  /* Panel: el arco interior da una vuelta al activarse. */
+  @keyframes nutriGira { from { transform: rotate(-200deg); } to { transform: rotate(0); } }
+  .nutri-nav-item.activo .ico-gira { animation: nutriGira .8s cubic-bezier(.22,1,.36,1); transform-box: fill-box; transform-origin: center; }
+  /* Menú: la tapa de la cloche se levanta un instante. */
+  @keyframes nutriTapa { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-3px); } }
+  .nutri-nav-item.activo .ico-tapa { animation: nutriTapa .7s cubic-bezier(.22,1,.36,1); }
+  /* Registro: el signo + gira y se asienta. */
+  @keyframes nutriMas { from { transform: rotate(-90deg) scale(.4); } to { transform: rotate(0) scale(1); } }
+  .nutri-nav-item.activo .ico-mas { animation: nutriMas .55s cubic-bezier(.22,1,.36,1); transform-box: fill-box; transform-origin: center; }
+
+  /* Accesibilidad: quien tiene "reducir movimiento" activado en su teléfono no recibe desplazamientos ni rebotes. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+  }
 </style>
 </head>
 <body>
@@ -112,6 +178,28 @@ const IconSettings = (p) => <Icon {...p}><circle cx="12" cy="12" r="3"/><path d=
 const IconCamera = (p) => <Icon {...p}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></Icon>;
 const IconPill = (p) => <Icon {...p}><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></Icon>;
 const IconAlert = (p) => <Icon {...p}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></Icon>;
+
+/* ---------- Iconos de la barra inferior ----------
+   Estilo propio: contorno de 2 px y, en las formas marcadas con "ico-fill", un relleno suave que aparece
+   cuando el menú está activo (ver CSS). Cada uno tiene una micro-animación distinta al activarse. */
+function IconoNav({ children, size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="nutri-ico" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+/* Perfil: busto de la persona. */
+const NavPerfil = (p) => <IconoNav {...p}><circle className="ico-fill" cx="12" cy="8" r="3.6"/><path className="ico-fill" d="M4.5 20.5c.6-3.9 3.6-6.2 7.5-6.2s6.9 2.3 7.5 6.2Z"/></IconoNav>;
+/* Registro: libreta de anotaciones con un signo + (anotar lo que comes). */
+const NavRegistro = (p) => <IconoNav {...p}><rect className="ico-fill" x="5" y="4.5" width="14" height="17" rx="2.6"/><path d="M9.5 4.5v-1h5v1"/><g className="ico-mas"><path d="M12 10.5v5.5"/><path d="M9.25 13.25h5.5"/></g></IconoNav>;
+/* Panel: anillos de progreso (los mismos del tablero del día). */
+const NavPanel = (p) => <IconoNav {...p}><circle className="ico-fill" cx="12" cy="12" r="9"/><path className="ico-gira" d="M12 7a5 5 0 1 1-5 5"/></IconoNav>;
+/* Menú: cloche de restaurante (plan de comidas). */
+const NavMenu = (p) => <IconoNav {...p}><g className="ico-tapa"><path className="ico-fill" d="M4.5 16.5a7.5 7.5 0 0 1 15 0Z"/><circle cx="12" cy="7.6" r="1.1"/></g><path d="M2.5 20h19"/></IconoNav>;
+/* Opciones: controles deslizantes. */
+const NavOpciones = (p) => <IconoNav {...p}><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/><circle className="ico-knob ico-mov ico-perilla-a" cx="15" cy="7" r="2.4"/><circle className="ico-knob ico-mov ico-perilla-b" cx="9" cy="12" r="2.4"/><circle className="ico-knob ico-mov ico-perilla-c" cx="16" cy="17" r="2.4"/></IconoNav>;
 
 /* ---------- Modelos y datos ---------- */
 const FACTOR_ACTIVIDAD = { sedentario: 1.2, ligero: 1.375, moderado: 1.55, intenso: 1.725 };
@@ -4642,12 +4730,19 @@ function NutriApp({ pacienteId, salir }) {
   const agregarCondicionCustom = useCallback((nueva) => setCatalogo((prev) => [...prev, nueva]), []);
 
   const TABS = [
-    { key: "perfil", label: "Perfil", icon: IconUser },
-    { key: "registro", label: "Registro", icon: IconSearch },
-    { key: "dashboard", label: "Panel", icon: IconActivity },
-    { key: "menu", label: "Menú", icon: IconUtensils },
-    { key: "opciones", label: "Opciones", icon: IconSettings },
+    { key: "perfil", label: "Perfil", icon: NavPerfil },
+    { key: "registro", label: "Registro", icon: NavRegistro },
+    { key: "dashboard", label: "Panel", icon: NavPanel },
+    { key: "menu", label: "Menú", icon: NavMenu },
+    { key: "opciones", label: "Opciones", icon: NavOpciones },
   ];
+  /* Dirección de la transición entre pantallas: entra desde la derecha si el menú nuevo está a la
+     derecha del anterior, y desde la izquierda si está a la izquierda. Se guarda en un ref que solo
+     cambia cuando cambia la pestaña, para que un re-render cualquiera no repita la animación. */
+  const idxTab = TABS.findIndex((t) => t.key === tab);
+  const dirTabRef = useRef({ idx: idxTab, clase: "nutri-pantalla-der" });
+  if (dirTabRef.current.idx !== idxTab) dirTabRef.current = { idx: idxTab, clase: idxTab > dirTabRef.current.idx ? "nutri-pantalla-der" : "nutri-pantalla-izq" };
+  const clasePantalla = dirTabRef.current.clase;
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
   if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
@@ -4668,14 +4763,18 @@ function NutriApp({ pacienteId, salir }) {
           <button onClick={() => setErrorSync("")} className="nutri-warn font-bold">✕</button>
         </div>
       )}
-      {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
-      {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
-      {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
-      {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
-      {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto nutri-panel border-t flex" style={{ borderColor: "var(--panel-border)" }}>
+      <div key={tab} className={clasePantalla}>
+        {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
+        {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
+        {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
+        {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
+        {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} pacienteId={pacienteId} salir={salir} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
+      </div>
+      <nav className="nutri-nav fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t flex" style={{ borderColor: "var(--panel-border)" }} aria-label="Navegación principal">
         {TABS.map(({ key, label, icon: IconC }) => (
-          <button key={key} onClick={() => setTab(key)} className={`flex-1 flex flex-col items-center gap-1 py-3 text-[11px] ${tab === key ? "nutri-brand-text font-medium" : "nutri-muted"}`}><IconC size={18} />{label}</button>
+          <button key={key} onClick={() => setTab(key)} aria-label={label} aria-current={tab === key ? "page" : undefined} className={`nutri-nav-item ${tab === key ? "activo" : ""}`}>
+            <span className="nutri-nav-pill"><IconC size={22} /><span className="nutri-nav-label">{label}</span></span>
+          </button>
         ))}
       </nav>
     </div>
