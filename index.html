@@ -71,14 +71,14 @@
     --brand: var(--tone-600); --brand-text: var(--tone-700); --brand-soft: var(--tint);
     --brand-glow: color-mix(in srgb, var(--tone-500) 32%, transparent);
     --track: var(--selected); --chip-border: var(--border); --chip-active-bg: var(--tone-600); --chip-active-text: #FFFFFF;
-    --accent-energy: #D96C3F; --accent-protein: #C79A3D; --accent-carb: #6C8F63; --accent-fat: #4E7089;
+    --accent-energy: #D96C3F; --accent-protein: #C79A3D; --accent-carb: #6C8F63; --accent-fat: #4E7089; --accent-fiber: #8E6BB0;
     --warn: #B23B3B; --warn-bg: #F6E7E4;
   }
   body[data-tema="oscuro"] {
     --input-bg: color-mix(in srgb, var(--surface) 78%, white);
     --brand-text: var(--accent);
     --chip-active-bg: var(--accent); --chip-active-text: var(--on-accent);
-    --accent-energy: #E08A57; --accent-protein: #D9B563; --accent-carb: #83B276; --accent-fat: #77A0C7;
+    --accent-energy: #E08A57; --accent-protein: #D9B563; --accent-carb: #83B276; --accent-fat: #77A0C7; --accent-fiber: #B093D4;
     --warn: #E58080; --warn-bg: #3A2328;
   }
   html { font-size: 18px; }
@@ -117,6 +117,45 @@
   .nutri-sheet > .nutri-panel:not(.nutri-hero-card):nth-child(3n+1) { background: var(--cardtone-1); }
   .nutri-sheet > .nutri-panel:not(.nutri-hero-card):nth-child(3n+2) { background: var(--cardtone-2); }
   .nutri-sheet > .nutri-panel:not(.nutri-hero-card):nth-child(3n+3) { background: var(--cardtone-3); }
+
+  /* Tarjeta del anillo de calorías: misma paleta pero en tono suave, para no competir con el encabezado. */
+  .nutri-sheet > .nutri-panel.nutri-gauge-card { border-color: color-mix(in srgb, var(--tone-300) 60%, transparent); position: relative; overflow: hidden;
+    background: radial-gradient(90% 70% at 18% 0%, color-mix(in srgb, #fff 55%, transparent), transparent 70%),
+                linear-gradient(155deg, color-mix(in srgb, var(--tone-100) 85%, var(--surface)) 0%, color-mix(in srgb, var(--tone-200) 78%, var(--surface)) 100%); }
+  body[data-tema="oscuro"] .nutri-sheet > .nutri-panel.nutri-gauge-card { border-color: color-mix(in srgb, var(--tone-500) 34%, transparent);
+    background: radial-gradient(90% 70% at 18% 0%, color-mix(in srgb, var(--tone-500) 22%, transparent), transparent 70%),
+                linear-gradient(155deg, color-mix(in srgb, var(--selected) 62%, var(--surface)) 0%, color-mix(in srgb, var(--tint) 85%, var(--surface)) 100%); }
+  .nutri-pildora { padding: 4px 12px; border-radius: 999px; font-weight: 500; color: var(--brand-text);
+    background: color-mix(in srgb, var(--tone-500) 14%, transparent); border: 1px solid color-mix(in srgb, var(--tone-500) 26%, transparent); }
+  .nutri-gauge-pct { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: var(--gauge-color);
+    background: color-mix(in srgb, var(--gauge-color) 14%, transparent); }
+  .nutri-gauge-orbita { color: var(--brand-text); animation: nutriOrbita 40s linear infinite; }
+  @keyframes nutriOrbita { to { transform: rotate(360deg); } }
+  .nutri-gauge-destello { animation: nutriDestello 3.4s cubic-bezier(.4,0,.2,1) 1.4s infinite; }
+  @keyframes nutriDestello { 0% { transform: rotate(0deg); opacity: 0; } 12% { opacity: 1; } 70%, 100% { transform: rotate(var(--vuelta, 360deg)); opacity: 0; } }
+  .nutri-gauge-ok { animation: nutriLogro 1.1s cubic-bezier(.34,1.56,.64,1) 1.1s 1; }
+  @keyframes nutriLogro { 0% { transform: scale(1); } 35% { transform: scale(1.07); } 100% { transform: scale(1); } }
+  .nutri-gauge-ok::after { content: ""; position: absolute; inset: 4%; border-radius: 50%; border: 2px solid var(--gauge-color); opacity: 0; pointer-events: none; animation: nutriOnda 1.4s ease-out 1.15s 1; }
+  @keyframes nutriOnda { 0% { transform: scale(.9); opacity: .7; } 100% { transform: scale(1.3); opacity: 0; } }
+  /* Mosaico de cada nutriente en "Cumplimiento de metas de hoy". */
+  .nutri-metrica { --track: color-mix(in srgb, var(--m) 20%, transparent); background: linear-gradient(160deg, color-mix(in srgb, var(--m) 14%, var(--panel-bg)) 0%, color-mix(in srgb, var(--m) 5%, var(--panel-bg)) 100%);
+    border: 1px solid color-mix(in srgb, var(--m) 30%, transparent); animation: nutriSube .5s cubic-bezier(.22,1,.36,1) both;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .25s; }
+  .nutri-metrica:active { transform: scale(.96); }
+  .nutri-metrica:hover { box-shadow: 0 10px 24px -14px var(--m); }
+  .nutri-metrica-chip { font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 999px; color: var(--muted);
+    background: color-mix(in srgb, var(--m) 12%, transparent); }
+  .nutri-metrica-chip.ok { color: #2F7A4B; background: color-mix(in srgb, #3E8E5A 16%, transparent); }
+  body[data-tema="oscuro"] .nutri-metrica-chip.ok { color: #8FD3A6; }
+  /* Barras: crecen con resorte y tienen un brillo que las recorre. */
+  .nutri-bar-fill { position: relative; overflow: hidden; transition: width .9s cubic-bezier(.22,1.2,.36,1); }
+  .nutri-bar-fill::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(255 255 255 / .28), rgb(255 255 255 / 0) 60%); }
+  .nutri-bar-fill::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -40%; background: linear-gradient(90deg, transparent, rgb(255 255 255 / .45), transparent); animation: nutriBarraBrillo 3.2s ease-in-out 1.2s infinite; }
+  @keyframes nutriBarraBrillo { 0% { left: -40%; } 55%, 100% { left: 140%; } }
+  @media (prefers-reduced-motion: reduce) {
+    .nutri-gauge-orbita, .nutri-gauge-destello, .nutri-gauge-ok, .nutri-gauge-ok::after, .nutri-bar-fill::after { animation: none !important; }
+    .nutri-gauge-destello { display: none; }
+  }
   .nutri-swatch { width: 36px; height: 36px; border-radius: 50%; border: 0; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .28); transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s; }
   .nutri-swatch[aria-pressed="true"] { transform: scale(1.14); box-shadow: inset 0 0 0 2px rgb(255 255 255 / .35), 0 0 0 3px var(--panel-bg), 0 0 0 5px var(--ink); }
   .nutri-ink { color: var(--ink); }
@@ -127,6 +166,7 @@
   .nutri-accent-protein { background: var(--accent-protein); }
   .nutri-accent-carb { background: var(--accent-carb); }
   .nutri-accent-fat { background: var(--accent-fat); }
+  .nutri-accent-fiber { background: var(--accent-fiber); }
   .nutri-warn { color: var(--warn); }
   .nutri-warn-bg { background: var(--warn-bg); }
   .nutri-track { background: var(--track); }
@@ -1347,12 +1387,14 @@ function SugeridorIngrediente({ requerimiento }) {
 }
 
 /* ---------- Componentes visuales ---------- */
-function Bar({ value, max, colorClass }) {
+function Bar({ value, max, colorClass, marcarExceso = true }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  const over = max > 0 && value > max;
+  const over = marcarExceso && max > 0 && value > max;
+  const [m, setM] = useState(false);
+  useEffect(() => { setM(false); const t = setTimeout(() => setM(true), 80); return () => clearTimeout(t); }, [value, max]);
   return (
-    <div className="h-2 w-full rounded-full nutri-track overflow-hidden">
-      <div className={`h-full rounded-full ${over ? "" : colorClass}`} style={{ width: `${pct}%`, background: over ? "#B23B3B" : undefined }} />
+    <div className="h-2.5 w-full rounded-full nutri-track overflow-hidden">
+      <div className={`h-full rounded-full nutri-bar-fill ${over ? "" : colorClass}`} style={{ width: m ? `${pct}%` : "0%", background: over ? "#B23B3B" : undefined }} />
     </div>
   );
 }
@@ -1391,12 +1433,32 @@ function BarraContribucion({ pct, color }) {
 }
 
 /* Un solo tipo de gráfico (gauge radial con inclinación 3D y sombra) reutilizado en Panel,
-   Historial y el objetivo calórico — así todo el cumplimiento se lee con el mismo lenguaje visual. */
+   Historial y el objetivo calórico — así todo el cumplimiento se lee con el mismo lenguaje visual.
+   Movimiento: el arco se dibuja con resorte, una perla viaja en su punta, el número cuenta hasta su
+   valor, un destello recorre el anillo y, al llegar al 100 %, el anillo pulsa una vez. */
+function useContar(valor, dur = 1000, retraso = 0) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const reducir = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducir) { setV(valor); return; }
+    let raf, t0 = null;
+    const paso = (t) => {
+      if (t0 === null) t0 = t;
+      const p = Math.min(Math.max((t - t0 - retraso) / dur, 0), 1);
+      setV(valor * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(paso);
+    };
+    setV(0);
+    raf = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(raf);
+  }, [valor, dur, retraso]);
+  return v;
+}
 function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = "porcentaje", animarDelay = 0 }) {
-  const size = tamano === "lg" ? 190 : tamano === "md" ? 128 : 92;
-  const grosor = tamano === "lg" ? 16 : tamano === "md" ? 11 : 8;
+  const size = tamano === "lg" ? 200 : tamano === "md" ? 124 : 92;
+  const grosor = tamano === "lg" ? 17 : tamano === "md" ? 11 : 8;
   const centro = size / 2;
-  const r = centro - grosor / 2 - 2;
+  const r = centro - grosor / 2 - 4;
   const c = 2 * Math.PI * r;
   const [montado, setMontado] = useState(false);
   useEffect(() => {
@@ -1406,18 +1468,38 @@ function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = 
   }, [valor, meta, animarDelay]);
   const pctReal = meta > 0 ? valor / meta : 0;
   const pct = montado ? Math.min(pctReal, 1) : 0;
+  const cumplida = pctReal >= 1;
   const pctMostrado = meta > 0 ? Math.round(pctReal * 100) : 0;
+  const contado = useContar(modo === "numero" ? valor : pctMostrado, 1100, animarDelay);
   const idGrad = `grad-${label.replace(/\s+/g, "")}-${tamano}`;
+  const idBrillo = `brillo-${label.replace(/\s+/g, "")}-${tamano}`;
+  const transicion = `1.15s cubic-bezier(.22,1.2,.36,1) ${animarDelay}ms`;
+  const grande = tamano === "lg";
   return (
-    <div className="anillos-3d relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="anillos-3d-svg" style={{ filter: `drop-shadow(0 ${tamano === "lg" ? 12 : 7}px ${tamano === "lg" ? 18 : 11}px rgba(20,67,60,0.22))` }}>
+    <div className={`anillos-3d relative shrink-0 ${cumplida && montado ? "nutri-gauge-ok" : ""}`} style={{ width: size, height: size, "--gauge-color": color }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="anillos-3d-svg" style={{ filter: `drop-shadow(0 ${grande ? 12 : 7}px ${grande ? 16 : 10}px color-mix(in srgb, ${color} 34%, transparent))`, overflow: "visible" }}>
         <defs>
           <linearGradient id={idGrad} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.7" />
+            <stop offset="0%" stopColor={color} stopOpacity="0.55" />
+            <stop offset="55%" stopColor={color} stopOpacity="0.9" />
             <stop offset="100%" stopColor={color} stopOpacity="1" />
           </linearGradient>
+          <radialGradient id={idBrillo} cx="50%" cy="38%" r="60%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </radialGradient>
         </defs>
+        {/* disco interior con brillo suave */}
+        <circle cx={centro} cy={centro} r={r - grosor / 2 - 2} fill={`url(#${idBrillo})`} />
+        {/* órbita decorativa que gira despacio */}
+        {grande && (
+          <g className="nutri-gauge-orbita" style={{ transformOrigin: `${centro}px ${centro}px` }}>
+            <circle cx={centro} cy={centro} r={r - grosor - 8} fill="none" stroke="currentColor" strokeOpacity="0.28" strokeWidth="1.5" strokeDasharray="1.5 7" strokeLinecap="round" />
+          </g>
+        )}
+        {/* pista */}
         <circle cx={centro} cy={centro} r={r} fill="none" stroke="var(--track)" strokeWidth={grosor} />
+        {/* arco de progreso */}
         <circle
           cx={centro} cy={centro} r={r} fill="none"
           stroke={`url(#${idGrad})`}
@@ -1426,19 +1508,33 @@ function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = 
           strokeDashoffset={c - pct * c}
           strokeLinecap="round"
           transform={`rotate(-90 ${centro} ${centro})`}
-          style={{ transition: `stroke-dashoffset 1s cubic-bezier(.22,1,.36,1) ${animarDelay}ms` }}
+          style={{ transition: `stroke-dashoffset ${transicion}` }}
         />
+        {/* destello que recorre el arco */}
+        {pct > 0.02 && (
+          <circle
+            cx={centro} cy={centro} r={r} fill="none" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth={Math.max(grosor - 8, 3)}
+            strokeLinecap="round" strokeDasharray={`${c * 0.045} ${c}`}
+            transform={`rotate(-90 ${centro} ${centro})`} className="nutri-gauge-destello"
+            style={{ transformOrigin: `${centro}px ${centro}px`, "--vuelta": `${pct * 360}deg` }}
+          />
+        )}
+        {/* perla en la punta del arco */}
+        <g style={{ transformOrigin: `${centro}px ${centro}px`, transform: `rotate(${pct * 360}deg)`, transition: `transform ${transicion}`, opacity: pct > 0 ? 1 : 0 }}>
+          <circle cx={centro} cy={centro - r} r={grosor / 2 - 1.5} fill="#FFFFFF" stroke={color} strokeWidth="2.5" />
+        </g>
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2 tabular-nums">
         {modo === "numero" ? (
           <>
-            <span className={tamano === "lg" ? "nutri-serif text-3xl nutri-ink" : "nutri-serif text-base nutri-ink"}>{Math.round(valor)}</span>
-            <span className="text-[10px] nutri-muted text-center leading-tight">de {Math.round(meta)} {unidad}</span>
+            <span className={grande ? "nutri-serif text-4xl nutri-ink leading-none" : "nutri-serif text-base nutri-ink"}>{Math.round(contado)}</span>
+            <span className="text-[11px] nutri-muted text-center leading-tight mt-1">de {Math.round(meta)} {unidad}</span>
+            {grande && <span className="nutri-gauge-pct mt-1.5">{pctMostrado >= 100 ? "¡meta cumplida!" : `${pctMostrado}%`}</span>}
           </>
         ) : (
           <>
-            <span className={tamano === "lg" ? "nutri-serif text-3xl nutri-ink" : tamano === "md" ? "nutri-serif text-lg nutri-ink" : "text-sm font-medium nutri-ink"}>{pctMostrado}%</span>
-            {tamano === "lg" && <span className="text-[11px] nutri-muted text-center leading-tight">{pctMostrado >= 100 ? "¡meta cumplida!" : "de tu meta"}</span>}
+            <span className={grande ? "nutri-serif text-4xl nutri-ink leading-none" : tamano === "md" ? "nutri-serif text-xl nutri-ink leading-none" : "text-sm font-medium nutri-ink"}>{Math.round(contado)}<span className={grande ? "text-lg" : "text-xs"}>%</span></span>
+            {grande && <span className="text-[11px] nutri-muted text-center leading-tight mt-1">{pctMostrado >= 100 ? "¡meta cumplida!" : "de tu meta"}</span>}
           </>
         )}
       </div>
@@ -1500,13 +1596,16 @@ function PanelMetas({ totales, requerimiento, tamanoGrid = "md", log }) {
 
   return (
     <div key="lista" className="nutri-fade-in">
-      <div className="grid grid-cols-2 gap-x-2 gap-y-4 justify-items-center py-2">
+      <div className="grid grid-cols-2 gap-3 py-2">
         {metricas.map((m, i) => {
           const pct = m.meta > 0 ? Math.round((m.valor / m.meta) * 100) : 0;
+          const cumplida = pct >= 100;
           return (
-            <button key={m.key} onClick={() => setSeleccionado(i)} className="flex flex-col items-center">
-              <GaugeRadial label={m.label} valor={m.valor} meta={m.meta} unidad={m.unidad} color={m.color} tamano={tamanoGrid} modo="porcentaje" animarDelay={i * 100} />
-              <span className="text-xs nutri-muted mt-1.5">{m.label} · {pct}%{pct >= 100 ? " ✓" : ""}</span>
+            <button key={m.key} onClick={() => setSeleccionado(i)} className="nutri-metrica flex flex-col items-center rounded-2xl px-2 pt-3 pb-3" style={{ "--m": m.color, animationDelay: `${i * 90}ms` }}>
+              <GaugeRadial label={m.label} valor={m.valor} meta={m.meta} unidad={m.unidad} color={m.color} tamano={tamanoGrid} modo="porcentaje" animarDelay={i * 110} />
+              <span className="text-sm font-medium nutri-ink mt-2">{m.label}</span>
+              <span className="text-[11px] nutri-muted tabular-nums">{Math.round(m.valor)} / {Math.round(m.meta)} {m.unidad}</span>
+              <span className={`nutri-metrica-chip mt-1.5 ${cumplida ? "ok" : ""}`}>{cumplida ? "✓ Cumplida" : `Falta ${Math.max(100 - pct, 0)} %`}</span>
             </button>
           );
         })}
@@ -3662,7 +3761,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
   const deltaPeso = ultimoPeso && pesoAnterior ? ultimoPeso.pesoKg - pesoAnterior.pesoKg : null;
   const fila = (label, val, max, unidad, colorClass) => (
     <div className="mb-4">
-      <div className="flex justify-between text-xs mb-1.5"><span className="nutri-ink font-medium">{label}</span><span className="nutri-muted">{Math.round(val)} / {Math.round(max)} {unidad}</span></div>
+      <div className="flex justify-between items-center text-xs mb-1.5"><span className="nutri-ink font-medium flex items-center gap-1.5"><span className={`inline-block w-2.5 h-2.5 rounded-full ${colorClass}`} />{label}</span><span className="nutri-muted tabular-nums">{Math.round(val)} / {Math.round(max)} {unidad} · <b className="nutri-ink font-semibold">{max > 0 ? Math.round((val / max) * 100) : 0}%</b></span></div>
       <Bar value={val} max={max} colorClass={colorClass} />
     </div>
   );
@@ -3674,10 +3773,10 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
       </div>
       <div className="nutri-sheet px-5 pt-6 pb-24">
       <AlertaInicioDia requerimiento={requerimiento} />
-      <div className="nutri-panel nutri-hero-card rounded-2xl p-6 flex flex-col items-center mb-5">
+      <div className="nutri-panel nutri-gauge-card rounded-2xl p-6 flex flex-col items-center mb-5">
         <GaugeRadial label="Calorías" valor={totales.kcal} meta={requerimiento.get} unidad="kcal" color="var(--accent-energy)" tamano="lg" modo="numero" />
         <div className="flex gap-4 mt-4 text-xs nutri-muted">
-          {requerimiento.prescripcionActiva ? <span>Objetivo por prescripción médica</span> : <><span>GEB {requerimiento.geb} kcal</span><span>·</span><span>GET {requerimiento.get} kcal</span></>}
+          {requerimiento.prescripcionActiva ? <span className="nutri-pildora">Objetivo por prescripción médica</span> : <><span className="nutri-pildora">GEB {requerimiento.geb} kcal</span><span className="nutri-pildora">GET {requerimiento.get} kcal</span></>}
         </div>
       </div>
 
@@ -3796,7 +3895,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
         {fila("Proteínas", totales.proteinasG, requerimiento.proteinasG, "g", "nutri-accent-protein")}
         {fila("Carbohidratos", totales.carbohidratosG, requerimiento.carbohidratosG, "g", "nutri-accent-carb")}
         {fila("Grasas", totales.grasasG, requerimiento.grasasG, "g", "nutri-accent-fat")}
-        {fila("Fibra", totales.fibraG, requerimiento.fibraG, "g", "nutri-accent-carb")}
+        {fila("Fibra", totales.fibraG, requerimiento.fibraG, "g", "nutri-accent-fiber")}
         {fila("Sodio", totales.sodioMg, requerimiento.sodioMg, "mg", "nutri-accent-energy")}
       </div>
       <div className="nutri-panel rounded-2xl p-5">
@@ -4096,20 +4195,21 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
       {copiadoOk && <p className="text-xs mb-2" style={{ color: "#3E8E5A" }}>✓ Menú copiado a tu registro de {NOMBRE_DIA_LARGO(activo.fecha)}. Ahora solo ajusta cantidades ahí si algo cambió.</p>}
       <div className="nutri-panel rounded-xl p-4 mb-5">
         {[
-          { label: "Calorías", unidad: "kcal", meta: requerimiento.get, actual: totalEfectivo.kcal },
-          { label: "Proteína", unidad: "g", meta: requerimiento.proteinasG, actual: totalEfectivo.proteinasG },
-          { label: "Carbohidratos", unidad: "g", meta: requerimiento.carbohidratosG, actual: totalEfectivo.carbohidratosG },
-          { label: "Grasas", unidad: "g", meta: requerimiento.grasasG, actual: totalEfectivo.grasasG },
-          { label: "Fibra", unidad: "g", meta: requerimiento.fibraG, actual: totalEfectivo.fibraG },
+          { label: "Calorías", unidad: "kcal", meta: requerimiento.get, actual: totalEfectivo.kcal, cls: "nutri-accent-energy" },
+          { label: "Proteína", unidad: "g", meta: requerimiento.proteinasG, actual: totalEfectivo.proteinasG, cls: "nutri-accent-protein" },
+          { label: "Carbohidratos", unidad: "g", meta: requerimiento.carbohidratosG, actual: totalEfectivo.carbohidratosG, cls: "nutri-accent-carb" },
+          { label: "Grasas", unidad: "g", meta: requerimiento.grasasG, actual: totalEfectivo.grasasG, cls: "nutri-accent-fat" },
+          { label: "Fibra", unidad: "g", meta: requerimiento.fibraG, actual: totalEfectivo.fibraG, cls: "nutri-accent-fiber" },
         ].map((n, i) => {
           const cumplido = n.actual >= n.meta;
           return (
             <div key={i} className="py-2" style={{ borderTop: i > 0 ? "1px solid var(--panel-border)" : "none" }}>
-              <div className="flex items-center justify-between mb-0.5">
-                <span className="text-xs font-medium nutri-ink">{n.label}</span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium nutri-ink flex items-center gap-1.5"><span className={`inline-block w-2.5 h-2.5 rounded-full ${n.cls}`} />{n.label}</span>
                 {cumplido ? <span className="text-xs" style={{ color: "#3E8E5A" }}>✅ Cumplido</span> : <span className="text-xs nutri-warn">⚠️ Ajustar</span>}
               </div>
-              <div className="flex items-center justify-between text-xs nutri-muted">
+              <Bar value={n.actual} max={n.meta} colorClass={n.cls} marcarExceso={false} />
+              <div className="flex items-center justify-between text-xs nutri-muted mt-1">
                 <span>Meta: {Math.round(n.meta)} {n.unidad}</span>
                 <span>Menú: {Math.round(n.actual)} {n.unidad}</span>
               </div>
@@ -4119,8 +4219,8 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
       </div>
 
       <div className="space-y-4">
-        {menuEfectivo.map((m) => (
-          <div key={m.key} className="nutri-panel rounded-2xl p-5">
+        {menuEfectivo.map((m, mi) => (
+          <div key={m.key} className="nutri-panel rounded-2xl p-5" style={{ borderLeft: `5px solid var(--tone-${[400, 500, 600, 700][mi % 4]})` }}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium nutri-ink">{m.label}</span>
               <div className="flex items-center gap-2">
