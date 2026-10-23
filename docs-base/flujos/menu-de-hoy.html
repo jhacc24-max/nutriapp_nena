@@ -3,6 +3,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
 <style>
+
 /* Layout: cabecera con la estructura común (avance arriba · 4 comidas · menú completado); tres celulares, uno por forma de elegir variantes. */
 :root {
   --pg-bg:#EEF5F4; --pg-card:#FFFFFF; --pg-line:#D5E2E0; --pg-fg:#0C1917; --pg-fg-2:#4F6461; --pg-acc:#007D76; --pg-chip:#DDF1EE;
@@ -15,7 +16,7 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --pg-bg:#071210; --pg-card:#0E1D1B; --pg-line:#1E3532; --pg-fg:#E9F5F3; --pg-fg-2:#9AB0AD; --pg-acc:#43B6AD; --pg-chip:#0F2B28; color-scheme:dark; } }
 :root[data-theme="dark"] { --pg-bg:#071210; --pg-card:#0E1D1B; --pg-line:#1E3532; --pg-fg:#E9F5F3; --pg-fg-2:#9AB0AD; --pg-acc:#43B6AD; --pg-chip:#0F2B28; color-scheme:dark; }
-.tel.oscuro { --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76; --on-hero-soft:#B3E7E1; --accent:#43B6AD; --on-accent:#0B1413; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --nav:#102624; --c-kcal:#FFA94D; --c-prot:#FF7B8E; --c-carb:#6CB2FF; --c-gras:#E8C547; color-scheme:dark; }
+.tel.oscuro, .tel-mini.oscuro { --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76; --on-hero-soft:#B3E7E1; --accent:#43B6AD; --on-accent:#0B1413; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --nav:#102624; --c-kcal:#FFA94D; --c-prot:#FF7B8E; --c-carb:#6CB2FF; --c-gras:#E8C547; color-scheme:dark; }
 
 * { box-sizing: border-box; }
 body { background: var(--pg-bg); color: var(--pg-fg); font-family: var(--f-texto); font-size: 15px; line-height: 1.5; }
@@ -154,51 +155,6 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 @keyframes sube { from { opacity: 0; transform: translateY(12px); } }
 .veces { font-size: 10.5px; color: var(--text-2); }
 
-/* Opción 1: carrusel de variantes */
-.carrusel { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px 2px 4px; flex: none; }
-.carrusel::-webkit-scrollbar { display: none; }
-.var { flex: none; width: 82%; scroll-snap-align: center; background: var(--surface); border: 1.5px solid var(--border); border-radius: 22px; padding: 12px; display: flex; flex-direction: column; gap: 8px; transition: border-color var(--d-base), transform var(--d-base) var(--e-over); }
-.var.elegida { border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint); }
-.var .portada { position: relative; height: 92px; border-radius: 16px; background: radial-gradient(circle at 50% 60%, var(--surface) 30%, var(--tint)); display: flex; align-items: center; justify-content: center; }
-.var .portada .ico { margin: 0 -4px; animation: flota 3s ease-in-out infinite alternate; }
-.var .portada .ico:nth-child(2) { animation-delay: .5s; } .var .portada .ico:nth-child(3) { animation-delay: 1s; } .var .portada .ico:nth-child(4) { animation-delay: 1.5s; }
-@keyframes flota { to { transform: translateY(-5px); } }
-.var .portada .sello { position: absolute; top: 8px; right: 8px; background: var(--accent); color: var(--on-accent); border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 700; animation: recien .5s var(--e-over); }
-.var h5 { margin: 0; font-size: 14px; }
-.var .meta-v { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-2); }
-.porciones { display: flex; gap: 5px; }
-.porciones button { flex: 1; height: 30px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background var(--d-base), color var(--d-base); }
-.porciones button.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-.puntos { display: flex; justify-content: center; gap: 5px; flex: none; }
-.puntos i { width: 6px; height: 6px; border-radius: 3px; background: var(--border); transition: width var(--d-base), background var(--d-base); }
-.puntos i.on { width: 18px; background: var(--accent); }
-.elegir { height: 38px; }
-.var.elegida .elegir { background: var(--ok); }
-
-/* Opción 2: arrastrar al plato */
-.plato-v { position: relative; width: 170px; height: 170px; margin: 0 auto; flex: none; touch-action: none; }
-.plato-v .aro { position: absolute; inset: 0; }
-.plato-v .aro .arco { transition: stroke-dashoffset .6s var(--e-standard); }
-.plato-v .base { position: absolute; inset: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--surface) 55%, var(--tint)); box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 7px var(--border), 0 10px 22px -12px rgba(0,0,0,.35); transition: transform var(--d-base) var(--e-over), box-shadow var(--d-base); }
-.plato-v.sobre .base { transform: scale(1.06); box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 9px var(--accent), 0 14px 26px -12px rgba(0,0,0,.4); }
-.plato-v .centro { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; z-index: 3; pointer-events: none; }
-.plato-v .centro strong { display: block; font-size: 20px; }
-.plato-v .centro span { font-size: 10px; color: var(--text-2); }
-.en-plato { position: absolute; width: 38px; height: 38px; margin: -19px 0 0 -19px; z-index: 2; animation: cae .6s var(--e-over) both; filter: drop-shadow(0 3px 3px rgba(0,0,0,.18)); }
-@keyframes cae { 0% { transform: translateY(-70px) scale(.6); opacity: 0; } 60% { transform: translateY(3px) scale(1.06); opacity: 1; } 100% { transform: none; } }
-.arrastrables { display: flex; flex-direction: column; gap: 6px; }
-.drag { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 6px 6px 8px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
-.drag .agarre { color: var(--text-2); font-size: 13px; letter-spacing: -2px; }
-.drag .icos { display: flex; } .drag .icos .ico { margin-right: -6px; }
-.drag .nm { flex: 1; min-width: 0; margin-left: 6px; font-size: 12px; font-weight: 600; }
-.drag .nm small { display: block; font-weight: 400; color: var(--text-2); font-size: 10.5px; }
-.drag .mas { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--tint); color: var(--accent); font-size: 18px; font-weight: 700; cursor: pointer; flex: none; }
-.drag.usada { opacity: .5; }
-.fantasma { position: absolute; z-index: 90; pointer-events: none; display: flex; filter: drop-shadow(0 8px 10px rgba(0,0,0,.3)); transform: scale(1.15); }
-.fantasma .ico { margin-right: -8px; }
-.elegidos { display: flex; flex-direction: column; gap: 5px; }
-.elegidos .it { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px 6px 5px 8px; }
-.pista { text-align: center; font-size: 11px; color: var(--text-2); margin-top: -4px; }
 
 /* Opción 3: arma por partes */
 .rapidas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; }
@@ -215,48 +171,99 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .tile .menos { position: absolute; top: -6px; left: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 700; line-height: 18px; }
 .tile .tn { width: 100%; padding: 0 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
+
+/* Layout de la página final: celular interactivo a la izquierda y notas a la derecha; debajo, los tres estados de color del avance. */
+:root { --st-bajo:#F08A24; --st-meta:#16A34A; --st-exceso:#E5484D; }
+.tel.oscuro, .tel-mini.oscuro { --st-bajo:#FFA94D; --st-meta:#3DD68C; --st-exceso:#FF6B6F; }
+.principal { display: grid; grid-template-columns: 360px minmax(0,1fr); gap: 28px; margin-top: 22px; align-items: start; }
+@media (max-width: 820px) { .principal { grid-template-columns: minmax(0,1fr); } }
+.notas { display: flex; flex-direction: column; gap: 10px; }
+.nota-c { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 14px; padding: 12px 14px; }
+.nota-c b { display: block; font-size: 14px; }
+.nota-c span { font-size: 13.5px; color: var(--pg-fg-2); }
+.bloque-h { font-family: var(--f-titulo); font-weight: 500; font-size: 24px; margin: 36px 0 4px; }
+.bloque-p { margin: 0; color: var(--pg-fg-2); max-width: 70ch; }
+.estados { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
+@media (max-width: 760px) { .estados { grid-template-columns: minmax(0,1fr); } }
+.estado-c { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.estado-c .muestra { background: var(--bg); border-radius: 16px; padding: 12px; color: var(--text); }
+.estado-c b { font-size: 15px; }
+.estado-c p { margin: 0; font-size: 13px; color: var(--pg-fg-2); }
+
+/* Estados del avance: color y animación según el porcentaje */
+.av-top .ring { overflow: visible; }
+.av-top .ring .arco, .av-top .ring .extra { transition: stroke-dashoffset .9s var(--e-standard), stroke .5s; }
+.est-bajo .ring { animation: respira 2.4s ease-in-out infinite; }
+@keyframes respira { 50% { transform: scale(1.04); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--st-bajo) 45%, transparent)); } }
+.est-meta .ring { animation: brilla 1.8s ease-in-out infinite; }
+@keyframes brilla { 50% { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--st-meta) 70%, transparent)); } }
+.est-exceso .ring { animation: sacude .5s ease-in-out 2; }
+@keyframes sacude { 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+.estado-tx { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 2px 9px; margin-top: 4px; transition: background .5s, color .5s; }
+.est-cero .estado-tx { background: var(--tint); color: var(--text-2); }
+.est-bajo .estado-tx { background: color-mix(in srgb, var(--st-bajo) 16%, transparent); color: var(--st-bajo); }
+.est-meta .estado-tx { background: color-mix(in srgb, var(--st-meta) 16%, transparent); color: var(--st-meta); }
+.est-exceso .estado-tx { background: color-mix(in srgb, var(--st-exceso) 16%, transparent); color: var(--st-exceso); }
+.av-top .pcw { transition: color .5s; }
+.est-bajo .pcw { color: var(--st-bajo); } .est-meta .pcw { color: var(--st-meta); } .est-exceso .pcw { color: var(--st-exceso); }
+.nutri .barra { position: relative; }
+.nutri .barra i { transition: width .9s var(--e-standard), background .5s; }
+.nutri.exceso .ico { animation: sacude .5s ease-in-out 2; }
+.particula { position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; z-index: 5; animation: estalla .8s var(--e-standard) forwards; }
+@keyframes estalla { to { transform: translate(var(--x), var(--y)) scale(.3); opacity: 0; } }
+.ring-wrap { position: relative; flex: none; }
+
+/* Ventana por partes: selección arriba con pesos, el resto baja */
+.seleccion { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: 18px; padding: 10px; }
+.seleccion[hidden] { display: none !important; }
+.seleccion .t-sel { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; }
+.seleccion .t-sel button { font: inherit; font-size: 11.5px; color: var(--accent); background: none; border: 0; cursor: pointer; }
+.pesos { display: flex; flex-direction: column; gap: 5px; }
+.pesos .it { background: var(--bg); border-radius: 12px; padding: 5px 6px 5px 8px; }
+.pesos .it .nm { white-space: normal; line-height: 1.2; font-weight: 600; }
+.pesos .it .nm small { display: block; font-weight: 400; color: var(--text-2); font-size: 10.5px; }
+.pesos .it .quitar { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 11px; cursor: pointer; flex: none; }
+.peso-in { animation: pesoIn .45s var(--e-emph) both; }
+@keyframes pesoIn { from { opacity: 0; transform: translateY(-8px) scaleY(.6); } }
+.resto { display: flex; flex-direction: column; gap: 8px; transition: opacity .4s; }
+.resto.atenuado .tile { opacity: .72; }
+.resto .algo-mas { font-size: 11.5px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; margin: 2px 2px 0; }
+.tile.flip { transition: transform .55s var(--e-emph), opacity .4s; }
+.tile.elegido-t { border-color: var(--accent); background: var(--tint); }
+.toast { position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%); z-index: 70; background: var(--text); color: var(--bg); font-size: 12.5px; font-weight: 600; padding: 9px 14px; border-radius: 999px; white-space: nowrap; animation: toast 2.6s var(--e-standard) both; }
+@keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
+.navb .reg { width: 22px; height: 22px; border-radius: 7px; background: var(--border); }
+.navb .reg.recibe { animation: recibe .7s var(--e-over); background: var(--accent); }
+@keyframes recibe { 40% { transform: scale(1.5); } }
+.vuela { position: absolute; z-index: 75; pointer-events: none; transition: transform .7s var(--e-standard), opacity .7s var(--e-exit); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } }
 </style>
 
 <div class="wrap">
   <h1>Menú de hoy</h1>
-  <p class="intro">Un Menú nuevo con la misma estructura en las tres opciones. La diferencia está en la ventana que se abre al tocar cada comida para elegir la preparación y la cantidad.</p>
-  <div class="estructura">
-    <div><b>Arriba · Avance del día</b>Porcentaje de la meta con los íconos de calorías, proteína, carbohidratos y grasa. Se llena al confirmar cada comida.</div>
-    <div><b>En medio · Las 4 comidas</b>Desayuno, Almuerzo, Cena y Colación. Cada una abre su propia ventana con tus variantes para esa comida.</div>
-    <div><b>Abajo · Menú completado</b>Cuando las 4 están elegidas aparece la tarjeta de menú completado, con confeti y el porcentaje final.</div>
-  </div>
+  <p class="intro">La versión que armamos juntando lo que elegiste: el avance de arriba con colores según el porcentaje, las 4 comidas, la ventana "Arma por partes" donde lo elegido sube con sus pesos y el resto baja, y "Pasar al registro" que deja el menú vacío para el día siguiente.</p>
   <div class="ctl">
-    <button type="button" class="pri" id="demo">▶ Ver demo en los 3</button>
+    <button type="button" class="pri" id="demo">▶ Ver demo</button>
     <button type="button" id="reinicia">Reiniciar</button>
     <button type="button" data-tema="claro" aria-pressed="true">Claro</button>
     <button type="button" data-tema="oscuro" aria-pressed="false">Oscuro</button>
-    <p class="nota">Las variantes son de ejemplo con alimentos de tu base. En la app saldrán de las comidas que registraste en cada momento, ordenadas por cuántas veces las preparaste. Meta de ejemplo: 1300 kcal y 60 g de proteína.</p>
+    <p class="nota">El celular responde al toque. Variantes de ejemplo con alimentos de tu base; meta de ejemplo de 1300 kcal y 60 g de proteína.</p>
   </div>
 
-  <div class="modelos">
-    <section class="modelo">
-      <header><span class="letra">1</span><h2>Carrusel de variantes</h2></header>
-      <p class="desc">La ventana sube desde abajo con tus variantes como tarjetas que se deslizan con el dedo. Eliges la porción (½, 1, 1½, 2) y ajustas cada alimento con − / +.</p>
-      <div class="tel" id="tel1"></div>
-      <button type="button" class="btn-modelo" data-solo="1">▶ Ver solo este</button>
-      <div class="mov"><code>sheet-up</code><code>scroll-snap</code><code>flotar íconos</code><code>chip-pop</code><code>count-up</code><code>chart-draw</code><code>icon-beat</code><code>confeti + tada</code></div>
-    </section>
-    <section class="modelo">
-      <header><span class="letra">2</span><h2>Arrastra al plato</h2></header>
-      <p class="desc">La comida se abre desde su tarjeta y muestra un plato. Arrastras una variante al plato con el dedo (o tocas +), los alimentos caen y ajustas gramos debajo.</p>
-      <div class="tel" id="tel2"></div>
-      <button type="button" class="btn-modelo" data-solo="2">▶ Ver solo este</button>
-      <div class="mov"><code>zoom-through</code><code>drag &amp; drop</code><code>caída con resorte</code><code>plato que se ilumina</code><code>count-up</code><code>confeti + tada</code></div>
-    </section>
-    <section class="modelo">
-      <header><span class="letra">3</span><h2>Arma por partes</h2></header>
-      <p class="desc">Arriba tus variantes como atajo de un toque. Debajo, los alimentos de esa comida por partes: cada toque suma una porción y el número indica cuántas.</p>
-      <div class="tel" id="tel3"></div>
-      <button type="button" class="btn-modelo" data-solo="3">▶ Ver solo este</button>
-      <div class="mov"><code>push-slide</code><code>cluster-pop</code><code>badge-pop</code><code>press-scale</code><code>count-up</code><code>confeti + tada</code></div>
-    </section>
+  <div class="principal">
+    <div><div class="tel" id="tel"></div></div>
+    <div class="notas">
+      <div class="nota-c"><b>1 · Avance del día (de la opción A)</b><span>Anillo con el porcentaje y los cuatro íconos de calorías, proteína, carbohidratos y grasa, con su valor, barra y porcentaje. El color y la animación cambian según el porcentaje (ver abajo).</span></div>
+      <div class="nota-c"><b>2 · Elige tus comidas</b><span>Desayuno, Almuerzo, Cena y Colación, igual que antes. Cada una abre su propia ventana.</span></div>
+      <div class="nota-c"><b>3 · Ventana "Arma por partes"</b><span>Al tocar una variante, sus alimentos suben al recuadro de arriba y debajo aparecen sus pesos con − / + (también se pueden escribir). El resto de alimentos baja a "¿Algo más?". Si tocas uno de ahí, sube y se suma con su peso.</span></div>
+      <div class="nota-c"><b>4 · Confirmar y pasar al registro</b><span>Al confirmar, la comida queda marcada y el avance se llena. Con las 4 comidas aparece "¡Menú completado!". Al pasarlo al registro, los alimentos viajan a la pestaña Registro y el menú queda vacío.</span></div>
+      <div class="mov"><code>push-slide</code><code>FLIP: lo elegido sube</code><code>pesos que se despliegan</code><code>count-up</code><code>respira / brilla / sacude</code><code>estallido al llegar a 100</code><code>confeti + tada</code><code>shared-element al Registro</code></div>
+    </div>
   </div>
+
+  <h2 class="bloque-h">Colores del avance</h2>
+  <p class="bloque-p">El anillo, el porcentaje y las barras de cada nutriente usan el mismo código de color, cada uno con su animación.</p>
+  <div class="estados" id="estados"></div>
 </div>
 
 <script>
@@ -971,222 +978,178 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
   const RAP = { v: false }; const espera = (ms) => new Promise((r) => setTimeout(r, RAP.v ? 10 : ms));
   const BASE = {}; window.__BASE.forEach(([id, nombre, cat, kcal, p, c, g]) => { BASE[id] = { id, nombre, cat, kcal, p, c, g }; });
   const corto = (id) => BASE[id].nombre.replace(/ \(.*\)/, "").replace(/ \/.*/, "").replace(/ (cocid[oa]s?|enter[oa]|fresc[oa]|natural|crud[oa]|firme|en hojuelas|descremada|desamargado|mixta)$/i, "");
-  const ico = (id, s, cls = "") => `<span class="ico ${cls}" style="width:${s}px;height:${s}px">${N.alimento(BASE[id], s)}</span>`;
-  const icoN = (k, s, cls = "") => `<span class="ico ${cls}" style="width:${s}px;height:${s}px">${N.svg(k, s)}</span>`;
+  const ico = (id, s) => `<span class="ico" style="width:${s}px;height:${s}px">${N.alimento(BASE[id], s)}</span>`;
+  const icoN = (k, s) => `<span class="ico" style="width:${s}px;height:${s}px">${N.svg(k, s)}</span>`;
   const R = Math.round;
   const META = { kcal: 1300, p: 60, c: 165, g: 43 };
   const MOMS = [["desayuno", "Desayuno", "☕", .25], ["almuerzo", "Almuerzo", "🍽", .35], ["cena", "Cena", "🌙", .30], ["colacion", "Colación", "🍎", .10]];
   const pctM = Object.fromEntries(MOMS.map((m) => [m[0], m[3]]));
+  const nomM = Object.fromEntries(MOMS.map((m) => [m[0], m[1]]));
   const ap = (it) => { const f = BASE[it[0]], k = it[1] / 100; return { kcal: f.kcal * k, p: f.p * k, c: f.c * k, g: f.g * k }; };
   const sum = (its) => its.reduce((s, it) => { const a = ap(it); s.kcal += a.kcal; s.p += a.p; s.c += a.c; s.g += a.g; return s; }, { kcal: 0, p: 0, c: 0, g: 0 });
   const VAR = {
-    desayuno: [["Avena con leche y plátano", 14, [["f08",40],["f28",200],["f21",80]]], ["Yogur con avena e higo", 9, [["f27",150],["f08",30],["f65",100]]], ["Huevo, pan integral y palta", 8, [["f03",50],["f48",60],["f24",60]]], ["Yogur con frutos rojos y nueces", 5, [["f27",150],["f23",100],["f62",15]]], ["Avena con leche y manzana", 4, [["f08",40],["f28",200],["f20",150]]], ["Pan con queso y mandarina", 2, [["f13",60],["f29",60],["f43",80]]]],
-    almuerzo: [["Arroz, pollo y ensalada", 12, [["f10",150],["f01",100],["f18",100],["f25",5]]], ["Quinua con bonito y papa", 7, [["f14",150],["f32",100],["f11",120]]], ["Arroz con frijoles y pollo", 6, [["f10",120],["f39",120],["f01",80]]], ["Papa con pavo y zapallo", 5, [["f11",200],["f31",100],["f49",120],["f25",5]]], ["Arroz con salmón y brócoli", 3, [["f10",130],["f34",90],["f15",100]]], ["Lentejas con arroz y huevo", 3, [["f06",150],["f10",100],["f03",50]]]],
-    cena: [["Tilapia con camote y ensalada", 8, [["f33",120],["f12",150],["f18",100],["f25",5]]], ["Huevo, pan integral y brócoli", 7, [["f03",100],["f48",60],["f15",100]]], ["Tofu con quinua y zanahoria", 4, [["f05",120],["f14",150],["f17",70],["f25",5]]], ["Tilapia con yuca y brócoli", 3, [["f33",120],["f59",120],["f15",100]]], ["Huevo con tomate y pan", 3, [["f03",100],["f19",120],["f13",50]]]],
-    colacion: [["Manzana con yogur", 9, [["f20",150],["f27",80]]], ["Mandarina y almendras", 7, [["f43",120],["f26",10]]], ["Kiwi", 4, [["f40",150]]], ["Cottage con aguaymanto", 4, [["f29",60],["f53",60]]], ["Higo con nueces", 3, [["f65",100],["f62",8]]], ["Piña", 2, [["f55",150]]]],
+    desayuno: [["Avena con leche y plátano", [["f08",40],["f28",200],["f21",80]]], ["Yogur con avena e higo", [["f27",150],["f08",30],["f65",100]]], ["Huevo, pan integral y palta", [["f03",50],["f48",60],["f24",60]]], ["Yogur con frutos rojos y nueces", [["f27",150],["f23",100],["f62",15]]], ["Avena con leche y manzana", [["f08",40],["f28",200],["f20",150]]]],
+    almuerzo: [["Arroz, pollo y ensalada", [["f10",150],["f01",100],["f18",100],["f25",5]]], ["Quinua con bonito y papa", [["f14",150],["f32",100],["f11",120]]], ["Arroz con frijoles y pollo", [["f10",120],["f39",120],["f01",80]]], ["Papa con pavo y zapallo", [["f11",200],["f31",100],["f49",120],["f25",5]]], ["Lentejas con arroz y huevo", [["f06",150],["f10",100],["f03",50]]]],
+    cena: [["Tilapia con camote y ensalada", [["f33",120],["f12",150],["f18",100],["f25",5]]], ["Huevo, pan integral y brócoli", [["f03",100],["f48",60],["f15",100]]], ["Tofu con quinua y zanahoria", [["f05",120],["f14",150],["f17",70],["f25",5]]], ["Tilapia con yuca y brócoli", [["f33",120],["f59",120],["f15",100]]]],
+    colacion: [["Manzana con yogur", [["f20",150],["f27",80]]], ["Mandarina y almendras", [["f43",120],["f26",10]]], ["Higo con nueces", [["f65",100],["f62",8]]], ["Cottage con aguaymanto", [["f29",60],["f53",60]]], ["Piña", [["f55",150]]]],
   };
-  function contar(el, a, b, ms = 700) { if (!el) return; if (RAP.v) { el.textContent = R(b); return; } const t0 = performance.now(); (function s(t) { const x = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - x, 3); el.textContent = R(a + (b - a) * e); if (x < 1) requestAnimationFrame(s); })(t0); }
-  const anillo = (pct, size, gr, col, cls = "") => { const r = (size - gr) / 2, c = 2 * Math.PI * r; return `<svg class="${cls}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--tint)" stroke-width="${gr}"/><circle class="arco" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${gr}" stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - Math.min(1, pct))).toFixed(1)}" data-c="${c.toFixed(1)}"/></svg>`; };
-  const ponerAnillo = (svg, pct) => { const a = svg && svg.querySelector(".arco"); if (a) a.style.strokeDashoffset = (+a.dataset.c * (1 - Math.min(1, pct))).toFixed(1); };
+  function contar(el, a, b, ms = 700) { if (!el) return; if (RAP.v) { el.textContent = R(b); return; } const t0 = performance.now(); (function s(t) { const x = Math.max(0, Math.min(1, (t - t0) / ms)), e = 1 - Math.pow(1 - x, 3); el.textContent = R(a + (b - a) * e); if (x < 1) requestAnimationFrame(s); })(t0); }
   const stepper = (g) => `<span class="stepper"><button type="button" data-d="-1" aria-label="Menos">−</button><label><input type="number" inputmode="numeric" value="${g}" aria-label="Gramos">g</label><button type="button" data-d="1" aria-label="Más">+</button></span>`;
   const paso = (g, d) => Math.max(5, g + d * (g >= 100 ? 10 : 5));
-  function atarStepper(sp, item, cb) {
-    const inp = $("input", sp);
+  function atarStepper(sp, item, cb) { const inp = $("input", sp);
     sp.querySelectorAll("button").forEach((b) => b.onclick = (e) => { e.stopPropagation(); item[1] = paso(item[1], +b.dataset.d); inp.value = item[1]; cb(); });
-    inp.oninput = () => { const v = parseInt(inp.value, 10); if (v > 0) { item[1] = v; cb(); } }; inp.onfocus = () => inp.select();
-  }
-  const COLS = [["kcal", "calorias", "Calorías", "var(--c-kcal)", ""], ["p", "proteina", "Proteína", "var(--c-prot)", " g"], ["c", "carbohidratos", "Carbohid.", "var(--c-carb)", " g"], ["g", "grasas", "Grasa", "var(--c-gras)", " g"]];
+    inp.oninput = () => { const v = parseInt(inp.value, 10); if (v > 0) { item[1] = v; cb(); } }; inp.onfocus = () => inp.select(); }
+  const COLS = [["kcal", "calorias", "Calorías", ""], ["p", "proteina", "Proteína", " g"], ["c", "carbohidratos", "Carbohid.", " g"], ["g", "grasas", "Grasa", " g"]];
 
-  /* =================== Pantalla común: avance + comidas + completado =================== */
-  function crearMenu(el, abrirVentana) {
+  /* ---------- Estado de color según el porcentaje ---------- */
+  const estado = (p) => p > 1.05 ? "exceso" : p >= .85 ? "meta" : p > 0 ? "bajo" : "cero";
+  const COLOR = { cero: "var(--border)", bajo: "var(--st-bajo)", meta: "var(--st-meta)", exceso: "var(--st-exceso)" };
+  const TEXTO = (p) => p > 1.05 ? `▲ Te pasaste ${R((p - 1) * 100)} %` : p >= 1 ? "✓ ¡Meta cumplida!" : p >= .85 ? "● ¡Por llegar a tu meta!" : p > 0 ? "◐ Vas en camino" : "○ Elige tu primera comida";
+  /* Anillo con vuelta extra cuando pasa de 100 % */
+  function anilloAvance(size, gr) { const r = (size - gr) / 2, c = 2 * Math.PI * r, h = size / 2;
+    return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--tint)" stroke-width="${gr}"/>
+      <circle class="arco" cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--st-bajo)" stroke-width="${gr}" stroke-linecap="round" transform="rotate(-90 ${h} ${h})" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${c.toFixed(1)}" data-c="${c.toFixed(1)}"/>
+      <circle class="extra" cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--st-exceso)" stroke-width="${gr - 3}" stroke-linecap="round" transform="rotate(-90 ${h} ${h})" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${c.toFixed(1)}" data-c="${c.toFixed(1)}" style="filter:brightness(.8)"/></svg>`; }
+  function pintarAvance(cont, p) {
+    const ring = $(".ring", cont), a = $(".arco", ring), x = $(".extra", ring), c = +a.dataset.c, est = estado(p);
+    a.style.stroke = COLOR[est]; a.style.strokeDashoffset = (c * (1 - Math.min(1, p))).toFixed(1);
+    x.style.strokeDashoffset = (c * (1 - Math.max(0, Math.min(1, p - 1)))).toFixed(1);
+    const prev = cont.dataset.est; cont.classList.remove("est-cero", "est-bajo", "est-meta", "est-exceso"); void cont.offsetWidth; cont.classList.add("est-" + est); cont.dataset.est = est;
+    $(".estado-tx", cont).textContent = TEXTO(p);
+    if (est === "meta" && prev !== "meta" && p >= .85) estallar($(".ring-wrap", cont), "var(--st-meta)");
+  }
+  function estallar(wrap, col) { if (RAP.v || !wrap) return; for (let i = 0; i < 14; i++) { const s = document.createElement("i"); s.className = "particula"; const ang = i / 14 * Math.PI * 2, d = 46 + Math.random() * 16;
+    s.style.cssText = `left:50%;top:50%;margin:-3px;background:${i % 3 ? col : "#FFD447"};--x:${(Math.cos(ang) * d).toFixed(0)}px;--y:${(Math.sin(ang) * d).toFixed(0)}px`; wrap.appendChild(s); setTimeout(() => s.remove(), 850); } }
+  const avanceHTML = () => `<div class="card avance"><div class="av-top"><span class="ring-wrap">${anilloAvance(88, 10)}</span><div class="info"><div class="grande n-num pcw"><span class="pc">0</span><small>%</small></div><p>de tu meta de hoy · <span class="n-num kk" style="color:var(--text)">0</span> de ${META.kcal} kcal</p><span class="estado-tx"></span></div></div>
+    <div class="nutris">${COLS.map(([k, ik, n, u]) => `<div class="nutri" data-k="${k}">${icoN(ik, 30)}<span class="val"><span class="n-num v">0</span>${u}</span><div class="barra"><i style="width:0"></i></div><small>${n} · <span class="pp">0</span>%</small></div>`).join("")}</div></div>`;
+  function actualizarAvance(cont, t, p0, latir) {
+    pintarAvance(cont, t.kcal / META.kcal);
+    contar($(".pc", cont), p0.kcal / META.kcal * 100, t.kcal / META.kcal * 100, 900); contar($(".kk", cont), p0.kcal, t.kcal, 900);
+    cont.querySelectorAll(".nutri").forEach((n) => { const k = n.dataset.k, p = t[k] / META[k], est = estado(p);
+      contar($(".v", n), p0[k], t[k], 900); contar($(".pp", n), p0[k] / META[k] * 100, p * 100, 900);
+      const bar = $(".barra i", n); bar.style.width = Math.min(100, p * 100) + "%"; bar.style.background = COLOR[est];
+      n.classList.toggle("exceso", est === "exceso");
+      if (latir && t[k] !== p0[k]) { const i = $(".ico", n); i.classList.remove("late"); void i.offsetWidth; i.classList.add("late"); } });
+  }
+
+  /* ---------- Pantalla del Menú ---------- */
+  function crearMenu(el) {
     const M = { el, dia: {}, previo: { kcal: 0, p: 0, c: 0, g: 0 } };
     el.innerHTML = `<div class="isla"></div><div class="pant"><div class="hero"><div class="top"><span class="marca">NutriClínica</span><span>Reportes · Historial</span></div><h3>Menú de hoy <small>Jueves 22 oct</small></h3></div>
-      <div class="hoja">
-        <div class="card avance"><div class="av-top">${anillo(0, 84, 9, "var(--accent)", "ring")}<div class="info"><div class="grande n-num"><span class="pc">0</span><small>%</small></div><p>de tu meta de hoy<br><span class="n-num kk" style="color:var(--text)">0</span> de ${META.kcal} kcal</p></div></div>
-          <div class="nutris">${COLS.map(([k, ik, n, col, u]) => `<div class="nutri" data-k="${k}">${icoN(ik, 30)}<span class="val"><span class="n-num v">0</span>${u}</span><div class="barra"><i style="width:0;background:${col}"></i></div><small>${n} · <span class="pp">0</span>%</small></div>`).join("")}</div></div>
-        <p class="t-sec">Elige tus comidas</p>
-        <div class="comidas"></div>
-        <div class="final"></div>
-      </div><div class="navb"><span></span><span></span><span></span><span class="act"><i></i>Menú</span><span></span></div></div>`;
+      <div class="hoja">${avanceHTML()}<p class="t-sec">Elige tus comidas</p><div class="comidas"></div><div class="final"></div></div>
+      <div class="navb"><span></span><span class="reg" title="Registro"></span><span></span><span class="act"><i></i>Menú</span><span></span></div></div>`;
     M.pintarComidas = (recien) => {
       $(".comidas", el).innerHTML = MOMS.map(([k, n, e, p]) => { const its = M.dia[k], t = its ? sum(its) : null, meta = R(META.kcal * p);
         return `<button type="button" class="comida ${its ? "lista" : ""} ${recien === k ? "recien" : ""}" data-m="${k}">${its ? '<span class="ok">✓</span>' : ""}<span class="emo">${e}</span><b>${n}</b>
           ${its ? `<span class="icos">${its.slice(0, 4).map((it) => ico(it[0], 24)).join("")}</span><span class="est"><span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> de ${meta} kcal</span>` : `<span class="est">Meta ${meta} kcal<br>Toca para elegir</span>`}
-          <span class="mini"><i style="width:${its ? Math.min(100, t.kcal / meta * 100) : 0}%"></i></span></button>`; }).join("");
-      el.querySelectorAll(".comida").forEach((b) => b.onclick = () => abrirVentana(M, b.dataset.m, b));
+          <span class="mini"><i style="width:${its ? Math.min(100, t.kcal / meta * 100) : 0}%;background:${its ? COLOR[estado(t.kcal / meta)] : "var(--accent)"}"></i></span></button>`; }).join("");
+      el.querySelectorAll(".comida").forEach((b) => b.onclick = () => { M.W = ventana(M, b.dataset.m); });
     };
     M.actualizar = (recien) => {
       const t = sum(Object.values(M.dia).flat()), p0 = M.previo; M.previo = t;
-      ponerAnillo($(".ring", el), t.kcal / META.kcal); contar($(".pc", el), p0.kcal / META.kcal * 100, t.kcal / META.kcal * 100, 900); contar($(".kk", el), p0.kcal, t.kcal, 900);
-      el.querySelectorAll(".nutri").forEach((n) => { const k = n.dataset.k; contar($(".v", n), p0[k], t[k], 900); contar($(".pp", n), p0[k] / META[k] * 100, t[k] / META[k] * 100, 900); $(".barra i", n).style.width = Math.min(100, t[k] / META[k] * 100) + "%";
-        if (recien && t[k] !== p0[k]) { const i = $(".ico", n); i.classList.remove("late"); void i.offsetWidth; i.classList.add("late"); } });
-      M.pintarComidas(recien);
+      actualizarAvance($(".avance", el), t, p0, !!recien); M.pintarComidas(recien);
       const n = Object.keys(M.dia).length, f = $(".final", el);
       if (n === 4) {
-        f.innerHTML = `<div class="completado"><h4>¡Menú completado!</h4><p>Tus 4 comidas cubren el <b class="n-num" style="color:#fff">${R(t.kcal / META.kcal * 100)}%</b> de tus calorías y el <b class="n-num" style="color:#fff">${R(t.p / META.p * 100)}%</b> de tu proteína.</p><button type="button" class="btn">→ Pasar al registro</button></div>`;
-        const c = $(".completado", f); const cols = ["#FFD447", "#FF7B8E", "#6CB2FF", "#7CF2C5", "#FFFFFF"];
-        for (let i = 0; i < 22; i++) { const s = document.createElement("i"); s.className = "confeti"; s.style.left = (Math.random() * 100) + "%"; s.style.background = cols[i % 5]; s.style.animationDelay = (Math.random() * .5) + "s"; c.appendChild(s); }
+        f.innerHTML = `<div class="completado"><h4>¡Menú completado!</h4><p>Tus 4 comidas cubren el <b class="n-num" style="color:#fff">${R(t.kcal / META.kcal * 100)}%</b> de tus calorías y el <b class="n-num" style="color:#fff">${R(t.p / META.p * 100)}%</b> de tu proteína.</p><button type="button" class="btn pasar">→ Pasar al registro</button></div>`;
+        const c = $(".completado", f), cols = ["#FFD447", "#FF7B8E", "#6CB2FF", "#7CF2C5", "#FFFFFF"];
+        for (let i = 0; i < 22; i++) { const s = document.createElement("i"); s.className = "confeti"; s.style.left = Math.random() * 100 + "%"; s.style.background = cols[i % 5]; s.style.animationDelay = Math.random() * .5 + "s"; c.appendChild(s); }
+        $(".pasar", f).onclick = () => M.pasar();
         if (recien) setTimeout(() => $(".hoja", el).scrollTo({ top: 9999, behavior: "smooth" }), 300);
-      } else f.innerHTML = `<div class="pendiente">Te faltan ${4 - n} comida${4 - n === 1 ? "" : "s"} por elegir para completar el menú.</div>`;
+      } else f.innerHTML = n ? `<div class="pendiente">Te faltan ${4 - n} comida${4 - n === 1 ? "" : "s"} para completar el menú.</div>` : `<div class="pendiente">Toca una comida para empezar tu menú de hoy.</div>`;
     };
     M.confirmar = (mom, its) => { M.dia[mom] = its.map((x) => [x[0], x[1]]); M.actualizar(mom); };
+    /* Pasar al registro: los alimentos viajan a la pestaña Registro y el menú queda vacío */
+    M.pasar = async () => {
+      const r0 = el.getBoundingClientRect(), dest = $(".navb .reg", el).getBoundingClientRect();
+      const icos = [...el.querySelectorAll(".comida .icos .ico")];
+      icos.forEach((ic, i) => { const r = ic.getBoundingClientRect(), c = ic.cloneNode(true); c.classList.add("vuela"); Object.assign(c.style, { left: r.left - r0.left - 9 + "px", top: r.top - r0.top - 9 + "px", transitionDelay: i * 30 + "ms" }); el.appendChild(c);
+        requestAnimationFrame(() => { c.style.transform = `translate(${dest.left - r.left}px, ${dest.top - r.top}px) scale(.4)`; c.style.opacity = "0"; }); setTimeout(() => c.remove(), 1200); });
+      await espera(750); const rg = $(".navb .reg", el); rg.classList.remove("recibe"); void rg.offsetWidth; rg.classList.add("recibe");
+      M.dia = {}; M.actualizar(); $(".hoja", el).scrollTo({ top: 0, behavior: "smooth" });
+      el.insertAdjacentHTML("beforeend", `<div class="toast">✓ Pasado a tu registro de hoy</div>`); setTimeout(() => $(".toast", el)?.remove(), 2700);
+    };
     M.actualizar();
     return M;
   }
-  /* Resumen de la ventana (anillo de la comida) */
-  const resumenHTML = (mom) => `<div class="resumen">${anillo(0, 44, 5, "var(--accent)", "r-ring")}<div class="tx"><b><span class="n-num rk">0</span> de ${R(META.kcal * pctM[mom])} kcal</b><span class="rt">Nada elegido aún</span></div><span class="n-num rp" style="font-size:16px">0%</span></div>`;
-  function ponerResumen(v, mom, its, ant) {
-    const t = sum(its), meta = META.kcal * pctM[mom];
-    ponerAnillo($(".r-ring", v), t.kcal / meta); contar($(".rk", v), ant || 0, t.kcal, 400);
-    $(".rp", v).textContent = R(t.kcal / meta * 100) + "%"; $(".rt", v).innerHTML = its.length ? `<span class="n-num">${t.p.toFixed(1)}</span> g prot · <span class="n-num">${t.c.toFixed(1)}</span> g carb · <span class="n-num">${t.g.toFixed(1)}</span> g grasa` : "Nada elegido aún";
-    const r = $(".resumen", v); r.classList.remove("salta"); void r.offsetWidth; r.classList.add("salta");
-    return t.kcal;
-  }
-  const cabV = (mom) => { const m = MOMS.find((x) => x[0] === mom); return `<div class="v-cab"><span style="font-size:24px">${m[2]}</span><h4>${m[1]}<small>${VAR[mom].length} variantes tuyas · meta ${R(META.kcal * m[3])} kcal</small></h4><button type="button" class="cerrar" aria-label="Cerrar">✕</button></div>`; };
 
-  /* =================== Opción 1: carrusel de variantes =================== */
-  function ventana1(M, mom) {
-    const el = M.el; el.classList.add("ventana-abierta");
-    const vs = VAR[mom].map(([n, veces, its]) => ({ n, veces, base: its, por: 1, its: its.map((x) => [x[0], x[1]]) }));
-    let elegida = null, ant = 0;
-    el.insertAdjacentHTML("beforeend", `<div class="ventana"><div class="asa"></div>${cabV(mom)}${resumenHTML(mom)}<div class="v-cuerpo"><div class="carrusel"></div><div class="puntos">${vs.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div></div><button type="button" class="btn listo" disabled>Elige una variante</button></div>`);
-    const v = $(".ventana", el), car = $(".carrusel", v);
-    const tarjeta = (x, i) => { const t = sum(x.its), meta = META.kcal * pctM[mom];
-      return `<div class="var ${elegida === i ? "elegida" : ""}" data-i="${i}"><div class="portada">${x.its.slice(0, 4).map((it) => ico(it[0], 46)).join("")}${elegida === i ? '<span class="sello">✓ Elegida</span>' : ""}</div>
-        <h5>${x.n}</h5><div class="meta-v"><span class="veces">La preparaste ${x.veces} veces</span><span><span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> kcal · ${R(t.kcal / meta * 100)}%</span></div>
-        <div class="porciones" aria-label="Porciones">${[.5, 1, 1.5, 2].map((p) => `<button type="button" data-p="${p}" class="${x.por === p ? "on" : ""}">${p === .5 ? "½" : p === 1.5 ? "1½" : p}</button>`).join("")}</div>
-        <div style="display:flex;flex-direction:column;gap:5px">${x.its.map((it, j) => `<div class="it" data-j="${j}">${ico(it[0], 26)}<span class="nm">${corto(it[0])}</span>${stepper(it[1])}</div>`).join("")}</div>
-        <button type="button" class="btn elegir">${elegida === i ? "✓ Elegida" : "Elegir esta"}</button></div>`; };
-    const pintar = (sc) => { const s = car.scrollLeft; car.innerHTML = vs.map(tarjeta).join(""); car.scrollLeft = sc ?? s; atar(); };
-    const refrescarUna = (i) => { const old = car.querySelector(`.var[data-i="${i}"]`); old.outerHTML = tarjeta(vs[i], i); atar(); };
-    const elegir = (i) => { elegida = i; pintar(); ant = ponerResumen(v, mom, vs[i].its, ant); const b = $(".listo", v); b.disabled = false; b.textContent = `Confirmar ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()}`; };
-    const atar = () => car.querySelectorAll(".var").forEach((c) => { const i = +c.dataset.i, x = vs[i];
-      c.querySelectorAll(".porciones button").forEach((b) => b.onclick = () => { x.por = +b.dataset.p; x.its = x.base.map((it) => [it[0], R(it[1] * x.por / 5) * 5]); refrescarUna(i); if (elegida === i) ant = ponerResumen(v, mom, x.its, ant); });
-      c.querySelectorAll(".it").forEach((r) => atarStepper($(".stepper", r), x.its[+r.dataset.j], () => { if (elegida === i) ant = ponerResumen(v, mom, x.its, ant); const t = sum(x.its); $(".meta-v span:last-child", c).innerHTML = `<span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> kcal · ${R(t.kcal / (META.kcal * pctM[mom]) * 100)}%`; }));
-      $(".elegir", c).onclick = () => elegir(i); });
-    car.addEventListener("scroll", () => { const i = R(car.scrollLeft / (car.scrollWidth / vs.length)); v.querySelectorAll(".puntos i").forEach((p, j) => p.classList.toggle("on", j === i)); });
-    pintar(0);
-    const cerrar = async (ok) => { v.classList.add("cierra"); el.classList.remove("ventana-abierta"); await espera(330); v.remove(); if (ok) M.confirmar(mom, vs[elegida].its); };
-    $(".cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
-    return { v, car, elegir, vs, deslizar: (i) => car.scrollTo({ left: i * (car.scrollWidth / vs.length), behavior: RAP.v ? "auto" : "smooth" }), cerrar };
-  }
-
-  /* =================== Opción 2: arrastra al plato =================== */
-  const POS = [[50, 27], [74, 46], [66, 73], [36, 75], [24, 50], [32, 27], [56, 52]];
-  function ventana2(M, mom, desde) {
-    const el = M.el; const r0 = el.getBoundingClientRect(), rb = desde.getBoundingClientRect();
-    const ox = rb.left - r0.left + rb.width / 2, oy = rb.top - r0.top + rb.height / 2;
-    let elegidos = [], ant = 0;
-    el.insertAdjacentHTML("beforeend", `<div class="ventana zoom" style="--ox:${ox}px;--oy:${oy}px">${cabV(mom)}
-      <div class="plato-v">${anillo(0, 170, 7, "var(--accent)", "aro")}<div class="base"></div><div class="centro"><div><strong class="n-num pk">0</strong><span>kcal · <span class="pm">0</span>% de la meta</span></div></div></div>
-      <p class="pista">Arrastra una variante al plato o toca +</p>
-      <div class="v-cuerpo"><div class="elegidos"></div><p class="t-sec" style="margin-bottom:0">Tus variantes</p><div class="arrastrables">${VAR[mom].map(([n, veces, its], i) => `<div class="drag" data-i="${i}"><span class="agarre">⋮⋮</span><span class="icos">${its.slice(0, 3).map((it) => ico(it[0], 28)).join("")}</span><span class="nm">${n}<small>${R(sum(its).kcal)} kcal · ${veces} veces</small></span><button type="button" class="mas" aria-label="Agregar">+</button></div>`).join("")}</div></div>
-      <button type="button" class="btn listo" disabled>Pon algo en el plato</button></div>`);
-    const v = $(".ventana", el), plato = $(".plato-v", v);
-    const pintarPlato = () => {
-      plato.querySelectorAll(".en-plato").forEach((e) => { if (!elegidos.some((x) => x[0] === e.dataset.id)) e.remove(); });
-      elegidos.slice(0, 7).forEach((it) => { if (plato.querySelector(`[data-id="${it[0]}"]`)) return; const j = POS.findIndex((p, j) => !plato.querySelector(`[data-p="${j}"]`)); if (j < 0) return;
-        plato.insertAdjacentHTML("beforeend", `<span class="en-plato" data-id="${it[0]}" data-p="${j}" style="left:${POS[j][0]}%;top:${POS[j][1]}%;animation-delay:${(elegidos.indexOf(it) % 4) * 90}ms">${ico(it[0], 38)}</span>`); });
-      const t = sum(elegidos), meta = META.kcal * pctM[mom]; ponerAnillo($(".aro", plato), t.kcal / meta); contar($(".pk", v), ant, t.kcal, 500); ant = t.kcal; $(".pm", v).textContent = R(t.kcal / meta * 100);
-      $(".elegidos", v).innerHTML = elegidos.map((it, i) => `<div class="it sube" data-i="${i}">${ico(it[0], 26)}<span class="nm">${corto(it[0])}</span><span class="gr">${R(ap(it).kcal)} kcal</span>${stepper(it[1])}<button type="button" class="cerrar" style="width:24px;height:24px;font-size:11px" aria-label="Quitar">✕</button></div>`).join("");
-      v.querySelectorAll(".elegidos .it").forEach((r) => { const it = elegidos[+r.dataset.i]; atarStepper($(".stepper", r), it, () => { $(".gr", r).textContent = R(ap(it).kcal) + " kcal"; const t2 = sum(elegidos); ponerAnillo($(".aro", plato), t2.kcal / meta); $(".pk", v).textContent = R(t2.kcal); ant = t2.kcal; $(".pm", v).textContent = R(t2.kcal / meta * 100); });
-        $(".cerrar", r).onclick = () => { elegidos.splice(+r.dataset.i, 1); pintarPlato(); }; });
-      const b = $(".listo", v); b.disabled = !elegidos.length; b.textContent = elegidos.length ? `Confirmar ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()} · ${R(t.kcal)} kcal` : "Pon algo en el plato";
-    };
-    const soltar = (i) => { VAR[mom][i][2].forEach((it) => { const p = elegidos.find((x) => x[0] === it[0]); if (p) p[1] += it[1]; else elegidos.push([it[0], it[1]]); }); v.querySelector(`.drag[data-i="${i}"]`).classList.add("usada"); pintarPlato(); };
-    v.querySelectorAll(".drag").forEach((d) => {
-      $(".mas", d).onclick = (e) => { e.stopPropagation(); soltar(+d.dataset.i); };
-      d.addEventListener("pointerdown", (e) => {
-        if (e.target.closest(".mas")) return; e.preventDefault();
-        const vr = el.getBoundingClientRect(); const g = document.createElement("div"); g.className = "fantasma"; g.innerHTML = $(".icos", d).innerHTML; el.appendChild(g);
-        const mover = (ev) => { g.style.left = ev.clientX - vr.left - 30 + "px"; g.style.top = ev.clientY - vr.top - 20 + "px"; const pr = plato.getBoundingClientRect(); plato.classList.toggle("sobre", ev.clientX > pr.left && ev.clientX < pr.right && ev.clientY > pr.top && ev.clientY < pr.bottom); };
-        mover(e);
-        const fin = (ev) => { window.removeEventListener("pointermove", mover); window.removeEventListener("pointerup", fin); g.remove(); if (plato.classList.contains("sobre")) soltar(+d.dataset.i); plato.classList.remove("sobre"); };
-        window.addEventListener("pointermove", mover); window.addEventListener("pointerup", fin);
-      });
-    });
-    const cerrar = async (ok) => { v.classList.add("cierra"); await espera(330); v.remove(); if (ok) M.confirmar(mom, elegidos); };
-    $(".v-cab .cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
-    /* Arrastre simulado para la demo */
-    const arrastrar = async (i) => {
-      const d = v.querySelector(`.drag[data-i="${i}"]`); if (RAP.v) return soltar(i);
-      const vr = el.getBoundingClientRect(), dr = d.getBoundingClientRect(), pr = plato.getBoundingClientRect();
-      const g = document.createElement("div"); g.className = "fantasma"; g.innerHTML = $(".icos", d).innerHTML; g.style.transition = "left .7s cubic-bezier(.2,0,0,1), top .7s cubic-bezier(.2,0,0,1)";
-      g.style.left = dr.left - vr.left + 20 + "px"; g.style.top = dr.top - vr.top + "px"; el.appendChild(g); await espera(60);
-      g.style.left = pr.left - vr.left + pr.width / 2 - 40 + "px"; g.style.top = pr.top - vr.top + pr.height / 2 - 20 + "px"; await espera(450); plato.classList.add("sobre"); await espera(300);
-      g.remove(); plato.classList.remove("sobre"); soltar(i);
-    };
-    return { v, arrastrar, cerrar, elegidos: () => elegidos };
-  }
-
-  /* =================== Opción 3: arma por partes =================== */
+  /* ---------- Ventana "Arma por partes" con selección que sube ---------- */
   const PARTES = [["Base", ["carbohidrato", "quinua", "menestra"]], ["Proteína", ["proteina"]], ["Lácteos", ["lacteo"]], ["Fruta", ["fruta"]], ["Verduras", ["vegetal"]], ["Extras", ["grasa"]]];
-  function ventana3(M, mom) {
+  const anilloSimple = (size, gr) => { const r = (size - gr) / 2, c = 2 * Math.PI * r, h = size / 2; return `<svg class="r-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--tint)" stroke-width="${gr}"/><circle class="arco" cx="${h}" cy="${h}" r="${r}" fill="none" stroke="var(--st-bajo)" stroke-width="${gr}" stroke-linecap="round" transform="rotate(-90 ${h} ${h})" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${c.toFixed(1)}" data-c="${c.toFixed(1)}" style="transition:stroke-dashoffset .6s var(--e-standard), stroke .5s"/></svg>`; };
+  function ventana(M, mom) {
     const el = M.el; el.classList.add("push-abierta");
-    const por = {}; VAR[mom].forEach(([, , its]) => its.forEach(([id, g]) => { (por[id] = por[id] || []).push(g); }));
+    const por = {}; VAR[mom].forEach(([, its]) => its.forEach(([id, g]) => (por[id] = por[id] || []).push(g)));
     const porcion = (id) => R(por[id].reduce((a, b) => a + b, 0) / por[id].length / 5) * 5;
-    const cant = {}; let ant = 0, rapida = null;
     const partes = PARTES.map(([n, cats]) => [n, Object.keys(por).filter((id) => cats.includes(BASE[id].cat))]).filter((p) => p[1].length);
-    el.insertAdjacentHTML("beforeend", `<div class="ventana push">${cabV(mom)}${resumenHTML(mom)}<div class="v-cuerpo">
-      <p class="t-sec" style="margin-bottom:0">Tus variantes · un toque</p><div class="rapidas">${VAR[mom].map(([n, , its], i) => `<button type="button" class="rapida" data-i="${i}"><span class="icos">${its.slice(0, 3).map((it) => ico(it[0], 20)).join("")}</span>${n}</button>`).join("")}</div>
-      ${partes.map(([n, ids]) => `<div class="parte"><h6>${n}</h6><div class="rejilla">${ids.map((id, i) => `<button type="button" class="tile" data-id="${id}" style="animation:sube .4s var(--e-over) ${i * 50}ms both">${ico(id, 34)}<span class="tn">${corto(id)}</span></button>`).join("")}</div></div>`).join("")}
-      <div class="elegidos"></div></div><button type="button" class="btn listo" disabled>Toca los alimentos que comerás</button></div>`);
-    const v = $(".ventana", el);
-    const its = () => Object.keys(cant).filter((id) => cant[id].n > 0).map((id) => [id, cant[id].g * cant[id].n]);
-    const ref = () => {
-      v.querySelectorAll(".tile").forEach((t) => { const c = cant[t.dataset.id]; t.classList.toggle("on", !!(c && c.n)); t.querySelectorAll(".badge,.menos").forEach((x) => x.remove()); if (c && c.n) t.insertAdjacentHTML("afterbegin", `<span class="badge">×${c.n}</span><span class="menos" role="button" aria-label="Quitar una porción">−</span>`); });
-      v.querySelectorAll(".tile .menos").forEach((m) => m.onclick = (e) => { e.stopPropagation(); const id = m.closest(".tile").dataset.id; cant[id].n--; rapida = null; ref(); });
-      const lista = its();
-      $(".elegidos", v).innerHTML = lista.length ? `<p class="t-sec" style="margin:4px 2px 2px">Tu ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()}</p>` + lista.map(([id, g]) => `<div class="it" data-id="${id}">${ico(id, 26)}<span class="nm">${corto(id)}</span><span class="gr">${R(ap([id, g]).kcal)} kcal</span>${stepper(g)}</div>`).join("") : "";
-      v.querySelectorAll(".elegidos .it").forEach((r) => { const id = r.dataset.id, obj = [id, cant[id].g * cant[id].n]; atarStepper($(".stepper", r), obj, () => { cant[id].g = obj[1] / cant[id].n; $(".gr", r).textContent = R(ap(obj).kcal) + " kcal"; ant = ponerResumen(v, mom, its(), ant); }); });
-      v.querySelectorAll(".rapida").forEach((b) => b.classList.toggle("on", +b.dataset.i === rapida));
-      ant = ponerResumen(v, mom, lista, ant);
-      const b = $(".listo", v); b.disabled = !lista.length; b.textContent = lista.length ? `Confirmar ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()} · ${R(sum(lista).kcal)} kcal` : "Toca los alimentos que comerás";
+    const meta = META.kcal * pctM[mom];
+    let sel = [], variante = null, ant = 0;   // sel: [id, gramos] en el orden en que se eligieron
+    el.insertAdjacentHTML("beforeend", `<div class="ventana push"><div class="v-cab"><span style="font-size:24px">${MOMS.find((m) => m[0] === mom)[2]}</span><h4>${nomM[mom]}<small>Meta ${R(meta)} kcal</small></h4><button type="button" class="cerrar" aria-label="Cerrar">✕</button></div>
+      <div class="resumen">${anilloSimple(44, 5)}<div class="tx"><b><span class="n-num rk">0</span> de ${R(meta)} kcal</b><span class="rt">Elige una variante o toca alimentos</span></div><span class="n-num rp" style="font-size:16px">0%</span></div>
+      <div class="v-cuerpo"><p class="t-sec" style="margin-bottom:0">Tus variantes · un toque</p>
+        <div class="rapidas">${VAR[mom].map(([n, its], i) => `<button type="button" class="rapida" data-i="${i}"><span class="icos">${its.slice(0, 3).map((it) => ico(it[0], 20)).join("")}</span>${n}</button>`).join("")}</div>
+        <div class="seleccion" hidden><div class="t-sel"><span>Tu ${nomM[mom].toLowerCase()}</span><button type="button" class="limpiar">Empezar de nuevo</button></div><div class="rejilla sel-tiles"></div><div class="pesos"></div></div>
+        <div class="resto"></div></div>
+      <button type="button" class="btn listo" disabled>Elige lo que comerás</button></div>`);
+    const v = $(".ventana", el), cuerpo = $(".v-cuerpo", v);
+    const tileHTML = (id, elegido) => `<button type="button" class="tile flip ${elegido ? "elegido-t" : ""}" data-id="${id}">${ico(id, 34)}<span class="tn">${corto(id)}</span></button>`;
+    /* FLIP: guarda dónde estaba cada mosaico, vuelve a pintar y lo anima desde su lugar anterior */
+    const posiciones = () => Object.fromEntries([...v.querySelectorAll(".tile[data-id]")].map((t) => [t.dataset.id, t.getBoundingClientRect()]));
+    const animarDesde = (antes) => { if (RAP.v) return; v.querySelectorAll(".tile[data-id]").forEach((t) => { const a = antes[t.dataset.id]; if (!a) return; const b = t.getBoundingClientRect(); const dx = a.left - b.left, dy = a.top - b.top; if (!dx && !dy) return;
+      t.style.transition = "none"; t.style.transform = `translate(${dx}px, ${dy}px)`; t.style.zIndex = t.classList.contains("elegido-t") ? 3 : 1; requestAnimationFrame(() => requestAnimationFrame(() => { t.style.transition = ""; t.style.transform = ""; })); }); };
+    const resumen = () => { const t = sum(sel), p = t.kcal / meta, a = $(".r-ring .arco", v); a.style.stroke = COLOR[estado(p)]; a.style.strokeDashoffset = (+a.dataset.c * (1 - Math.min(1, p))).toFixed(1);
+      contar($(".rk", v), ant, t.kcal, 400); ant = t.kcal; $(".rp", v).textContent = R(p * 100) + "%"; $(".rp", v).style.color = COLOR[estado(p)];
+      $(".rt", v).innerHTML = sel.length ? `<span class="n-num">${t.p.toFixed(1)}</span> g prot · <span class="n-num">${t.c.toFixed(1)}</span> g carb · <span class="n-num">${t.g.toFixed(1)}</span> g grasa` : "Elige una variante o toca alimentos";
+      const b = $(".listo", v); b.disabled = !sel.length; b.textContent = sel.length ? `Confirmar ${nomM[mom].toLowerCase()} · ${R(t.kcal)} kcal` : "Elige lo que comerás"; };
+    const pintar = (nuevos = []) => {
+      const antes = posiciones(), elegidos = new Set(sel.map((x) => x[0]));
+      $(".seleccion", v).hidden = !sel.length;
+      $(".sel-tiles", v).innerHTML = sel.map(([id]) => tileHTML(id, true)).join("");
+      $(".pesos", v).innerHTML = sel.map(([id, g], i) => `<div class="it ${nuevos.includes(id) ? "peso-in" : ""}" data-i="${i}" style="animation-delay:${nuevos.indexOf(id) * 80 + 380}ms">${ico(id, 26)}<span class="nm">${corto(id)}<small class="gr">${R(ap([id, g]).kcal)} kcal</small></span>${stepper(g)}<button type="button" class="quitar" aria-label="Quitar ${corto(id)}">✕</button></div>`).join("");
+      const restoParts = partes.map(([n, ids]) => [n, ids.filter((id) => !elegidos.has(id))]).filter((p) => p[1].length);
+      $(".resto", v).classList.toggle("atenuado", !!sel.length);
+      $(".resto", v).innerHTML = (sel.length ? `<p class="algo-mas">¿Algo más? Toca para sumar</p>` : "") + restoParts.map(([n, ids]) => `<div class="parte"><h6>${n}</h6><div class="rejilla">${ids.map((id) => tileHTML(id, false)).join("")}</div></div>`).join("");
+      v.querySelectorAll(".rapida").forEach((b) => b.classList.toggle("on", +b.dataset.i === variante));
+      animarDesde(antes); atar(); resumen();
     };
-    v.querySelectorAll(".tile").forEach((t) => t.onclick = () => { const id = t.dataset.id; cant[id] = cant[id] || { n: 0, g: porcion(id) }; cant[id].n++; rapida = null; ref(); });
-    v.querySelectorAll(".rapida").forEach((b) => b.onclick = () => { Object.keys(cant).forEach((k) => delete cant[k]); VAR[mom][+b.dataset.i][2].forEach(([id, g]) => cant[id] = { n: 1, g }); rapida = +b.dataset.i; ref(); });
-    const cerrar = async (ok) => { v.classList.add("cierra"); el.classList.remove("push-abierta"); await espera(260); v.remove(); if (ok) M.confirmar(mom, its()); };
-    $(".v-cab .cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
+    const atar = () => {
+      v.querySelectorAll(".resto .tile").forEach((t) => t.onclick = () => { sel.push([t.dataset.id, porcion(t.dataset.id)]); variante = null; pintar([t.dataset.id]); });
+      v.querySelectorAll(".pesos .it").forEach((r) => { const it = sel[+r.dataset.i]; atarStepper($(".stepper", r), it, () => { $(".gr", r).textContent = R(ap(it).kcal) + " kcal"; resumen(); });
+        $(".quitar", r).onclick = () => { sel.splice(+r.dataset.i, 1); variante = null; pintar(); }; });
+    };
+    v.querySelectorAll(".rapida").forEach((b) => b.onclick = () => { variante = +b.dataset.i; sel = VAR[mom][variante][1].map(([id, g]) => [id, g]); pintar(sel.map((x) => x[0])); cuerpo.scrollTo({ top: 0, behavior: RAP.v ? "auto" : "smooth" }); });
+    $(".limpiar", v).onclick = () => { sel = []; variante = null; pintar(); };
+    const cerrar = async (ok) => { v.classList.add("cierra"); el.classList.remove("push-abierta"); await espera(260); v.remove(); if (ok) M.confirmar(mom, sel); };
+    $(".cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
+    pintar();
     return { v, cerrar };
   }
 
-  /* =================== Montaje y demos =================== */
-  const T = { 1: { el: $("#tel1"), vent: ventana1 }, 2: { el: $("#tel2"), vent: ventana2 }, 3: { el: $("#tel3"), vent: ventana3 } };
-  const montar = (k) => { T[k].M = crearMenu(T[k].el, (M, mom, b) => { T[k].W = T[k].vent(M, mom, b); }); return T[k].M; };
-  const abrir = async (k, mom, ms = 700) => { T[k].el.querySelector(`.comida[data-m="${mom}"]`).click(); await espera(ms); return T[k].W; };
-  const clic = async (el, ms = 400) => { if (el) { el.click(); await espera(ms); } };
-  const DEMOS = {
-    async 1() {
-      montar(1); await espera(900);
-      let W = await abrir(1, "desayuno"); W.deslizar(1); await espera(800); W.deslizar(2); await espera(800); W.deslizar(0); await espera(700);
-      W.elegir(0); await espera(500); await clic(W.v.querySelector('.var[data-i="0"] .porciones [data-p="1.5"]'), 600); await clic(W.v.querySelector(".listo"), 1500);
-      W = await abrir(1, "almuerzo"); W.deslizar(1); await espera(700); W.elegir(1); await espera(400); W.deslizar(1); await espera(500); await clic(W.v.querySelector(".listo"), 1300);
-      W = await abrir(1, "cena"); W.elegir(0); await espera(500); await clic(W.v.querySelector(".listo"), 1300);
-      W = await abrir(1, "colacion"); W.deslizar(1); await espera(600); W.elegir(1); await espera(500); await clic(W.v.querySelector(".listo"), 1000);
-    },
-    async 2() {
-      montar(2); await espera(900);
-      let W = await abrir(2, "desayuno"); await W.arrastrar(2); await espera(700);
-      const mas = W.v.querySelector(".elegidos .it .stepper button[data-d='1']"); await clic(mas, 300); await clic(W.v.querySelector(".listo"), 1500);
-      W = await abrir(2, "almuerzo"); await W.arrastrar(0); await espera(600); await clic(W.v.querySelector(".listo"), 1300);
-      W = await abrir(2, "cena"); await W.arrastrar(1); await espera(600); await clic(W.v.querySelector(".listo"), 1300);
-      W = await abrir(2, "colacion"); await W.arrastrar(0); await espera(500); await clic(W.v.querySelector(".listo"), 1000);
-    },
-    async 3() {
-      montar(3); await espera(900);
-      let W = await abrir(3, "desayuno"); for (const id of ["f27", "f08", "f65", "f65"]) await clic(W.v.querySelector(`.tile[data-id="${id}"]`), 380); await espera(500); await clic(W.v.querySelector(".listo"), 1400);
-      W = await abrir(3, "almuerzo"); await clic(W.v.querySelector('.rapida[data-i="0"]'), 900); await clic(W.v.querySelector(".listo"), 1300);
-      W = await abrir(3, "cena"); await clic(W.v.querySelector('.rapida[data-i="1"]'), 800); await clic(W.v.querySelector(".listo"), 1300);
-      W = await abrir(3, "colacion"); await clic(W.v.querySelector('.tile[data-id="f20"]'), 400); await clic(W.v.querySelector('.tile[data-id="f27"]'), 500); await clic(W.v.querySelector(".listo"), 1000);
-    },
-  };
-  Object.keys(T).forEach(montar);
-  $("#demo").onclick = () => Object.keys(DEMOS).forEach((k) => DEMOS[k]());
-  $("#reinicia").onclick = () => Object.keys(T).forEach(montar);
-  document.querySelectorAll("[data-solo]").forEach((b) => b.onclick = () => DEMOS[b.dataset.solo]());
-  document.querySelectorAll("[data-tema]").forEach((b) => b.onclick = () => { document.querySelectorAll("[data-tema]").forEach((x) => x.setAttribute("aria-pressed", x === b)); document.querySelectorAll(".tel").forEach((t) => t.classList.toggle("oscuro", b.dataset.tema === "oscuro")); });
+  /* ---------- Muestras de los tres estados ---------- */
+  const ESTADOS = [[.6, "Vas en camino", "Menos de 85 %: naranja. El anillo respira suavemente para invitar a completar."], [.97, "Por llegar o en la meta", "Entre 85 % y 105 %: verde. Al entrar en la meta el anillo brilla y suelta un estallido de partículas."], [1.18, "Te pasaste", "Más de 105 %: rojo. El anillo da una segunda vuelta con lo que sobra y se sacude, igual que el ícono del nutriente pasado."]];
+  function pintarEstados() {
+    const cont = $("#estados"); cont.innerHTML = ESTADOS.map(([p, t, d], i) => `<div class="estado-c"><div class="muestra tel-mini" data-i="${i}">${avanceHTML()}</div><b>${t}</b><p>${d}</p></div>`).join("");
+    cont.querySelectorAll(".tel-mini").forEach((m) => { const p = ESTADOS[+m.dataset.i][0]; const t = { kcal: META.kcal * p, p: META.p * (p + .1), c: META.c * (p - .05), g: META.g * (p * .9) };
+      setTimeout(() => actualizarAvance($(".avance", m), t, { kcal: 0, p: 0, c: 0, g: 0 }, false), 400 + +m.dataset.i * 300); });
+  }
+
+  /* ---------- Montaje y demo ---------- */
+  let M = crearMenu($("#tel"));
+  const clic = async (s, ms = 450, r = document) => { const e = typeof s === "string" ? $(s, r) : s; if (e) { e.click(); await espera(ms); } };
+  async function demo() {
+    M = crearMenu($("#tel")); const el = $("#tel"); await espera(900);
+    await clic('.comida[data-m="desayuno"]', 600, el); await clic('.rapida[data-i="1"]', 1300, el);
+    await clic('.resto .tile[data-id="f23"]', 1000, el); await clic('.pesos .it:last-child .stepper button[data-d="-1"]', 300, el); await clic('.pesos .it:last-child .stepper button[data-d="-1"]', 600, el);
+    await clic(".ventana .listo", 1600, el);
+    await clic('.comida[data-m="almuerzo"]', 600, el); await clic('.rapida[data-i="0"]', 1200, el); await clic(".ventana .listo", 1500, el);
+    await clic('.comida[data-m="cena"]', 600, el); await clic('.rapida[data-i="1"]', 1100, el); await clic(".ventana .listo", 1700, el);
+    await clic('.comida[data-m="colacion"]', 600, el); await clic('.rapida[data-i="0"]', 1000, el); await clic(".ventana .listo", 2600, el);
+    await clic(".pasar", 600, el);
+  }
+  $("#demo").onclick = demo;
+  $("#reinicia").onclick = () => { M = crearMenu($("#tel")); pintarEstados(); };
+  document.querySelectorAll("[data-tema]").forEach((b) => b.onclick = () => { document.querySelectorAll("[data-tema]").forEach((x) => x.setAttribute("aria-pressed", x === b)); document.querySelectorAll(".tel, .tel-mini").forEach((t) => t.classList.toggle("oscuro", b.dataset.tema === "oscuro")); });
+  pintarEstados();
   try { if (matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light") $("[data-tema='oscuro']").click(); } catch (e) {}
-  window.__T = T; window.__abrir = abrir;
-  setTimeout(() => $("#demo").click(), 700);
+  window.__M = () => M;
+  setTimeout(demo, 700);
 })();
 </script>
