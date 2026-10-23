@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "NutriClínica",
+  "short_name": "NutriApp",
+  "description": "Nutrición clínica para el adulto mayor: registro de alimentos, metas diarias y menú semanal.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#021210",
+  "theme_color": "#004A46",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
