@@ -220,12 +220,12 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .recipientes.sale { animation: saleDer var(--d-base) var(--e-exit) both; }
 .recipientes h5 { margin: 0; font-family: var(--f-titulo); font-weight: 500; font-size: 17px; }
 .recipientes p { margin: -4px 0 0; font-size: 12px; color: var(--text-2); }
-.r-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-.r-op { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--border); font: inherit; color: var(--text); cursor: pointer; animation: cluster var(--d-slower) var(--e-over) both; transition: border-color var(--d-base), background var(--d-base); }
-.r-op b { font-size: 12.5px; font-weight: 600; }
-.r-op span { font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.r-lista { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+.r-op { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px 6px; border-radius: 14px; min-width: 0; text-align: center; background: var(--surface); border: 1.5px solid var(--border); font: inherit; color: var(--text); cursor: pointer; animation: cluster var(--d-slower) var(--e-over) both; transition: border-color var(--d-base), background var(--d-base); }
+.r-op b { font-size: 11px; font-weight: 600; line-height: 1.2; width: 100%; min-height: 2.4em; display: flex; align-items: center; justify-content: center; padding: 0 2px; }
+.r-op span { font-size: 10px; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .r-op.on { border-color: var(--accent); background: var(--tint); }
-.r-op svg { width: 44px; height: 32px; }
+.r-op svg { width: 36px; height: 26px; }
 .r-edit { font-size: 12px; color: var(--accent); font-weight: 600; background: none; border: 0; cursor: pointer; font-family: inherit; align-self: center; }
 /* ---------- Buscar 3: balanza ---------- */
 .pesar { position: absolute; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column; gap: 9px; animation: entraDer var(--d-slow) var(--e-standard) both; }
@@ -1253,9 +1253,14 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
     plato: '<svg viewBox="0 0 44 32"><ellipse cx="22" cy="20" rx="20" ry="7" fill="#E3E8EC"/><ellipse cx="22" cy="18.5" rx="20" ry="6.5" fill="#FFFFFF" stroke="#C7D0DA"/><ellipse cx="22" cy="18.5" rx="12" ry="3.6" fill="none" stroke="#D5DCE3"/></svg>',
     bol1: '<svg viewBox="0 0 44 32"><path d="M4 12h36c0 10-8 17-18 17S4 22 4 12z" fill="#5BA8D8"/><ellipse cx="22" cy="12" rx="18" ry="4" fill="#A9D5F0"/></svg>',
     bol2: '<svg viewBox="0 0 44 32"><path d="M6 10h32c0 11-7 19-16 19S6 21 6 10z" fill="#E59A5C"/><ellipse cx="22" cy="10" rx="16" ry="3.6" fill="#F6C79C"/></svg>',
+    taza: '<svg viewBox="0 0 44 32"><path d="M10 6h20v16a6 6 0 0 1-6 6h-8a6 6 0 0 1-6-6z" fill="#F2F4F7" stroke="#C7D0DA"/><path d="M30 10h3a4 4 0 0 1 0 8h-3" fill="none" stroke="#C7D0DA" stroke-width="2.4"/></svg>',
+    vaso: '<svg viewBox="0 0 44 32"><path d="M14 3h16l-2 26H16z" fill="#D9EEF8" stroke="#9CC9E4"/><path d="M15 12h14l-1.3 16H16.3z" fill="#B7DDF1"/></svg>',
+    tabla: '<svg viewBox="0 0 44 32"><rect x="3" y="9" width="34" height="16" rx="5" fill="#D9A066"/><circle cx="38" cy="17" r="3.5" fill="none" stroke="#B57A3E" stroke-width="2"/><path d="M8 14h22" stroke="#C88A4E" stroke-width="1.2"/></svg>',
     taper: '<svg viewBox="0 0 44 32"><rect x="5" y="11" width="34" height="17" rx="4" fill="#BFE6DC"/><rect x="3" y="7" width="38" height="6" rx="3" fill="#2EA88C"/></svg>',
   };
-  const RECIP2 = [{ id: "plato", n: "Plato", t: 320 }, { id: "bol1", n: "Bol 1", t: 180 }, { id: "bol2", n: "Bol 2", t: 240 }, { id: "taper", n: "Táper", t: 95 }];
+  const RECIP2 = [{ id: "plato", n: "Plato", t: 320 }, { id: "hondo", n: "Plato hondo", t: 360, s: "bol2" }, { id: "bol1", n: "Bol 1", t: 180 }, { id: "bol2", n: "Bol 2", t: 240 },
+    { id: "bol3", n: "Bol 3", t: 150, s: "bol1" }, { id: "bol4", n: "Bol 4", t: 210, s: "bol2" }, { id: "taper", n: "Táper", t: 95 }, { id: "taper2", n: "Táper grande", t: 140, s: "taper" },
+    { id: "taza", n: "Taza", t: 260 }, { id: "vaso", n: "Vaso", t: 210 }, { id: "tabla", n: "Tabla", t: 410 }];
   const recOf = (id) => RECIP2.find((x) => x.id === id) || { id: "ninguno", n: "Sin recipiente", t: 0 };
   function buscar2(H, v) {
     v.innerHTML = `<div class="buscador">🔍<input type="search" placeholder="Busca o filtra tus alimentos…" aria-label="Buscar alimento"></div><p class="t-sec"></p><div class="rejilla"></div>`;
@@ -1280,7 +1285,7 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
           <div class="centrado" style="flex-direction:column;align-items:center;gap:2px"><span class="neto">${o.rec === "ninguno" ? "Peso del alimento" : "Peso total en la balanza"}</span>${stepper(o.g, "grande")}</div>
           <div class="macros"><div><strong>${Math.round(a.kcal)}</strong>kcal</div><div><strong>${a.p.toFixed(1)}<small>g</small></strong>proteína</div><div><strong>${a.c.toFixed(1)}<small>g</small></strong>carbohid.</div><div><strong>${a.g.toFixed(1)}<small>g</small></strong>grasa</div></div>
           <div class="recip"><div class="toggle ${o.rec !== "ninguno" ? "on" : ""}" role="switch" aria-checked="${o.rec !== "ninguno"}"><span>Lo pesé con un recipiente</span><span class="sw"></span></div>
-          ${o.rec !== "ninguno" ? `<div class="recip-fila"><button type="button" class="elegido">${SVG_REC[o.rec].replace("<svg", '<svg width="28" height="20"')}${r.n} · ${r.t} g ›</button><span class="neto">Neto <b>${neto} g</b></span></div>` : ""}</div>
+          ${o.rec !== "ninguno" ? `<div class="recip-fila"><button type="button" class="elegido">${SVG_REC[recOf(o.rec).s || o.rec].replace("<svg", '<svg width="28" height="20"')}${r.n} · ${r.t} g ›</button><span class="neto">Neto <b>${neto} g</b></span></div>` : ""}</div>
           <button type="button" class="btn agr" ${neto > 0 ? "" : "disabled"}><span class="txt">Agregar ${neto} g al plato</span></button>`;
         atarStepper($(".stepper", f), o, () => pintarF());
         f.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { o.g = +b.dataset.g + r.t; pintarF(); });
@@ -1293,7 +1298,7 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
       const elegirRec = () => {
         f.insertAdjacentHTML("beforeend", `<div class="recipientes"><button type="button" class="atras">‹ ${ico(id, 24)} ${corto(id)}</button>
           <h5>¿En qué lo pesaste?</h5><p>Se descuenta su peso (tara) para guardar solo el alimento.</p>
-          <div class="r-lista">${[{ id: "ninguno", n: "Sin recipiente", t: 0 }].concat(RECIP2).map((x, i) => `<button type="button" class="r-op ${x.id === o.rec ? "on" : ""}" data-r="${x.id}" style="animation-delay:${i * 60}ms">${SVG_REC[x.id]}<b>${x.n}</b><span>${x.t ? "tara " + x.t + " g" : "peso directo"}</span></button>`).join("")}</div>
+          <div class="r-lista">${[{ id: "ninguno", n: "Sin recipiente", t: 0 }].concat(RECIP2).map((x, i) => `<button type="button" class="r-op ${x.id === o.rec ? "on" : ""}" data-r="${x.id}" style="animation-delay:${i * 60}ms">${SVG_REC[x.s || x.id]}<b>${x.n}</b><span>${x.t ? "tara " + x.t + " g" : "peso directo"}</span></button>`).join("")}</div>
           <button type="button" class="r-edit">✎ Editar mis recipientes</button></div>`);
         const rs = $(".recipientes", f);
         const salir = async () => { rs.classList.add("sale"); await espera(220); rs.remove(); };
