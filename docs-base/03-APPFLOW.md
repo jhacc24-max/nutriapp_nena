@@ -142,3 +142,9 @@ Repetir este bloque por cada pantalla.
     1. Lista que se despliega: fila con "+" que se abre en acordeón con gramos y recipiente; categorías con íconos. `pantallas/H-03-1-buscar-lista*.png`.
     2. Cuadrícula de íconos: frecuentes en mosaico; ficha con porciones rápidas, − / + grande, macros y recipiente. `pantallas/H-03-2-buscar-cuadricula*.png`.
     3. Balanza: pantalla de pesaje con número grande, teclado y tara descontada al instante. `pantallas/H-03-3-buscar-balanza*.png`.
+- **Decisión 2026-10-23 · Buscar = cuadrícula de íconos (modelo 2)**, con estos cambios pedidos por el usuario:
+  - **4 íconos por fila** (íconos de 34 px, nombre en hasta 2 líneas) para ver más opciones.
+  - **Frecuentes según el momento:** al cambiar Desayuno / Almuerzo / Cena / Colación (selector de vidrio, `glass-picker` + `text-morph`), la cuadrícula muestra lo que más se registra en ese momento, ordenado por veces en los últimos 30 días ("12 veces"), con `cluster-pop`. Se calcula con `registros/{fecha}/items` (cada ítem ya guarda su momento); para no leer 30 días cada vez, se mantiene un contador por momento que se actualiza al agregar o borrar.
+  - **Números con un solo estilo:** kcal, proteína, carbohidratos, grasa y gramos usan la misma letra (Inter 700, cifras tabulares); macros con 1 decimal y "g".
+  - **Recipiente en pantalla aparte:** al activar "Lo pesé con un recipiente" se abre "¿En qué lo pesaste?" con todos los recipientes y su tara (`push-slide`); al elegir vuelve a la ficha con el neto calculado y el recipiente como botón para cambiarlo. Incluye "Editar mis recipientes" (va a Opciones).
+  - Capturas: `pantallas/H-03-buscar-frecuentes*.png`, `H-03-buscar-ficha*.png`, `H-03-buscar-recipientes*.png`. Los modelos 1 (lista) y 3 (balanza) quedan descartados.

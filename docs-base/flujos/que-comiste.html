@@ -6,7 +6,7 @@
 /* Layout: cabecera con lo decidido + barra de prueba; bloque 1 "Escribir" (un celular + notas), bloque 2 "Buscar" (tres celulares). Celulares con la paleta Turquesa de la app. */
 :root {
   --pg-bg: #EEF5F4; --pg-card: #FFFFFF; --pg-line: #D5E2E0; --pg-fg: #0C1917; --pg-fg-2: #4F6461; --pg-acc: #007D76; --pg-chip: #DDF1EE;
-  --f-titulo: "Fraunces", Georgia, serif; --f-texto: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-num: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; --f-titulo: "Fraunces", Georgia, serif; --f-texto: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --bg:#EDF9F7; --surface:#FFFFFF; --tint:#D6F4F1; --selected:#B3E7E1; --hero:#003330; --hero-2:#004A46; --on-hero:#FFFFFF; --on-hero-soft:#82D2CA;
   --accent:#007D76; --on-accent:#FFFFFF; --text:#0C1917; --text-2:#546866; --border:#D6E1DF; --nav:#FFFFFF; --nav-active:#003330;
   --warn:#B45309; --warn-bg:#FEF3C7; --ok:#16A34A; --frame:#0B1413;
@@ -113,7 +113,8 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .stepper input:focus { outline: 2px solid var(--accent); background: var(--surface); }
 .stepper.grande { padding: 4px; border-radius: 16px; }
 .stepper.grande button { width: 40px; height: 40px; border-radius: 13px; font-size: 20px; }
-.stepper.grande input { width: 64px; font-size: 22px; }
+.stepper.grande input { width: 56px; font-size: 16px; }
+.stepper.grande label { font-size: 16px; }
 .stepper.grande label { font-size: 15px; }
 .est { font-size: 10px; font-weight: 600; color: var(--text-2); background: var(--tint); border-radius: 5px; padding: 1px 5px; margin-left: 4px; }
 .est.exacto { color: var(--accent); }
@@ -135,7 +136,7 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .chip.pop { animation: chipPop var(--d-slower) var(--e-over); }
 @keyframes chipPop { 55% { transform: scale(1.1); } }
 .tot { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
-.tot strong { font-family: var(--f-titulo); font-weight: 500; font-size: 20px; color: var(--text); }
+.tot strong { font-family: var(--f-num); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; color: var(--text); }
 .recip { display: flex; flex-direction: column; gap: 7px; background: var(--bg); border-radius: 12px; padding: 8px; }
 .toggle { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 500; color: var(--text); cursor: pointer; }
 .toggle .sw { width: 34px; height: 20px; border-radius: 10px; background: var(--border); position: relative; transition: background var(--d-base); flex: none; }
@@ -168,7 +169,7 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .plato .aro { position: absolute; inset: 0; }
 .plato .base { position: absolute; inset: 13px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--surface) 55%, var(--tint)); box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 7px var(--border), 0 10px 22px -12px rgba(0,0,0,.35); }
 .plato .centro { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; pointer-events: none; z-index: 3; }
-.plato .centro strong { display: block; font-family: var(--f-titulo); font-weight: 500; font-size: 22px; line-height: 1; font-variant-numeric: tabular-nums; }
+.plato .centro strong { display: block; font-family: var(--f-num); font-weight: 700; font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
 .plato .centro span { font-size: 10px; color: var(--text-2); }
 .en-plato { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; z-index: 2; animation: cae .6s var(--e-over) both; filter: drop-shadow(0 3px 3px rgba(0,0,0,.18)); }
 @keyframes cae { 0% { transform: translateY(-70px) scale(.6); opacity: 0; } 60% { transform: translateY(3px) scale(1.06); opacity: 1; } 100% { transform: none; } }
@@ -188,8 +189,8 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .l-gr { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-2); }
 
 /* ---------- Buscar 2: cuadrícula ---------- */
-.rejilla { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; flex: none; }
-.tile { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 9px 4px 7px; display: flex; flex-direction: column; align-items: center; gap: 4px; font: inherit; font-size: 11px; font-weight: 600; color: var(--text); cursor: pointer; text-align: center; line-height: 1.2; animation: cluster var(--d-slower) var(--e-over) both; }
+.rejilla { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; flex: none; }
+.tile { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 7px 2px 6px; display: flex; flex-direction: column; align-items: center; gap: 3px; font: inherit; font-size: 10.5px; min-width: 0; font-weight: 600; color: var(--text); cursor: pointer; text-align: center; line-height: 1.2; animation: cluster var(--d-slower) var(--e-over) both; }
 @keyframes cluster { from { opacity: 0; transform: scale(.4); } }
 .tile.tiene { border-color: var(--accent); background: var(--tint); }
 .tile .badge { position: absolute; top: -5px; right: -4px; background: var(--accent); color: var(--on-accent); border-radius: 999px; font-size: 10px; padding: 1px 6px; font-variant-numeric: tabular-nums; animation: chipPop var(--d-slower) var(--e-over); }
@@ -202,9 +203,30 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .ficha .cab-f span { font-size: 11.5px; color: var(--text-2); }
 .macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .macros div { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 6px 4px; text-align: center; font-size: 10.5px; color: var(--text-2); }
-.macros strong { display: block; font-family: var(--f-titulo); font-weight: 500; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
+.macros strong small { font-size: 11px; font-weight: 600; color: var(--text-2); margin-left: 1px; }
+.macros strong { display: block; font-family: var(--f-num); font-weight: 700; font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; }
 .centrado { display: flex; justify-content: center; }
 
+
+.tile .tn { width: 100%; padding: 0 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.tile .veces { font-size: 9.5px; font-weight: 500; color: var(--text-2); }
+.picker { position: absolute; right: 14px; top: 46px; z-index: 30; display: flex; flex-direction: column; gap: 2px; padding: 5px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 16px 30px -12px rgba(0,0,0,.35); transform-origin: top right; animation: abrePicker var(--d-slow) var(--e-over) both; }
+@keyframes abrePicker { from { opacity: 0; transform: scale(.6) translateY(-8px); } }
+.picker button { display: flex; align-items: center; gap: 8px; border: 0; background: none; font: inherit; font-size: 13px; color: var(--text); padding: 7px 12px 7px 8px; border-radius: 11px; cursor: pointer; text-align: left; }
+.picker button.on { background: var(--tint); font-weight: 600; }
+.recip-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+.recip-fila .elegido { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px 3px 4px; font-weight: 600; cursor: pointer; font: inherit; font-size: 12px; color: var(--text); }
+.recipientes { position: absolute; inset: 0; z-index: 25; background: var(--bg); display: flex; flex-direction: column; gap: 9px; animation: entraDer var(--d-slow) var(--e-standard) both; }
+.recipientes.sale { animation: saleDer var(--d-base) var(--e-exit) both; }
+.recipientes h5 { margin: 0; font-family: var(--f-titulo); font-weight: 500; font-size: 17px; }
+.recipientes p { margin: -4px 0 0; font-size: 12px; color: var(--text-2); }
+.r-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.r-op { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--border); font: inherit; color: var(--text); cursor: pointer; animation: cluster var(--d-slower) var(--e-over) both; transition: border-color var(--d-base), background var(--d-base); }
+.r-op b { font-size: 12.5px; font-weight: 600; }
+.r-op span { font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.r-op.on { border-color: var(--accent); background: var(--tint); }
+.r-op svg { width: 44px; height: 32px; }
+.r-edit { font-size: 12px; color: var(--accent); font-weight: 600; background: none; border: 0; cursor: pointer; font-family: inherit; align-self: center; }
 /* ---------- Buscar 3: balanza ---------- */
 .pesar { position: absolute; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column; gap: 9px; animation: entraDer var(--d-slow) var(--e-standard) both; }
 .pesar.sale { animation: saleDer var(--d-base) var(--e-exit) both; }
@@ -227,13 +249,13 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
   <h1>¿Qué comiste?</h1>
   <p class="intro">Una sola hoja para registrar comida. Arriba eliges el momento y, debajo, si quieres <b>buscar</b> alimentos o <b>escribir</b> lo que comiste. Las dos formas llenan el mismo plato, que se registra al final con un solo botón.</p>
   <ul class="decidido">
-    <li>Selector Buscar | Escribir arriba (de A)</li><li>Escribir = plato que se arma (C)</li><li>Gramos con − / + y escribibles, sin barra</li><li>Pesar con recipiente se mantiene</li>
+    <li>Selector Buscar | Escribir arriba (de A)</li><li>Escribir = plato que se arma (C)</li><li>Gramos con − / + y escribibles, sin barra</li><li>Buscar = cuadrícula de íconos, 4 por fila</li><li>Frecuentes según el momento</li><li>Números con un solo estilo</li><li>Recipiente en pantalla aparte</li>
   </ul>
   <div class="prueba">
     <label for="frase">Frase para la parte de escribir</label>
     <textarea id="frase" rows="2"></textarea>
     <div class="ctl">
-      <button type="button" class="pri" id="demo">▶ Ver demo en los 4</button>
+      <button type="button" class="pri" id="demo">▶ Ver demo</button>
       <button type="button" id="reinicia">Reiniciar</button>
       <button type="button" data-tema="claro" aria-pressed="true">Claro</button>
       <button type="button" data-tema="oscuro" aria-pressed="false">Oscuro</button>
@@ -257,29 +279,29 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
   </section>
 
   <section class="bloque" aria-labelledby="h-bus">
-    <h2 id="h-bus">Buscar · elige uno de 3</h2>
-    <p>Las tres formas suman al mismo plato de abajo, usan − / + con gramos escribibles y permiten pesar con recipiente para descontar la tara.</p>
+    <h2 id="h-bus">Buscar · cuadrícula de íconos (elegida)</h2>
+    <p>Con tus cambios: 4 íconos por fila, frecuentes que cambian con el momento, números con el mismo estilo y el recipiente en una pantalla aparte.</p>
     <div class="modelos">
       <section class="modelo">
-        <header><span class="letra">1</span><h3>Lista que se despliega</h3></header>
-        <p class="desc">Lo más cercano a lo de hoy. Buscas, tocas "+" y la fila se abre ahí mismo con los gramos y el recipiente. Categorías con íconos para filtrar rápido.</p>
-        <div class="tel" id="tel1"></div>
-        <button type="button" class="btn-modelo" data-solo="1">▶ Ver solo este</button>
-        <div class="mov"><code>acordeón con resorte</code><code>fab-rotate (+ → ×)</code><code>toggle-spring</code><code>shared-element al plato</code><code>count-up</code></div>
+        <header><span class="letra">1</span><h3>Frecuentes según el momento</h3></header>
+        <p class="desc">Al cambiar Desayuno, Almuerzo, Cena o Colación, la cuadrícula muestra lo que más comes en ese momento, ordenado por cuántas veces lo registraste en los últimos 30 días.</p>
+        <div class="tel" id="telG"></div>
+        <button type="button" class="btn-modelo" data-solo="G">▶ Ver solo este</button>
+        <div class="mov"><code>glass-picker</code><code>text-morph</code><code>cluster-pop</code><code>shared-element al plato</code></div>
       </section>
       <section class="modelo">
-        <header><span class="letra">2</span><h3>Cuadrícula de íconos</h3></header>
-        <p class="desc">Tus frecuentes como mosaico de íconos grandes, que se filtran mientras escribes. Al tocar uno se abre su ficha con porciones rápidas, macros y recipiente.</p>
-        <div class="tel" id="tel2"></div>
-        <button type="button" class="btn-modelo" data-solo="2">▶ Ver solo este</button>
-        <div class="mov"><code>cluster-pop</code><code>shared-element (mosaico → ficha)</code><code>chip-pop</code><code>count-up</code><code>icon-bounce</code></div>
+        <header><span class="letra">2</span><h3>Ficha del alimento</h3></header>
+        <p class="desc">Calorías, proteína, carbohidratos y grasa con la misma letra y tamaño que los gramos. Las porciones rápidas y el − / + cambian todo al mismo tiempo.</p>
+        <div class="tel" id="telF"></div>
+        <button type="button" class="btn-modelo" data-solo="F">▶ Ver solo este</button>
+        <div class="mov"><code>shared-element (mosaico → ficha)</code><code>icon-pop</code><code>chip-pop</code><code>press-scale</code></div>
       </section>
       <section class="modelo">
-        <header><span class="letra">3</span><h3>Balanza</h3></header>
-        <p class="desc">Pensado para quien pesa todo. Eliges el alimento y pasas a una pantalla tipo balanza con números grandes, teclado y la tara del recipiente descontada al instante.</p>
-        <div class="tel" id="tel3"></div>
-        <button type="button" class="btn-modelo" data-solo="3">▶ Ver solo este</button>
-        <div class="mov"><code>push-slide / pop-slide</code><code>count-up del neto</code><code>press-scale (teclado)</code><code>chip-pop</code><code>shared-element al plato</code></div>
+        <header><span class="letra">3</span><h3>Elegir el recipiente</h3></header>
+        <p class="desc">Al activar "Lo pesé con un recipiente" se abre una pantalla con todos tus recipientes y su tara. Al elegir, vuelve a la ficha con el peso neto ya calculado.</p>
+        <div class="tel" id="telR"></div>
+        <button type="button" class="btn-modelo" data-solo="R">▶ Ver solo este</button>
+        <div class="mov"><code>toggle-spring</code><code>push-slide / pop-slide</code><code>cluster-pop</code><code>count-up</code></div>
       </section>
     </div>
   </section>
@@ -1085,21 +1107,29 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
     el.innerHTML = `<div class="isla"></div><div class="fondo"><div class="hero">Registro de alimentos</div><div class="lin"></div><div class="lin"></div><div class="lin"></div></div>
       <div class="hoja" role="dialog" aria-label="¿Qué comiste?">
         <div class="asa"></div>
-        <div class="cab"><h4>¿Qué comiste?</h4><button type="button" class="vidrio">🍽 <span class="m">Almuerzo</span> ▾</button></div>
+        <div class="cab"><h4>¿Qué comiste?</h4><button type="button" class="vidrio" aria-haspopup="listbox">🍽 <span class="m">Almuerzo</span> ▾</button></div>
         <div class="seg ${inicial === "escribir" ? "der" : ""}"><span class="ind"></span><button type="button" data-v="buscar" class="${inicial === "buscar" ? "on" : ""}">🔍 Buscar</button><button type="button" data-v="escribir" class="${inicial === "escribir" ? "on" : ""}">✍ Escribir</button></div>
         <div class="zona"></div>
         <div class="pie"></div>
       </div>`;
     const orden = ["desayuno", "almuerzo", "cena", "colacion"];
-    $(".vidrio", el).onclick = () => H.ponerMomento(orden[(orden.indexOf(H.momento) + 1) % 4]);
-    H.ponerMomento = (m) => { if (!m || m === H.momento) return; H.momento = m; const s = $(".vidrio .m", el); s.classList.remove("cambia"); void s.offsetWidth; s.classList.add("cambia"); setTimeout(() => s.textContent = MOM[m], 230); H.pie(); };
+    const EMO = { desayuno: "☕", almuerzo: "🍽", cena: "🌙", colacion: "🍎" };
+    $(".vidrio", el).onclick = (e) => {
+      e.stopPropagation(); const ya = $(".picker", el); if (ya) return ya.remove();
+      $(".hoja", el).insertAdjacentHTML("beforeend", `<div class="picker" role="listbox">${orden.map((m) => `<button type="button" data-m="${m}" class="${m === H.momento ? "on" : ""}">${EMO[m]} ${MOM[m]}</button>`).join("")}</div>`);
+      el.querySelectorAll(".picker button").forEach((b) => b.onclick = () => { $(".picker", el).remove(); H.ponerMomento(b.dataset.m); });
+    };
+    H.ponerMomento = (m) => {
+      if (!m || m === H.momento) return; H.momento = m; const s = $(".vidrio .m", el); s.classList.remove("cambia"); void s.offsetWidth; s.classList.add("cambia");
+      setTimeout(() => { s.textContent = MOM[m]; $(".vidrio", el).firstChild.textContent = EMO[m] + " "; }, 230); H.pie(); if (H.alMomento) H.alMomento(m);
+    };
     el.querySelectorAll(".seg button").forEach((b) => b.onclick = () => H.cambiar(b.dataset.v));
     H.cambiar = (v) => {
       const seg = $(".seg", el); const dir = v === "escribir" ? "entra-der" : "entra-izq";
       seg.classList.toggle("der", v === "escribir"); seg.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === v));
       H.modo = v; H.render(dir);
     };
-    H.render = (dir = "") => { const z = $(".zona", el); z.innerHTML = `<div class="vista ${dir}"></div>`; const vista = $(".vista", z); if (H.modo === "escribir") escribir(H, vista); else modoBuscar(H, vista); H.pie(); };
+    H.render = (dir = "") => { H.alMomento = null; const z = $(".zona", el); z.innerHTML = `<div class="vista ${dir}"></div>`; const vista = $(".vista", z); if (H.modo === "escribir") escribir(H, vista); else modoBuscar(H, vista); H.pie(); };
     H.pie = () => {
       const p = $(".pie", el), t = suma(H.items), n = H.items.length;
       if (H.modo === "escribir") { p.innerHTML = `<button type="button" class="btn reg" ${n ? "" : "disabled"}><span class="txt">Registrar ${n ? n + " " : ""}en ${MOM[H.momento]}</span>${CHECK}</button>`; }
@@ -1210,37 +1240,71 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
     if (["f08", "f25", "f60"].includes(id)) { const c = { f08: 10, f25: 13, f60: 21 }[id]; return [["1 cda", c], ["2 cdas", c * 2], ["4 cdas", c * 4]]; }
     const p = porcion(id); return [["½ porción", Math.round(p / 2)], [`1 porción`, p], ["100 g", 100]];
   }
+  /* Frecuentes por momento: en la app se calculan contando el registro de los últimos 30 días.
+     Aquí, un historial de ejemplo (veces en 30 días). */
+  const HIST = {
+    desayuno: [["f08",14],["f27",12],["f21",11],["f03",9],["f48",8],["f28",7],["f24",6],["f20",4],["f60",3],["f65",2],["f40",2],["f26",1]],
+    almuerzo: [["f10",15],["f01",12],["f18",11],["f06",7],["f11",7],["f14",6],["f32",5],["f15",4],["f19",4],["f39",3],["f49",2],["f12",2]],
+    cena: [["f03",10],["f48",8],["f33",7],["f15",7],["f14",5],["f18",5],["f12",4],["f05",3],["f17",3],["f24",2],["f29",2],["f51",1]],
+    colacion: [["f20",12],["f27",9],["f26",8],["f43",7],["f62",5],["f40",4],["f55",4],["f65",3],["f56",2],["f54",2],["f53",1],["f29",1]],
+  };
+  const SVG_REC = {
+    ninguno: '<svg viewBox="0 0 44 32"><circle cx="22" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="2.4" opacity=".55"/><path d="M14 24 30 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".55"/></svg>',
+    plato: '<svg viewBox="0 0 44 32"><ellipse cx="22" cy="20" rx="20" ry="7" fill="#E3E8EC"/><ellipse cx="22" cy="18.5" rx="20" ry="6.5" fill="#FFFFFF" stroke="#C7D0DA"/><ellipse cx="22" cy="18.5" rx="12" ry="3.6" fill="none" stroke="#D5DCE3"/></svg>',
+    bol1: '<svg viewBox="0 0 44 32"><path d="M4 12h36c0 10-8 17-18 17S4 22 4 12z" fill="#5BA8D8"/><ellipse cx="22" cy="12" rx="18" ry="4" fill="#A9D5F0"/></svg>',
+    bol2: '<svg viewBox="0 0 44 32"><path d="M6 10h32c0 11-7 19-16 19S6 21 6 10z" fill="#E59A5C"/><ellipse cx="22" cy="10" rx="16" ry="3.6" fill="#F6C79C"/></svg>',
+    taper: '<svg viewBox="0 0 44 32"><rect x="5" y="11" width="34" height="17" rx="4" fill="#BFE6DC"/><rect x="3" y="7" width="38" height="6" rx="3" fill="#2EA88C"/></svg>',
+  };
+  const RECIP2 = [{ id: "plato", n: "Plato", t: 320 }, { id: "bol1", n: "Bol 1", t: 180 }, { id: "bol2", n: "Bol 2", t: 240 }, { id: "taper", n: "Táper", t: 95 }];
+  const recOf = (id) => RECIP2.find((x) => x.id === id) || { id: "ninguno", n: "Sin recipiente", t: 0 };
   function buscar2(H, v) {
-    v.innerHTML = `<div class="buscador">🔍<input type="search" placeholder="Filtra tus alimentos…" aria-label="Buscar alimento"></div><p class="t-sec">Tus frecuentes</p><div class="rejilla"></div>`;
+    v.innerHTML = `<div class="buscador">🔍<input type="search" placeholder="Busca o filtra tus alimentos…" aria-label="Buscar alimento"></div><p class="t-sec"></p><div class="rejilla"></div>`;
     const inp = $("input", v);
     const pintar = () => {
-      const ids = buscar(inp.value); $(".t-sec", v).textContent = inp.value ? (ids.length === 1 ? "1 resultado" : `${ids.length} resultados`) : "Tus frecuentes";
-      $(".rejilla", v).innerHTML = ids.map((id, i) => { const en = H.items.find((x) => x.id === id); return `<button type="button" class="tile ${en ? "tiene" : ""}" style="animation-delay:${i * 45}ms" data-id="${id}">${en ? `<span class="badge">${en.g} g</span>` : ""}${ico(id, 42)}<span>${corto(id)}</span></button>`; }).join("");
+      let ids, veces = {};
+      if (inp.value.trim()) { ids = buscar(inp.value); $(".t-sec", v).textContent = ids.length === 1 ? "1 resultado" : `${ids.length} resultados`; }
+      else { HIST[H.momento].forEach(([id, n]) => veces[id] = n); ids = HIST[H.momento].map((x) => x[0]); $(".t-sec", v).textContent = `Lo que sueles comer ${{ desayuno: "en el desayuno", almuerzo: "en el almuerzo", cena: "en la cena", colacion: "en la colación" }[H.momento]}`; }
+      $(".rejilla", v).innerHTML = ids.map((id, i) => { const en = H.items.find((x) => x.id === id); return `<button type="button" class="tile ${en ? "tiene" : ""}" style="animation-delay:${i * 35}ms" data-id="${id}">${en ? `<span class="badge">${en.g} g</span>` : ""}${ico(id, 34)}<span class="tn">${corto(id).replace(/ (cocid[oa]s?|enter[oa]|fresc[oa]|natural|crud[oa]|firme|al vapor|desamargado|tostada|partida cocida|mixta)$/i, "")}</span>${veces[id] ? `<span class="veces">${veces[id]} veces</span>` : ""}</button>`; }).join("");
       v.querySelectorAll(".tile").forEach((t) => t.onclick = () => ficha(t));
     };
+    H.alMomento = () => { if (!inp.value.trim() && !$(".ficha", v)) pintar(); };
     const ficha = (tile) => {
       const id = tile.dataset.id, o = { g: porcion(id), rec: "ninguno" };
       const rv = v.getBoundingClientRect(), rt = tile.getBoundingClientRect();
       v.insertAdjacentHTML("beforeend", `<div class="ficha" style="--ox:${rt.left - rv.left + rt.width / 2}px;--oy:${rt.top - rv.top + v.scrollTop + rt.height / 2}px;top:${v.scrollTop}px"></div>`);
       const f = $(".ficha", v); v.style.overflow = "hidden";
       const pintarF = (prim) => {
-        const r = RECIP.find((x) => x.id === o.rec), neto = Math.max(0, o.g - r.t), a = aporte({ id, g: neto });
-        f.innerHTML = `<div class="cab-f">${ico(id, 56, prim ? "pop" : "")}<div style="flex:1;min-width:0"><b>${corto(id)}</b><span>${BASE[id].kcal} kcal por 100 g</span></div><button type="button" class="mas cerrar" style="transform:rotate(45deg)" aria-label="Cerrar">+</button></div>
-          <div class="chips">${porciones(id).map(([n, g]) => `<button type="button" class="chip solo ${o.rec === "ninguno" && o.g === g ? "on" : ""}" data-g="${g}">${n}</button>`).join("")}</div>
-          <div class="centrado">${stepper(o.g, "grande")}</div>
-          <div class="macros"><div><strong class="m0">${Math.round(a.kcal)}</strong>kcal</div><div><strong>${a.p.toFixed(1)}</strong>prot.</div><div><strong>${a.c.toFixed(1)}</strong>carb.</div><div><strong>${a.g.toFixed(1)}</strong>grasa</div></div>
-          <div class="recip"><div class="toggle ${o.rec !== "ninguno" ? "on" : ""}"><span>Lo pesé con un recipiente</span><span class="sw"></span></div>
-          ${o.rec !== "ninguno" ? `<div class="chips">${RECIP.slice(1).map((x) => `<button type="button" class="chip solo ${x.id === o.rec ? "on" : ""}" data-r="${x.id}">${x.n} · ${x.t} g</button>`).join("")}</div><span class="neto">Neto: <b>${neto} g</b> (${o.g} − ${r.t} g de ${r.n})</span>` : ""}</div>
+        const r = recOf(o.rec), neto = Math.max(0, o.g - r.t), a = aporte({ id, g: neto });
+        f.innerHTML = `<div class="cab-f">${ico(id, 52, prim ? "pop" : "")}<div style="flex:1;min-width:0"><b>${corto(id)}</b><span>${BASE[id].kcal} kcal por 100 g</span></div><button type="button" class="mas cerrar" style="transform:rotate(45deg)" aria-label="Cerrar">+</button></div>
+          <div class="chips">${porciones(id).map(([n, g]) => `<button type="button" class="chip solo ${o.g - r.t === g ? "on" : ""}" data-g="${g}">${n}</button>`).join("")}</div>
+          <div class="centrado" style="flex-direction:column;align-items:center;gap:2px"><span class="neto">${o.rec === "ninguno" ? "Peso del alimento" : "Peso total en la balanza"}</span>${stepper(o.g, "grande")}</div>
+          <div class="macros"><div><strong>${Math.round(a.kcal)}</strong>kcal</div><div><strong>${a.p.toFixed(1)}<small>g</small></strong>proteína</div><div><strong>${a.c.toFixed(1)}<small>g</small></strong>carbohid.</div><div><strong>${a.g.toFixed(1)}<small>g</small></strong>grasa</div></div>
+          <div class="recip"><div class="toggle ${o.rec !== "ninguno" ? "on" : ""}" role="switch" aria-checked="${o.rec !== "ninguno"}"><span>Lo pesé con un recipiente</span><span class="sw"></span></div>
+          ${o.rec !== "ninguno" ? `<div class="recip-fila"><button type="button" class="elegido">${SVG_REC[o.rec].replace("<svg", '<svg width="28" height="20"')}${r.n} · ${r.t} g ›</button><span class="neto">Neto <b>${neto} g</b></span></div>` : ""}</div>
           <button type="button" class="btn agr" ${neto > 0 ? "" : "disabled"}><span class="txt">Agregar ${neto} g al plato</span></button>`;
         atarStepper($(".stepper", f), o, () => pintarF());
-        f.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { o.g = +b.dataset.g + RECIP.find((x) => x.id === o.rec).t; pintarF(); });
-        $(".toggle", f).onclick = () => { if (o.rec === "ninguno") { o.rec = "plato"; o.g += 320; } else { o.g -= RECIP.find((x) => x.id === o.rec).t; o.rec = "ninguno"; } pintarF(); };
-        f.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => { o.g += RECIP.find((x) => x.id === b.dataset.r).t - RECIP.find((x) => x.id === o.rec).t; o.rec = b.dataset.r; pintarF(); });
+        f.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { o.g = +b.dataset.g + r.t; pintarF(); });
+        $(".toggle", f).onclick = () => { if (o.rec === "ninguno") elegirRec(); else { o.g -= r.t; o.rec = "ninguno"; pintarF(); } };
+        const el2 = $(".elegido", f); if (el2) el2.onclick = () => elegirRec();
         $(".cerrar", f).onclick = () => cerrar();
-        $(".agr", f).onclick = () => { H.agregar(id, neto, $(".cab-f .ico", f)); cerrar(true); };
+        $(".agr", f).onclick = () => { H.agregar(id, neto, $(".cab-f .ico", f)); cerrar(); };
       };
-      const cerrar = async (ok) => { f.classList.add("cierra"); await espera(300); f.remove(); v.style.overflow = ""; pintar(); };
-      pintarF(true);
+      /* Pantalla aparte para elegir el recipiente */
+      const elegirRec = () => {
+        f.insertAdjacentHTML("beforeend", `<div class="recipientes"><button type="button" class="atras">‹ ${ico(id, 24)} ${corto(id)}</button>
+          <h5>¿En qué lo pesaste?</h5><p>Se descuenta su peso (tara) para guardar solo el alimento.</p>
+          <div class="r-lista">${[{ id: "ninguno", n: "Sin recipiente", t: 0 }].concat(RECIP2).map((x, i) => `<button type="button" class="r-op ${x.id === o.rec ? "on" : ""}" data-r="${x.id}" style="animation-delay:${i * 60}ms">${SVG_REC[x.id]}<b>${x.n}</b><span>${x.t ? "tara " + x.t + " g" : "peso directo"}</span></button>`).join("")}</div>
+          <button type="button" class="r-edit">✎ Editar mis recipientes</button></div>`);
+        const rs = $(".recipientes", f);
+        const salir = async () => { rs.classList.add("sale"); await espera(220); rs.remove(); };
+        $(".atras", rs).onclick = salir;
+        rs.querySelectorAll(".r-op").forEach((b) => b.onclick = async () => {
+          rs.querySelectorAll(".r-op").forEach((x) => x.classList.toggle("on", x === b)); await espera(260);
+          o.g = o.g - recOf(o.rec).t + recOf(b.dataset.r).t; o.rec = b.dataset.r; await salir(); pintarF();
+        });
+      };
+      const cerrar = async () => { f.classList.add("cierra"); await espera(300); f.remove(); v.style.overflow = ""; pintar(); };
+      pintarF(true); H.ficha = f;
     };
     inp.addEventListener("input", pintar); pintar(); H.inp = inp;
   }
@@ -1289,36 +1353,32 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
 
   /* =================== Montaje y demos =================== */
   const tels = {
-    E: { el: $("#telE"), modo: buscar1, ini: "escribir" },
-    1: { el: $("#tel1"), modo: buscar1, ini: "buscar" },
-    2: { el: $("#tel2"), modo: buscar2, ini: "buscar" },
-    3: { el: $("#tel3"), modo: buscar3, ini: "buscar" },
+    E: { el: $("#telE"), modo: buscar2, ini: "escribir" },
+    G: { el: $("#telG"), modo: buscar2, ini: "buscar" },
+    F: { el: $("#telF"), modo: buscar2, ini: "buscar" },
+    R: { el: $("#telR"), modo: buscar2, ini: "buscar" },
   };
   const montar = (k) => { tels[k].H = crearHoja(tels[k].el, tels[k].modo, tels[k].ini); return tels[k].H; };
   const clic = async (el, ms = 450) => { if (!el) return; el.click(); await espera(ms); };
   const DEMOS = {
     async E(fr) {
       const H = montar("E"); await espera(600); await teclear(H.ta, fr); await espera(900);
-      const mas = H.el.querySelector(".lista .stepper button[data-d='1']"); await clic(mas, 300); await clic(H.el.querySelector(".lista .stepper button[data-d='1']"), 600);
+      await clic(H.el.querySelector(".lista .stepper button[data-d='1']"), 300); await clic(H.el.querySelector(".lista .stepper button[data-d='1']"), 600);
     },
-    async 1() {
-      const H = montar("1"); await espera(700); await teclear(H.inp, "pollo", 70); await espera(500);
-      await clic(H.el.querySelector(".l-fila .l-top"), 700); await clic(H.el.querySelector(".l-fila.abierta .toggle"), 700);
-      await clic(H.el.querySelector(".l-fila.abierta [data-r='bol1']"), 500); await clic(H.el.querySelector(".l-fila.abierta .stepper button[data-d='-1']"), 400);
-      await clic(H.el.querySelector(".l-fila.abierta .agr"), 900);
-      H.inp.value = ""; H.inp.dispatchEvent(new Event("input")); await espera(400);
-      await clic(H.el.querySelector(".chip[data-c='fruta']"), 600); await clic(H.el.querySelector(".l-fila[data-id='f21'] .l-top"), 700); await clic(H.el.querySelector(".l-fila.abierta .agr"), 700);
+    async G() { /* cambia de momento y los frecuentes se reordenan */
+      const H = montar("G"); await espera(1200);
+      for (const m of ["desayuno", "cena", "colacion", "desayuno"]) { await clic($(".vidrio", H.el), 700); await clic(H.el.querySelector(`.picker [data-m='${m}']`), 1500); }
+      await clic(H.el.querySelector(".tile"), 900); await clic(H.el.querySelector(".ficha .agr"), 900);
     },
-    async 2() {
-      const H = montar("2"); await espera(900); await clic(H.el.querySelector(".tile[data-id='f10']"), 800);
-      await clic(H.el.querySelector(".ficha [data-g]"), 500); await clic(H.el.querySelector(".ficha .stepper button[data-d='1']"), 600); await clic(H.el.querySelector(".ficha .agr"), 1000);
-      await teclear(H.inp, "hig", 90); await espera(500); await clic(H.el.querySelector(".tile[data-id='f65']"), 800); await clic(H.el.querySelectorAll(".ficha [data-g]")[1], 500); await clic(H.el.querySelector(".ficha .agr"), 900);
+    async F() { /* ficha del alimento */
+      const H = montar("F"); await espera(900); await clic(H.el.querySelector(".tile[data-id='f01']"), 900);
+      await clic(H.el.querySelector(".ficha .stepper button[data-d='1']"), 400); await clic(H.el.querySelector(".ficha .stepper button[data-d='1']"), 600);
     },
-    async 3() {
-      const H = montar("3"); await espera(700); await teclear(H.inp, "lent", 80); await espera(500); await clic(H.el.querySelector(".res .fila"), 700);
-      await clic(H.el.querySelector(".pesar [data-r='bol1']"), 500);
-      for (const k of ["3", "4", "0"]) await clic(H.el.querySelector(`.pesar [data-k='${k}']`), 260);
-      await espera(600); await clic(H.el.querySelector(".pesar .agr"), 900);
+    async R() { /* recipiente en pantalla aparte */
+      const H = montar("R"); await espera(900); await clic(H.el.querySelector(".tile[data-id='f10']"), 900);
+      await clic(H.el.querySelector(".ficha .toggle"), 900); await clic(H.el.querySelector(".r-op[data-r='bol1']"), 800);
+      const inp = H.el.querySelector(".ficha .stepper input"); if (inp) { inp.value = "345"; inp.dispatchEvent(new Event("input")); }
+      await espera(500); if (!RAP.v) { await clic(H.el.querySelector(".ficha .elegido"), 1600); }
     },
   };
   const frase = $("#frase"); frase.value = DEMO;
