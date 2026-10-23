@@ -136,3 +136,9 @@ Repetir este bloque por cada pantalla.
   - **B · Conversación** (`pantallas/H-02B-escribir-chat*.png`): `push-slide` a un chat; enviar con `icon-fly`, burbuja con resorte, indicador "escribiendo…", respuesta con `text-blur-reveal` y alimentos en `cluster-pop`; pregunta por lo que no está en la base.
   - **C · Plato que se arma** (`pantallas/H-02C-escribir-plato*.png`): `depth-sheet` sobre el registro; las palabras reconocidas se resaltan mientras se escribe, cada alimento cae en el plato, aro de meta con `chart-draw` y `count-up`, momento con `text-morph`; gramos con barra deslizante.
   - Reglas comunes: nada entra al registro sin confirmar; lo que no está en la base se marca en ámbar ("elegir parecido" u omitir); el momento (desayuno, almuerzo…) se detecta del texto y se puede cambiar.
+- **Decisión 2026-10-23 · Hoja "¿Qué comiste?"** (reemplaza el flujo de registro): una sola hoja (`depth-sheet`) con el momento arriba (píldora con `text-morph`) y el selector **Buscar | Escribir** (`indicator-slide` + `tab-crossfade`). Las dos formas llenan el mismo plato y se registran con un botón. Maqueta: `flujos/que-comiste.html`.
+  - **Escribir — elegido por el usuario:** modelo C (texto resaltado en vivo + plato con aro de meta) con los gramos en **− / + y escribibles** (sin barra deslizante; pasos de 5 g hasta 100 g y de 10 g desde ahí). Captura `pantallas/H-02-que-comiste-escribir*.png`.
+  - **Buscar — 3 modelos en revisión (🎨):** conservan "pesar con recipiente" (neto = bruto − tara) y "restar carne".
+    1. Lista que se despliega: fila con "+" que se abre en acordeón con gramos y recipiente; categorías con íconos. `pantallas/H-03-1-buscar-lista*.png`.
+    2. Cuadrícula de íconos: frecuentes en mosaico; ficha con porciones rápidas, − / + grande, macros y recipiente. `pantallas/H-03-2-buscar-cuadricula*.png`.
+    3. Balanza: pantalla de pesaje con número grande, teclado y tara descontada al instante. `pantallas/H-03-3-buscar-balanza*.png`.
