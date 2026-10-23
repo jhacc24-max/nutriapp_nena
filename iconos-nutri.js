@@ -305,6 +305,17 @@
         ${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<ellipse cx="${(32 + 9 * Math.cos(a)).toFixed(1)}" cy="${(36 + 8 * Math.sin(a)).toFixed(1)}" rx=".9" ry="1.6" transform="rotate(${i * 30 + 90} ${(32 + 9 * Math.cos(a)).toFixed(1)} ${(36 + 8 * Math.sin(a)).toFixed(1)})" fill="#1E1A14"/>`; }).join("")}
         ${BRILLO(20, 28, 3, 1.6, -35, .35)}`,
   });
+  D.higo = (c) => ({
+    d: c.R("h", "#A77BC9", "#4A2462", .38, .3, .85) + c.R("in", "#FF8FA3", "#C8304F", .5, .55, .6),
+    b: `<path d="M24 12 C26 12 27 15 27 18 C33 22 37 30 36 38 C35 46 29 50 22 50 C14 50 9 45 9 38 C9 30 15 22 21 18 C21 15 22 12 24 12Z" fill="${c.u("h")}"/>
+        <path d="M24 13 C24 9 25 7 27 6" stroke="#6E8F3A" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M17 26 C14 32 14 40 17 46 M29 25 C32 31 32 40 29 46" stroke="#3A1A4D" stroke-width="1" fill="none" opacity=".4"/>
+        ${BRILLO(16, 30, 2, 5.5, 20, .4)}
+        <path d="M42 22 C44 22 45 24 45 26 C50 29 54 35 54 42 C54 50 48 55 42 55 C36 55 30 50 30 42 C30 35 34 29 39 26 C39 24 40 22 42 22Z" fill="#7A4A8F"/>
+        <path d="M42 25.5 C43 25.5 43.5 27 43.5 28 C48 31 51.5 36 51.5 42 C51.5 48.5 47 52.5 42 52.5 C37 52.5 32.5 48.5 32.5 42 C32.5 36 36 31 40.5 28 C40.5 27 41 25.5 42 25.5Z" fill="#F7EBD6"/>
+        <path d="M42 29 C46 32 49 37 49 42 C49 47.5 46 50.5 42 50.5 C38 50.5 35 47.5 35 42 C35 37 38 32 42 29Z" fill="${c.u("in")}"/>
+        ${[[39,37],[44,36],[41,41],[46,42],[38,45],[43,46],[40,49],[45,49],[42,33]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx=".8" ry="1.3" fill="#FFE3A8"/>`).join("")}`,
+  });
   D.mango = (c) => ({
     d: c.L("m", "#FFD23F", "#F25C2A", 1, 1, 0, 0),
     b: `<path d="M18 22 C30 14 48 18 53 30 C58 42 50 54 38 55 C28 56 22 50 18 42 C14 34 10 27 18 22Z" fill="${c.u("m")}"/>
@@ -615,7 +626,7 @@
     f08: "avena", f09: "arroz_integral", f10: "arroz", f11: "papa", f12: "camote", f13: "pan", f48: "pan_integral", f14: "quinua", f36: "arracacha",
     f15: "brocoli", f17: "zanahoria", f18: "ensalada", f19: "tomate", f49: "zapallo", f50: "pimiento", f51: "coliflor", f52: "olluco",
     f20: "manzana", f21: "platano", f22: "naranja", f23: "frutos_rojos", f40: "kiwi", f41: "mango", f42: "durazno", f43: "mandarina",
-    f44: "chirimoya", f53: "aguaymanto", f54: "pera", f55: "pina", f56: "uvas", f57: "sandia", f58: "melon", f59: "yuca", f60: "miel",
+    f44: "chirimoya", f53: "aguaymanto", f54: "pera", f55: "pina", f56: "uvas", f57: "sandia", f58: "melon", f65: "higo", f59: "yuca", f60: "miel",
     f24: "palta", f25: "aceite", f61: "aceitunas", f26: "almendras", f45: "semilla_calabaza", f46: "ajonjoli", f47: "semilla_girasol", f62: "nueces",
     f27: "yogur", f28: "leche", f29: "cottage", f30: "batido", f63: "suplemento", f64: "suplemento",
   };
@@ -629,7 +640,7 @@
     [/br[oó]coli/, "brocoli"], [/zanahoria/, "zanahoria"], [/ensalada|lechuga|espinaca|acelga/, "ensalada"], [/tomate/, "tomate"], [/zapallo|calabaza(?! ?tost)/, "zapallo"],
     [/pimiento|aj[ií]/, "pimiento"], [/coliflor/, "coliflor"],
     [/manzana/, "manzana"], [/pl[aá]tano|banana/, "platano"], [/mandarina/, "mandarina"], [/naranja|lim[oó]n|toronja/, "naranja"], [/fresa|frutilla|ar[aá]ndano|frambuesa|mora/, "frutos_rojos"],
-    [/kiwi/, "kiwi"], [/mango/, "mango"], [/durazno|melocot[oó]n/, "durazno"], [/chirimoya|guan[aá]bana/, "chirimoya"], [/aguaymanto/, "aguaymanto"], [/pera/, "pera"],
+    [/kiwi/, "kiwi"], [/mango/, "mango"], [/higo|breva/, "higo"], [/durazno|melocot[oó]n/, "durazno"], [/chirimoya|guan[aá]bana/, "chirimoya"], [/aguaymanto/, "aguaymanto"], [/pera/, "pera"],
     [/pi[ñn]a/, "pina"], [/uva|pasas/, "uvas"], [/sand[ií]a/, "sandia"], [/mel[oó]n|papaya/, "melon"], [/miel|azúcar|azucar/, "miel"],
     [/palta|aguacate/, "palta"], [/aceituna|oliva negra/, "aceitunas"], [/aceite/, "aceite"], [/almendra|man[ií]|cacahuate/, "almendras"],
     [/semilla de calabaza|pepita/, "semilla_calabaza"], [/ajonjol[ií]|s[eé]samo/, "ajonjoli"], [/girasol|ch[ií]a|linaza/, "semilla_girasol"], [/nuez|nueces|pecana/, "nueces"],
@@ -652,7 +663,7 @@
     quinua: "Quinua", arracacha: "Arracacha", yuca: "Yuca", olluco: "Olluco", miel: "Miel",
     brocoli: "Brócoli", zanahoria: "Zanahoria", ensalada: "Ensalada", tomate: "Tomate", zapallo: "Zapallo", pimiento: "Pimiento", coliflor: "Coliflor",
     manzana: "Manzana", platano: "Plátano", naranja: "Naranja", mandarina: "Mandarina", frutos_rojos: "Frutos rojos", kiwi: "Kiwi", mango: "Mango",
-    durazno: "Durazno", chirimoya: "Chirimoya", aguaymanto: "Aguaymanto", pera: "Pera", pina: "Piña", uvas: "Uvas", sandia: "Sandía", melon: "Melón",
+    durazno: "Durazno", chirimoya: "Chirimoya", aguaymanto: "Aguaymanto", pera: "Pera", pina: "Piña", uvas: "Uvas", sandia: "Sandía", higo: "Higo", melon: "Melón",
     palta: "Palta", aceite: "Aceite de oliva", aceitunas: "Aceitunas", almendras: "Almendras", semilla_calabaza: "Semilla de calabaza",
     ajonjoli: "Ajonjolí", semilla_girasol: "Semilla de girasol", nueces: "Nueces",
     yogur: "Yogur griego", leche: "Leche", cottage: "Queso cottage", batido: "Batido de proteína", suplemento: "Suplemento nutricional", plato: "Alimento",

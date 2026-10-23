@@ -1,7 +1,7 @@
 /* Service worker de NutriClínica: permite instalar la app y abrirla sin conexión.
    No guarda en caché las llamadas de Firebase (datos y sesión siempre van a la red). */
-const VERSION = "nutriapp-v1";
-const CASCARON = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"];
+const VERSION = "nutriapp-v2";
+const CASCARON = ["./", "./index.html", "./manifest.webmanifest", "./iconos-nutri.js", "./icons/icon-192.png", "./icons/icon-512.png"];
 const HOSTS_ESTATICOS = ["cdn.tailwindcss.com", "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com", "www.gstatic.com"];
 
 self.addEventListener("install", (e) => {
