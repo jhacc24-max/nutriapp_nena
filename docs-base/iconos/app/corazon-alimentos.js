@@ -66,7 +66,7 @@
         <path class="sombra-c" d="${D}" fill="#000" opacity=".28" transform="translate(0 14)" filter="url(#${id}-som)"/>
         <path class="base-c" d="${D}" fill="url(#${id}-base)"/>
         <g clip-path="url(#${id}-clip)">${items}</g>
-        <path class="borde" d="${D}" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round" pathLength="1"/>
+        ${opt.sinBorde ? "" : `<path class="borde" d="${D}" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round" pathLength="1"/>`}
         <g class="letra">
           <path d="M208 328 V218 L304 328 V218" transform="translate(5 12)" fill="none" stroke="#032F2C" stroke-opacity=".55" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" filter="url(#${id}-som)"/>
           <path d="M208 328 V218 L304 328 V218" fill="none" stroke="#0B4F4A" stroke-width="60" stroke-linecap="round" stroke-linejoin="round"/>
