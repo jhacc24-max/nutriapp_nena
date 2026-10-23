@@ -127,5 +127,7 @@ Repetir este bloque por cada pantalla.
 
 - App de una sola página (`index.html`) con 5 pestañas: Perfil, Registro, Panel, Menú, Opciones; más Historial y Reportes como pantallas aparte.
 - **Rediseño de color (2026-10-22):** las 5 pestañas siguen el Patrón B (cabecera oscura + hoja redondeada) y el Panel usa tarjeta héroe del Patrón A. Capturas en `pantallas/P-00-tabs-rediseno*.png` y `pantallas/P-04-panel*.png`: estado 🎨 en revisión. Se hicieron después del código, no antes; falta que el usuario las apruebe (✅).
+- **Ingreso (P-03):** modelo **F2 · Ola líquida** (elegido por el usuario el 2026-10-22), con `wave-flood` simplificado y el botón `btn-liquid-fill`. Capturas `pantallas/P-03-auth*.png` (🎨 en revisión).
+- **Cuenta e instalación:** tarjeta "Cuenta y aplicación" al inicio de Opciones (cerrar sesión con confirmación, instalar app). Captura `pantallas/P-07-opciones-cuenta*.png`.
 - Pendiente de inventariar y diseñar: Historial, Reportes y los estados vacío / error / sin conexión.
 - Nombre de pestaña "Registro" tiene 8 letras (la base pide máximo 7); se mantiene por decisión previa del proyecto.
