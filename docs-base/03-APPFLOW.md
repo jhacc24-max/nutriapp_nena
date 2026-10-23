@@ -149,8 +149,12 @@ Repetir este bloque por cada pantalla.
   - **Recipiente en pantalla aparte:** al activar "Lo pesé con un recipiente" se abre "¿En qué lo pesaste?" con todos los recipientes y su tara (`push-slide`); al elegir vuelve a la ficha con el neto calculado y el recipiente como botón para cambiarlo. Incluye "Editar mis recipientes" (va a Opciones).
   - Capturas: `pantallas/H-03-buscar-frecuentes*.png`, `H-03-buscar-ficha*.png`, `H-03-buscar-recipientes*.png`. Los modelos 1 (lista) y 3 (balanza) quedan descartados.
 - **"¿En qué lo pesaste?"** ahora muestra **4 recipientes por fila** (nombres en hasta 2 líneas), para que entren todos.
-- **P-05 · Menú (rediseño, 2026-10-23, 🎨 en revisión):** el menú deja de ser una combinación al azar y se arma con comidas reales de los últimos 30 días del registro. Requisitos del usuario: (1) usar sus días anteriores como base, (2) si el día no llega a la meta, sugerir qué agregar y cuánto aporta, (3) mostrar el porcentaje de la meta que cubre el menú del día. Maqueta: `flujos/menu-del-dia.html`. Tres opciones:
-  - **A · Mezcla de tus comidas** (`pantallas/P-05A-menu-mezcla*.png`): anillo con el % del día + barras por nutriente; cada comida pendiente sale de un día real ("Como el lunes 19") y se cambia con ‹ ›; tarjeta ámbar "Te faltan…" con 3 frecuentes para agregar.
-  - **B · Línea del día** (`pantallas/P-05B-menu-linea*.png`): línea de tiempo con lo registrado en firme y lo sugerido en punteado; barra "Comido 43 % / con lo planificado 82 %"; botones "Lo comí" y "Otra de mis comidas"; opciones deslizables para completar.
-  - **C · Semana con anillos** (`pantallas/P-05C-menu-semana*.png`): anillo de cumplimiento en cada día de la semana y por nutriente; plantillas con los días más cumplidos para completar el día; lista "Para llegar al 100 %".
-  - En las tres se mantiene "Pasar al registro"; "¿Qué preparo con…?" sigue en la pestaña.
+- **P-05 · Menú de hoy (rediseño, 2026-10-23, 🎨 en revisión):** el usuario descartó las 3 primeras opciones (mezcla, línea del día, semana con anillos) y pidió esta estructura común:
+  - **Arriba · avance del día:** anillo con el % de la meta y los 4 íconos de nutrientes del set propio (calorías, proteína, carbohidratos, grasa) con valor, barra y %; se llena con `count-up` y el ícono late (`icon-beat`) al confirmar cada comida.
+  - **En medio · 4 comidas** (Desayuno, Almuerzo, Cena, Colación) como tarjetas; cada una abre **su propia ventana** con las variantes que la persona prepara en ese momento (de su registro, ordenadas por veces) para elegir preparación y cantidad.
+  - **Abajo · menú completado:** al tener las 4 comidas, tarjeta con confeti y `tada` que muestra el % final y "Pasar al registro".
+  - Tres opciones para la ventana de cada comida (maqueta `flujos/menu-de-hoy.html`):
+    1. **Carrusel de variantes** (`pantallas/P-05-1-menu-carrusel*.png`): `sheet-up`; tarjetas deslizables con los íconos flotando, "la preparaste N veces", porciones ½ · 1 · 1½ · 2 y − / + por alimento.
+    2. **Arrastra al plato** (`pantallas/P-05-2-menu-plato*.png`): `zoom-through` desde la tarjeta; plato con aro de la meta de esa comida; se arrastra una variante con el dedo (o "+") y los alimentos caen; gramos con − / + debajo.
+    3. **Arma por partes** (`pantallas/P-05-3-menu-partes*.png`): `push-slide`; variantes como atajo de un toque y alimentos por partes (Base, Proteína, Lácteos, Fruta, Verduras, Extras) en 4 por fila; cada toque suma una porción (×1, ×2) y "−" la quita.
+  - Menú completado: `pantallas/P-05-menu-completado*.png`.

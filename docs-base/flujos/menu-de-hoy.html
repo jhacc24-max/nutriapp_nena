@@ -1,41 +1,38 @@
-<title>Menú del día</title>
+<title>Menú de hoy</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: cabecera con los 3 requisitos; tres celulares lado a lado (se apilan en móvil), cada uno con su ficha de cómo resuelve cada requisito. */
+/* Layout: cabecera con la estructura común (avance arriba · 4 comidas · menú completado); tres celulares, uno por forma de elegir variantes. */
 :root {
-  --pg-bg: #EEF5F4; --pg-card: #FFFFFF; --pg-line: #D5E2E0; --pg-fg: #0C1917; --pg-fg-2: #4F6461; --pg-acc: #007D76; --pg-chip: #DDF1EE;
-  --f-titulo: "Fraunces", Georgia, serif; --f-texto: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; --f-num: "Inter", system-ui, sans-serif;
+  --pg-bg:#EEF5F4; --pg-card:#FFFFFF; --pg-line:#D5E2E0; --pg-fg:#0C1917; --pg-fg-2:#4F6461; --pg-acc:#007D76; --pg-chip:#DDF1EE;
+  --f-titulo:"Fraunces", Georgia, serif; --f-texto:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; --f-num:"Inter", system-ui, sans-serif;
   --bg:#EDF9F7; --surface:#FFFFFF; --tint:#D6F4F1; --selected:#B3E7E1; --hero:#003330; --hero-2:#004A46; --on-hero:#FFFFFF; --on-hero-soft:#82D2CA;
-  --accent:#007D76; --on-accent:#FFFFFF; --text:#0C1917; --text-2:#546866; --border:#D6E1DF; --nav:#FFFFFF;
-  --warn:#B45309; --warn-bg:#FEF3C7; --ok:#16A34A; --frame:#0B1413;
+  --accent:#007D76; --on-accent:#FFFFFF; --text:#0C1917; --text-2:#546866; --border:#D6E1DF; --nav:#FFFFFF; --ok:#16A34A; --frame:#0B1413;
   --c-kcal:#F08A24; --c-prot:#D9485F; --c-carb:#3E8EDE; --c-gras:#C9A227;
   --d-fast:150ms; --d-base:240ms; --d-slow:360ms; --d-slower:500ms;
   --e-standard:cubic-bezier(.2,0,0,1); --e-exit:cubic-bezier(.3,0,1,1); --e-emph:cubic-bezier(.2,0,0,1.2); --e-over:cubic-bezier(.34,1.56,.64,1);
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --pg-bg:#071210; --pg-card:#0E1D1B; --pg-line:#1E3532; --pg-fg:#E9F5F3; --pg-fg-2:#9AB0AD; --pg-acc:#43B6AD; --pg-chip:#0F2B28; color-scheme: dark; } }
-:root[data-theme="dark"] { --pg-bg:#071210; --pg-card:#0E1D1B; --pg-line:#1E3532; --pg-fg:#E9F5F3; --pg-fg-2:#9AB0AD; --pg-acc:#43B6AD; --pg-chip:#0F2B28; color-scheme: dark; }
-.tel.oscuro { --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76; --on-hero-soft:#B3E7E1;
-  --accent:#43B6AD; --on-accent:#0B1413; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --nav:#102624; --warn:#FBBF24; --warn-bg:#3A2A06;
-  --c-kcal:#FFA94D; --c-prot:#FF7B8E; --c-carb:#6CB2FF; --c-gras:#E8C547; color-scheme: dark; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --pg-bg:#071210; --pg-card:#0E1D1B; --pg-line:#1E3532; --pg-fg:#E9F5F3; --pg-fg-2:#9AB0AD; --pg-acc:#43B6AD; --pg-chip:#0F2B28; color-scheme:dark; } }
+:root[data-theme="dark"] { --pg-bg:#071210; --pg-card:#0E1D1B; --pg-line:#1E3532; --pg-fg:#E9F5F3; --pg-fg-2:#9AB0AD; --pg-acc:#43B6AD; --pg-chip:#0F2B28; color-scheme:dark; }
+.tel.oscuro { --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76; --on-hero-soft:#B3E7E1; --accent:#43B6AD; --on-accent:#0B1413; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --nav:#102624; --c-kcal:#FFA94D; --c-prot:#FF7B8E; --c-carb:#6CB2FF; --c-gras:#E8C547; color-scheme:dark; }
 
 * { box-sizing: border-box; }
 body { background: var(--pg-bg); color: var(--pg-fg); font-family: var(--f-texto); font-size: 15px; line-height: 1.5; }
 .wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6vw, 40px); margin: 0; letter-spacing: -.01em; }
-.intro { color: var(--pg-fg-2); max-width: 72ch; margin: 8px 0 0; }
-.req { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 16px; }
-@media (max-width: 760px) { .req { grid-template-columns: minmax(0,1fr); } }
-.req div { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 14px; padding: 10px 14px; font-size: 13.5px; color: var(--pg-fg-2); }
-.req b { display: block; color: var(--pg-fg); font-size: 14px; }
+h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6vw, 40px); margin: 0; }
+.intro { color: var(--pg-fg-2); max-width: 74ch; margin: 8px 0 0; }
+.estructura { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 16px; }
+@media (max-width: 760px) { .estructura { grid-template-columns: minmax(0,1fr); } }
+.estructura div { background: var(--pg-card); border: 1px solid var(--pg-line); border-radius: 14px; padding: 10px 14px; font-size: 13.5px; color: var(--pg-fg-2); }
+.estructura b { display: block; color: var(--pg-fg); font-size: 14px; }
 .ctl { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
 .ctl button, .btn-modelo { font: inherit; font-weight: 600; font-size: 14px; border-radius: 999px; padding: 8px 16px; border: 1px solid var(--pg-line); background: var(--pg-card); color: var(--pg-fg); cursor: pointer; }
 .ctl .pri { background: var(--pg-acc); color: var(--pg-bg); border-color: var(--pg-acc); }
 .ctl [aria-pressed="true"] { background: var(--pg-fg); color: var(--pg-bg); }
 .ctl button:focus-visible, .btn-modelo:focus-visible { outline: 2px solid var(--pg-acc); outline-offset: 2px; }
 .ctl .nota { font-size: 12.5px; color: var(--pg-fg-2); margin: 0; flex-basis: 100%; }
-.modelos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 24px; }
+.modelos { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 22px; margin-top: 24px; }
 @media (max-width: 1120px) { .modelos { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width: 760px) { .modelos { grid-template-columns: minmax(0,1fr); } }
 .modelo { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
@@ -43,17 +40,17 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .letra { font-family: var(--f-titulo); font-size: 30px; line-height: 1; color: var(--pg-acc); }
 .modelo h2 { margin: 0; font-family: var(--f-titulo); font-weight: 500; font-size: 21px; }
 .modelo p.desc { margin: 0; color: var(--pg-fg-2); font-size: 14px; min-height: 4.5em; }
-.como { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--pg-fg-2); margin: 0; padding: 0; list-style: none; }
-.como li b { color: var(--pg-fg); }
 .mov { display: flex; flex-wrap: wrap; gap: 5px; }
 .mov code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; background: var(--pg-chip); color: var(--pg-fg); border-radius: 6px; padding: 2px 7px; }
 .btn-modelo { align-self: center; font-size: 13px; padding: 5px 12px; color: var(--pg-acc); }
 
 /* ---------- Celular ---------- */
 .tel { position: relative; width: 340px; max-width: 100%; height: 720px; margin: 0 auto; border-radius: 44px; border: 9px solid var(--frame); background: var(--bg); overflow: hidden; font-family: var(--f-texto); color: var(--text); box-shadow: 0 30px 60px -30px rgba(0,40,36,.45); isolation: isolate; font-size: 13px; }
-.isla { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 92px; height: 24px; border-radius: 14px; background: var(--frame); z-index: 60; }
-.pant { position: absolute; inset: 0; display: flex; flex-direction: column; }
-.hero { background: linear-gradient(160deg, var(--hero), var(--hero-2)); color: var(--on-hero); padding: 40px 16px 34px; flex: none; }
+.isla { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 92px; height: 24px; border-radius: 14px; background: var(--frame); z-index: 80; }
+.pant { position: absolute; inset: 0; display: flex; flex-direction: column; transition: transform var(--d-slow) var(--e-standard), filter var(--d-slow); }
+.tel.ventana-abierta .pant { transform: scale(.94); filter: brightness(.6); }
+.tel.push-abierta .pant { transform: translateX(-30%); filter: brightness(.6); }
+.hero { background: linear-gradient(160deg, var(--hero), var(--hero-2)); color: var(--on-hero); padding: 40px 16px 32px; flex: none; }
 .hero .top { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--on-hero-soft); }
 .hero .marca { font-family: var(--f-titulo); font-size: 16px; color: var(--on-hero); }
 .hero h3 { font-family: var(--f-titulo); font-weight: 500; font-size: 21px; margin: 10px 0 0; display: flex; justify-content: space-between; align-items: baseline; }
@@ -65,153 +62,199 @@ h1 { font-family: var(--f-titulo); font-weight: 500; font-size: clamp(28px, 4.6v
 .navb .act { width: auto; height: 36px; border-radius: 18px; background: var(--tint); display: flex; align-items: center; gap: 6px; padding: 0 12px; font-size: 12.5px; font-weight: 600; color: var(--text); }
 .navb .act i { width: 18px; height: 18px; border-radius: 5px; background: linear-gradient(135deg,#34D399,#0EA5E9); display: inline-block; }
 
-/* Comunes */
 .ico { flex: none; display: inline-flex; }
 .ico svg { display: block; width: 100%; height: 100%; }
 .n-num { font-family: var(--f-num); font-weight: 700; font-variant-numeric: tabular-nums; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 11px 12px; flex: none; }
-.card-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
-.card-h b { font-size: 13.5px; }
-.tag { font-size: 10.5px; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: var(--tint); color: var(--text); white-space: nowrap; }
-.tag.reg { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
-.tag.plan { background: var(--tint); color: var(--accent); }
-.items { display: flex; flex-direction: column; gap: 4px; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 42px; border-radius: 14px; border: 0; background: var(--accent); color: var(--on-accent); font: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; flex: none; transition: transform var(--d-fast), opacity var(--d-base); }
+.btn:active { transform: scale(.96); }
+.btn[disabled] { opacity: .45; cursor: default; }
+.stepper { display: inline-flex; align-items: center; gap: 2px; background: var(--tint); border-radius: 10px; padding: 2px; flex: none; }
+.stepper button { width: 24px; height: 24px; border-radius: 8px; border: 0; background: var(--surface); color: var(--text); font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; line-height: 1; transition: transform var(--d-fast); }
+.stepper button:active { transform: scale(.85); }
+.stepper label { display: flex; align-items: baseline; gap: 1px; padding: 0 2px; font-size: 12px; font-weight: 600; }
+.stepper input { width: 34px; border: 0; background: transparent; font: inherit; font-family: var(--f-num); font-weight: 700; color: var(--text); text-align: right; padding: 2px 0; -moz-appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.stepper input:focus { outline: 2px solid var(--accent); border-radius: 5px; background: var(--surface); }
+
+/* Panel superior: avance del día */
+.avance { display: flex; flex-direction: column; gap: 10px; }
+.av-top { display: flex; align-items: center; gap: 12px; }
+.av-top .arco { transition: stroke-dashoffset .9s var(--e-standard); }
+.av-top .info { flex: 1; min-width: 0; }
+.av-top .info .grande { font-size: 30px; line-height: 1; }
+.av-top .info .grande small { font-size: 14px; color: var(--text-2); }
+.av-top .info p { margin: 3px 0 0; font-size: 11.5px; color: var(--text-2); }
+.nutris { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+.nutri { display: flex; flex-direction: column; align-items: center; gap: 3px; background: var(--bg); border-radius: 14px; padding: 7px 4px 8px; text-align: center; }
+.nutri .ico.late { animation: late .9s var(--e-standard); }
+@keyframes late { 0%,56%,100% { transform: scale(1); } 14% { transform: scale(1.25); } 28% { transform: scale(1); } 42% { transform: scale(1.15); } }
+.nutri .val { font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.nutri .val .n-num { color: var(--text); font-size: 12.5px; }
+.nutri .barra { width: 100%; height: 5px; border-radius: 3px; background: var(--tint); overflow: hidden; }
+.nutri .barra i { display: block; height: 100%; border-radius: 3px; transition: width .9s var(--e-standard); }
+.nutri small { font-size: 10px; color: var(--text-2); }
+
+/* Comidas del día */
+.t-sec { font-size: 11.5px; font-weight: 600; color: var(--text-2); margin: 2px 2px -4px; text-transform: uppercase; letter-spacing: .05em; }
+.comidas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.comida { position: relative; display: flex; flex-direction: column; gap: 6px; text-align: left; background: var(--surface); border: 1.5px solid var(--border); border-radius: 18px; padding: 10px; font: inherit; color: var(--text); cursor: pointer; min-height: 112px; transition: transform var(--d-fast), border-color var(--d-base); overflow: hidden; }
+.comida:active { transform: scale(.97); }
+.comida .emo { font-size: 22px; line-height: 1; }
+.comida b { font-size: 13.5px; }
+.comida .est { font-size: 11px; color: var(--text-2); }
+.comida .icos { display: flex; }
+.comida .icos .ico { margin-right: -5px; }
+.comida.lista { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.comida .ok { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.comida.recien { animation: recien .7s var(--e-over); }
+@keyframes recien { 0% { transform: scale(.92); } 50% { transform: scale(1.04); } 100% { transform: none; } }
+.comida .mini { height: 4px; border-radius: 2px; background: var(--tint); overflow: hidden; margin-top: auto; }
+.comida .mini i { display: block; height: 100%; background: var(--accent); transition: width .8s var(--e-standard); }
+
+/* Menú completado */
+.completado { position: relative; overflow: hidden; border-radius: 20px; padding: 16px 14px; background: linear-gradient(140deg, var(--hero-2), var(--accent)); color: var(--on-hero); display: flex; flex-direction: column; gap: 8px; animation: tada .9s var(--e-standard) both; flex: none; }
+@keyframes tada { 0% { transform: scale(.85); opacity: 0; } 30% { transform: scale(1.04) rotate(-2deg); opacity: 1; } 50% { transform: scale(1.04) rotate(2deg); } 70% { transform: scale(1.02) rotate(-1deg); } 100% { transform: none; } }
+.completado h4 { margin: 0; font-family: var(--f-titulo); font-weight: 500; font-size: 20px; }
+.completado p { margin: 0; font-size: 12px; color: var(--on-hero-soft); }
+.completado .btn { background: var(--on-hero); color: var(--hero); }
+.confeti { position: absolute; width: 7px; height: 11px; border-radius: 2px; top: -12px; animation: cae-c 1.8s var(--e-standard) forwards; opacity: .95; }
+@keyframes cae-c { to { transform: translateY(190px) rotate(540deg); opacity: 0; } }
+.pendiente { border: 1.5px dashed var(--border); border-radius: 18px; padding: 12px; font-size: 12px; color: var(--text-2); text-align: center; flex: none; }
+
+/* Ventanas por comida (comunes) */
+.ventana { position: absolute; left: 0; right: 0; bottom: 0; height: 93%; z-index: 40; background: var(--bg); border-radius: 26px 26px 0 0; display: flex; flex-direction: column; padding: 8px 12px 14px; gap: 9px; box-shadow: 0 -12px 30px rgba(0,0,0,.2); animation: sube-v var(--d-slower) var(--e-over) both; }
+@keyframes sube-v { from { transform: translateY(100%); } }
+.ventana.cierra { animation: baja-v var(--d-slow) var(--e-exit) both; }
+@keyframes baja-v { to { transform: translateY(100%); } }
+.ventana.push { height: 100%; border-radius: 0; padding-top: 40px; animation: entra-p var(--d-slow) var(--e-standard) both; }
+@keyframes entra-p { from { transform: translateX(100%); } }
+.ventana.push.cierra { animation: sale-p var(--d-base) var(--e-exit) both; }
+@keyframes sale-p { to { transform: translateX(100%); } }
+.ventana.zoom { height: 100%; border-radius: 0; padding-top: 40px; animation: zoom-in var(--d-slower) var(--e-emph) both; transform-origin: var(--ox, 50%) var(--oy, 50%); }
+@keyframes zoom-in { from { transform: scale(.2); opacity: 0; border-radius: 40px; } }
+.ventana.zoom.cierra { animation: zoom-out var(--d-slow) var(--e-exit) both; }
+@keyframes zoom-out { to { transform: scale(.2); opacity: 0; } }
+.asa { width: 40px; height: 5px; border-radius: 3px; background: var(--border); margin: 0 auto; flex: none; }
+.v-cab { display: flex; align-items: center; gap: 10px; flex: none; }
+.v-cab .cerrar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 16px; cursor: pointer; flex: none; }
+.v-cab h4 { margin: 0; font-family: var(--f-titulo); font-weight: 500; font-size: 19px; flex: 1; }
+.v-cab small { display: block; font-family: var(--f-texto); font-size: 11.5px; color: var(--text-2); font-weight: 400; }
+.v-cuerpo { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px; }
+.v-cuerpo::-webkit-scrollbar { display: none; }
+.resumen { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 8px 10px; flex: none; }
+.resumen svg .arco { transition: stroke-dashoffset .6s var(--e-standard); }
+.resumen .tx { flex: 1; min-width: 0; font-size: 11.5px; color: var(--text-2); }
+.resumen .tx b { display: block; font-size: 13px; color: var(--text); }
+.resumen.salta { animation: recien .5s var(--e-over); }
 .it { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
 .it .nm { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .it .gr { color: var(--text-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
-.it.nuevo { animation: nuevo var(--d-slower) var(--e-over) both; }
-@keyframes nuevo { from { opacity: 0; transform: translateX(-14px) scale(.9); } }
-.pie-card { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 11.5px; color: var(--text-2); }
-.flechas { display: flex; gap: 4px; }
-.flechas button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 15px; cursor: pointer; line-height: 1; transition: transform var(--d-fast); }
-.flechas button:active { transform: scale(.88); }
-.falta { background: var(--warn-bg); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); border-radius: 18px; padding: 10px 12px; flex: none; }
-.falta .t { font-size: 12.5px; color: var(--warn); font-weight: 600; line-height: 1.35; }
-.falta .s { font-size: 11.5px; color: var(--text-2); margin: 2px 0 8px; }
-.sug { display: flex; flex-direction: column; gap: 6px; }
-.sug button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 13px; padding: 6px 8px; font: inherit; font-size: 12px; color: var(--text); cursor: pointer; transition: transform var(--d-fast), border-color var(--d-base); }
-.sug button:active { transform: scale(.97); }
-.sug button .nm { flex: 1; min-width: 0; }
-.sug button .nm small { display: block; color: var(--text-2); font-size: 10.5px; }
-.sug button .mas { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 700; flex: none; }
-.listo { background: color-mix(in srgb, var(--ok) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent); color: var(--text); border-radius: 18px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; font-size: 12.5px; flex: none; animation: tada .85s var(--e-standard) both; }
-@keyframes tada { 0% { transform: scale(.9); opacity: 0; } 30% { transform: scale(1.04) rotate(-1.5deg); opacity: 1; } 50% { transform: scale(1.04) rotate(1.5deg); } 70% { transform: scale(1.02) rotate(-.8deg); } 100% { transform: none; } }
-.btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 42px; border-radius: 14px; border: 0; background: var(--accent); color: var(--on-accent); font: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; flex: none; transition: transform var(--d-fast); }
-.btn:active { transform: scale(.96); }
-.btn.sec { background: var(--surface); color: var(--accent); border: 1px solid var(--border); height: 36px; font-size: 12.5px; }
-.barra { height: 7px; border-radius: 4px; background: var(--tint); overflow: hidden; position: relative; }
-.barra i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width .7s var(--e-standard); }
-.macros4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
-.macros4 > div { font-size: 10.5px; color: var(--text-2); display: flex; flex-direction: column; gap: 3px; }
-.macros4 .n-num { font-size: 12.5px; color: var(--text); }
+.sube { animation: sube .4s var(--e-emph) both; }
+@keyframes sube { from { opacity: 0; transform: translateY(12px); } }
+.veces { font-size: 10.5px; color: var(--text-2); }
 
-/* ---------- A: Mezcla de tus días ---------- */
-.anillo { display: flex; align-items: center; gap: 14px; }
-.anillo svg { flex: none; }
-.anillo .arco { transition: stroke-dashoffset .8s var(--e-standard); }
-.anillo .info { flex: 1; min-width: 0; }
-.anillo .info .grande { font-size: 30px; line-height: 1; }
-.anillo .info .grande small { font-size: 14px; color: var(--text-2); font-weight: 600; }
-.anillo .info p { margin: 4px 0 0; font-size: 11.5px; color: var(--text-2); }
-.fuente { font-size: 10.5px; color: var(--text-2); }
-.cambia { animation: cambia var(--d-slow) var(--e-emph) both; }
-@keyframes cambia { from { opacity: 0; transform: translateX(var(--dx, 24px)); } }
+/* Opción 1: carrusel de variantes */
+.carrusel { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px 2px 4px; flex: none; }
+.carrusel::-webkit-scrollbar { display: none; }
+.var { flex: none; width: 82%; scroll-snap-align: center; background: var(--surface); border: 1.5px solid var(--border); border-radius: 22px; padding: 12px; display: flex; flex-direction: column; gap: 8px; transition: border-color var(--d-base), transform var(--d-base) var(--e-over); }
+.var.elegida { border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint); }
+.var .portada { position: relative; height: 92px; border-radius: 16px; background: radial-gradient(circle at 50% 60%, var(--surface) 30%, var(--tint)); display: flex; align-items: center; justify-content: center; }
+.var .portada .ico { margin: 0 -4px; animation: flota 3s ease-in-out infinite alternate; }
+.var .portada .ico:nth-child(2) { animation-delay: .5s; } .var .portada .ico:nth-child(3) { animation-delay: 1s; } .var .portada .ico:nth-child(4) { animation-delay: 1.5s; }
+@keyframes flota { to { transform: translateY(-5px); } }
+.var .portada .sello { position: absolute; top: 8px; right: 8px; background: var(--accent); color: var(--on-accent); border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 700; animation: recien .5s var(--e-over); }
+.var h5 { margin: 0; font-size: 14px; }
+.var .meta-v { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-2); }
+.porciones { display: flex; gap: 5px; }
+.porciones button { flex: 1; height: 30px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background var(--d-base), color var(--d-base); }
+.porciones button.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.puntos { display: flex; justify-content: center; gap: 5px; flex: none; }
+.puntos i { width: 6px; height: 6px; border-radius: 3px; background: var(--border); transition: width var(--d-base), background var(--d-base); }
+.puntos i.on { width: 18px; background: var(--accent); }
+.elegir { height: 38px; }
+.var.elegida .elegir { background: var(--ok); }
 
-/* ---------- B: Línea del día ---------- */
-.prog { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--tint); gap: 2px; }
-.prog > span { height: 100%; transition: width .7s var(--e-standard); position: relative; }
-.prog .r { background: var(--accent); }
-.prog .p { background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--accent) 55%, transparent) 0 4px, color-mix(in srgb, var(--accent) 25%, transparent) 4px 8px); }
-.prog .x { background: repeating-linear-gradient(-45deg, var(--c-kcal) 0 4px, color-mix(in srgb, var(--c-kcal) 45%, transparent) 4px 8px); }
-.leyenda { display: flex; gap: 12px; font-size: 10.5px; color: var(--text-2); margin-top: 6px; }
-.leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
-.linea { position: relative; display: flex; flex-direction: column; gap: 10px; padding-left: 22px; }
-.linea::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
-.nodo { position: relative; }
-.nodo::before { content: ""; position: absolute; left: -20px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); box-sizing: border-box; transition: background var(--d-base), border-color var(--d-base); }
-.nodo.hecho::before { background: var(--accent); border-color: var(--accent); }
-.nodo .card.fantasma { border-style: dashed; background: color-mix(in srgb, var(--surface) 55%, transparent); }
-.nodo .card.fantasma .it { opacity: .78; }
-.nodo .hora { font-size: 10.5px; color: var(--text-2); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 3px; }
-.acc { display: flex; gap: 6px; margin-top: 8px; }
-.acc button { flex: 1; height: 32px; border-radius: 10px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
-.acc button.pri { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-.opciones { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; scroll-snap-type: x mandatory; }
-.opciones::-webkit-scrollbar { display: none; }
-.opc { flex: none; width: 170px; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 9px; display: flex; flex-direction: column; gap: 6px; }
-.opc b { font-size: 12px; }
-.opc .its { display: flex; gap: 4px; align-items: center; font-size: 11px; color: var(--text-2); }
-.opc .aporta { font-size: 11px; color: var(--text-2); }
-.opc .aporta .n-num { color: var(--text); }
-.opc button { height: 30px; border-radius: 10px; border: 0; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+/* Opción 2: arrastrar al plato */
+.plato-v { position: relative; width: 170px; height: 170px; margin: 0 auto; flex: none; touch-action: none; }
+.plato-v .aro { position: absolute; inset: 0; }
+.plato-v .aro .arco { transition: stroke-dashoffset .6s var(--e-standard); }
+.plato-v .base { position: absolute; inset: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--surface) 55%, var(--tint)); box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 7px var(--border), 0 10px 22px -12px rgba(0,0,0,.35); transition: transform var(--d-base) var(--e-over), box-shadow var(--d-base); }
+.plato-v.sobre .base { transform: scale(1.06); box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 9px var(--accent), 0 14px 26px -12px rgba(0,0,0,.4); }
+.plato-v .centro { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; z-index: 3; pointer-events: none; }
+.plato-v .centro strong { display: block; font-size: 20px; }
+.plato-v .centro span { font-size: 10px; color: var(--text-2); }
+.en-plato { position: absolute; width: 38px; height: 38px; margin: -19px 0 0 -19px; z-index: 2; animation: cae .6s var(--e-over) both; filter: drop-shadow(0 3px 3px rgba(0,0,0,.18)); }
+@keyframes cae { 0% { transform: translateY(-70px) scale(.6); opacity: 0; } 60% { transform: translateY(3px) scale(1.06); opacity: 1; } 100% { transform: none; } }
+.arrastrables { display: flex; flex-direction: column; gap: 6px; }
+.drag { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 6px 6px 8px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.drag .agarre { color: var(--text-2); font-size: 13px; letter-spacing: -2px; }
+.drag .icos { display: flex; } .drag .icos .ico { margin-right: -6px; }
+.drag .nm { flex: 1; min-width: 0; margin-left: 6px; font-size: 12px; font-weight: 600; }
+.drag .nm small { display: block; font-weight: 400; color: var(--text-2); font-size: 10.5px; }
+.drag .mas { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--tint); color: var(--accent); font-size: 18px; font-weight: 700; cursor: pointer; flex: none; }
+.drag.usada { opacity: .5; }
+.fantasma { position: absolute; z-index: 90; pointer-events: none; display: flex; filter: drop-shadow(0 8px 10px rgba(0,0,0,.3)); transform: scale(1.15); }
+.fantasma .ico { margin-right: -8px; }
+.elegidos { display: flex; flex-direction: column; gap: 5px; }
+.elegidos .it { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px 6px 5px 8px; }
+.pista { text-align: center; font-size: 11px; color: var(--text-2); margin-top: -4px; }
 
-/* ---------- C: Semana con anillos ---------- */
-.semana { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 3px; }
-.dia { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 5px; border-radius: 14px; border: 1px solid transparent; background: none; font: inherit; color: var(--text); cursor: pointer; }
-.dia.on { background: var(--surface); border-color: var(--accent); }
-.dia small { font-size: 9.5px; color: var(--text-2); text-transform: uppercase; font-weight: 600; }
-.dia .pc { font-size: 9.5px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
-.dia svg .arco { transition: stroke-dashoffset .8s var(--e-standard); }
-.aros { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 4px; text-align: center; }
-.aros div { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; color: var(--text-2); }
-.aros .arco { transition: stroke-dashoffset .8s var(--e-standard); }
-.plantillas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-.plantillas::-webkit-scrollbar { display: none; }
-.plantilla { flex: none; display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; padding: 7px 9px; font: inherit; font-size: 11.5px; color: var(--text); cursor: pointer; text-align: left; transition: border-color var(--d-base), background var(--d-base); }
-.plantilla.on { border-color: var(--accent); background: var(--tint); }
-.plantilla .icos { display: flex; }
-.plantilla .icos .ico { margin-right: -5px; }
-.plantilla .pct { font-weight: 700; font-size: 11px; color: var(--ok); }
-.fila-c { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border); font-size: 12.5px; }
-.fila-c:first-child { border-top: 0; }
-.fila-c .icos { display: flex; }
-.fila-c .icos .ico { margin-right: -6px; }
-.fila-c .nm { flex: 1; min-width: 0; margin-left: 6px; }
-.fila-c .nm small { display: block; color: var(--text-2); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Opción 3: arma por partes */
+.rapidas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; }
+.rapidas::-webkit-scrollbar { display: none; }
+.rapida { flex: none; display: flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font: inherit; font-size: 11.5px; font-weight: 600; color: var(--text); cursor: pointer; }
+.rapida .icos { display: flex; } .rapida .icos .ico { margin-right: -5px; }
+.rapida.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.parte h6 { margin: 2px 2px 5px; font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
+.rejilla { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+.tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px 6px; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--border); font: inherit; font-size: 10.5px; font-weight: 600; color: var(--text); cursor: pointer; text-align: center; line-height: 1.2; transition: border-color var(--d-base), background var(--d-base), transform var(--d-fast); }
+.tile:active { transform: scale(.92); }
+.tile.on { border-color: var(--accent); background: var(--tint); }
+.tile .badge { position: absolute; top: -6px; right: -4px; background: var(--accent); color: var(--on-accent); border-radius: 999px; font-size: 10px; font-family: var(--f-num); font-weight: 700; padding: 1px 6px; animation: recien .4s var(--e-over); }
+.tile .menos { position: absolute; top: -6px; left: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 700; line-height: 18px; }
+.tile .tn { width: 100%; padding: 0 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } }
 </style>
 
 <div class="wrap">
-  <h1>Menú del día</h1>
-  <p class="intro">Tres formas de rehacer la pestaña Menú para que salga de lo que de verdad comes, no de combinaciones al azar. Ejemplo: jueves 22, con meta de 1300 kcal y 60 g de proteína; el desayuno y un almuerzo ligero ya están registrados, así que el día no llega a la meta y la app propone cómo completarlo.</p>
-  <div class="req">
-    <div><b>1 · Se arma con tus días</b>Usa comidas reales que registraste otros días, empezando por las que mejor cumplieron la meta.</div>
-    <div><b>2 · Sugiere cómo completar</b>Si el día no llega a la meta, propone qué agregar y con cuánto aporta.</div>
-    <div><b>3 · Muestra el porcentaje</b>Con el menú del día armado, indica qué porcentaje de la meta cubre.</div>
+  <h1>Menú de hoy</h1>
+  <p class="intro">Un Menú nuevo con la misma estructura en las tres opciones. La diferencia está en la ventana que se abre al tocar cada comida para elegir la preparación y la cantidad.</p>
+  <div class="estructura">
+    <div><b>Arriba · Avance del día</b>Porcentaje de la meta con los íconos de calorías, proteína, carbohidratos y grasa. Se llena al confirmar cada comida.</div>
+    <div><b>En medio · Las 4 comidas</b>Desayuno, Almuerzo, Cena y Colación. Cada una abre su propia ventana con tus variantes para esa comida.</div>
+    <div><b>Abajo · Menú completado</b>Cuando las 4 están elegidas aparece la tarjeta de menú completado, con confeti y el porcentaje final.</div>
   </div>
   <div class="ctl">
     <button type="button" class="pri" id="demo">▶ Ver demo en los 3</button>
     <button type="button" id="reinicia">Reiniciar</button>
     <button type="button" data-tema="claro" aria-pressed="true">Claro</button>
     <button type="button" data-tema="oscuro" aria-pressed="false">Oscuro</button>
-    <p class="nota">Los días anteriores son un historial de ejemplo con alimentos de tu base. En la app se usará el registro real de los últimos 30 días.</p>
+    <p class="nota">Las variantes son de ejemplo con alimentos de tu base. En la app saldrán de las comidas que registraste en cada momento, ordenadas por cuántas veces las preparaste. Meta de ejemplo: 1300 kcal y 60 g de proteína.</p>
   </div>
 
   <div class="modelos">
     <section class="modelo">
-      <header><span class="letra">A</span><h2>Mezcla de tus comidas</h2></header>
-      <p class="desc">Cada comida del día sale de una que ya registraste. Con las flechas pasas a otra versión real de esa comida, y el anillo de arriba dice el porcentaje del día.</p>
-      <div class="tel" id="telA"></div>
-      <button type="button" class="btn-modelo" data-solo="A">▶ Ver solo este</button>
-      <ul class="como"><li><b>Tus días:</b> cada comida muestra de qué día viene ("Como el lunes 19").</li><li><b>Completar:</b> tarjeta ámbar con lo que falta y 3 alimentos de tus frecuentes.</li><li><b>Porcentaje:</b> anillo grande y barras por nutriente.</li></ul>
-      <div class="mov"><code>chart-draw</code><code>count-up</code><code>push-slide entre versiones</code><code>stagger-up</code><code>icon-tada</code></div>
+      <header><span class="letra">1</span><h2>Carrusel de variantes</h2></header>
+      <p class="desc">La ventana sube desde abajo con tus variantes como tarjetas que se deslizan con el dedo. Eliges la porción (½, 1, 1½, 2) y ajustas cada alimento con − / +.</p>
+      <div class="tel" id="tel1"></div>
+      <button type="button" class="btn-modelo" data-solo="1">▶ Ver solo este</button>
+      <div class="mov"><code>sheet-up</code><code>scroll-snap</code><code>flotar íconos</code><code>chip-pop</code><code>count-up</code><code>chart-draw</code><code>icon-beat</code><code>confeti + tada</code></div>
     </section>
     <section class="modelo">
-      <header><span class="letra">B</span><h2>Línea del día</h2></header>
-      <p class="desc">El día como una línea de tiempo: lo registrado en firme y lo sugerido en punteado. La barra separa lo que ya comiste de lo que falta por comer.</p>
-      <div class="tel" id="telB"></div>
-      <button type="button" class="btn-modelo" data-solo="B">▶ Ver solo este</button>
-      <ul class="como"><li><b>Tus días:</b> lo pendiente se sugiere desde otro día tuyo; "Lo comí" lo pasa al registro.</li><li><b>Completar:</b> 3 opciones deslizables (rápida, más proteína, ligera).</li><li><b>Porcentaje:</b> "comiste 43 %, con lo planificado llegas a 82 %".</li></ul>
-      <div class="mov"><code>progress-fill</code><code>dashed → sólido</code><code>scroll-snap</code><code>count-up</code><code>icon-tada</code></div>
+      <header><span class="letra">2</span><h2>Arrastra al plato</h2></header>
+      <p class="desc">La comida se abre desde su tarjeta y muestra un plato. Arrastras una variante al plato con el dedo (o tocas +), los alimentos caen y ajustas gramos debajo.</p>
+      <div class="tel" id="tel2"></div>
+      <button type="button" class="btn-modelo" data-solo="2">▶ Ver solo este</button>
+      <div class="mov"><code>zoom-through</code><code>drag &amp; drop</code><code>caída con resorte</code><code>plato que se ilumina</code><code>count-up</code><code>confeti + tada</code></div>
     </section>
     <section class="modelo">
-      <header><span class="letra">C</span><h2>Semana con anillos</h2></header>
-      <p class="desc">Cada día de la semana tiene su anillo de cumplimiento. Para armar el día eliges uno de tus mejores días como plantilla y se completa con un toque.</p>
-      <div class="tel" id="telC"></div>
-      <button type="button" class="btn-modelo" data-solo="C">▶ Ver solo este</button>
-      <ul class="como"><li><b>Tus días:</b> plantillas con tus días más cumplidos ("Martes 20 · 98 %").</li><li><b>Completar:</b> lista "Para llegar al 100 %" con lo que suma cada alimento.</li><li><b>Porcentaje:</b> anillos por día y por nutriente.</li></ul>
-      <div class="mov"><code>chart-draw por día</code><code>cluster-pop</code><code>count-up</code><code>shared-element</code><code>icon-tada</code></div>
+      <header><span class="letra">3</span><h2>Arma por partes</h2></header>
+      <p class="desc">Arriba tus variantes como atajo de un toque. Debajo, los alimentos de esa comida por partes: cada toque suma una porción y el número indica cuántas.</p>
+      <div class="tel" id="tel3"></div>
+      <button type="button" class="btn-modelo" data-solo="3">▶ Ver solo este</button>
+      <div class="mov"><code>push-slide</code><code>cluster-pop</code><code>badge-pop</code><code>press-scale</code><code>count-up</code><code>confeti + tada</code></div>
     </section>
   </div>
 </div>
@@ -927,194 +970,223 @@ window.__BASE=[["f01", "Pechuga de pollo", "proteina", 165, 31, 0, 3.6], ["f03",
   const N = window.NutriIconos; const $ = (s, r = document) => r.querySelector(s);
   const RAP = { v: false }; const espera = (ms) => new Promise((r) => setTimeout(r, RAP.v ? 10 : ms));
   const BASE = {}; window.__BASE.forEach(([id, nombre, cat, kcal, p, c, g]) => { BASE[id] = { id, nombre, cat, kcal, p, c, g }; });
-  const corto = (id) => BASE[id].nombre.replace(/ \(.*\)/, "").replace(/ \/.*/, "");
-  const ico = (id, s) => `<span class="ico" style="width:${s}px;height:${s}px">${N.alimento(BASE[id], s)}</span>`;
+  const corto = (id) => BASE[id].nombre.replace(/ \(.*\)/, "").replace(/ \/.*/, "").replace(/ (cocid[oa]s?|enter[oa]|fresc[oa]|natural|crud[oa]|firme|en hojuelas|descremada|desamargado|mixta)$/i, "");
+  const ico = (id, s, cls = "") => `<span class="ico ${cls}" style="width:${s}px;height:${s}px">${N.alimento(BASE[id], s)}</span>`;
+  const icoN = (k, s, cls = "") => `<span class="ico ${cls}" style="width:${s}px;height:${s}px">${N.svg(k, s)}</span>`;
+  const R = Math.round;
   const META = { kcal: 1300, p: 60, c: 165, g: 43 };
-  const MOMS = [["desayuno", "Desayuno", "8:00"], ["almuerzo", "Almuerzo", "13:30"], ["colacion", "Colación", "17:00"], ["cena", "Cena", "20:00"]];
-  const PCT = { desayuno: .25, colacion: .10, almuerzo: .35, cena: .30 };
+  const MOMS = [["desayuno", "Desayuno", "☕", .25], ["almuerzo", "Almuerzo", "🍽", .35], ["cena", "Cena", "🌙", .30], ["colacion", "Colación", "🍎", .10]];
+  const pctM = Object.fromEntries(MOMS.map((m) => [m[0], m[3]]));
   const ap = (it) => { const f = BASE[it[0]], k = it[1] / 100; return { kcal: f.kcal * k, p: f.p * k, c: f.c * k, g: f.g * k }; };
   const sum = (its) => its.reduce((s, it) => { const a = ap(it); s.kcal += a.kcal; s.p += a.p; s.c += a.c; s.g += a.g; return s; }, { kcal: 0, p: 0, c: 0, g: 0 });
-  const R = Math.round;
-  const faltaTxt = (f) => { const k = R(Math.max(0, f.kcal)), p = R(Math.max(0, f.p)); return `<span class="n-num">${k}</span> kcal` + (p > 0 ? ` y <span class="n-num">${p}</span> g de proteína` : ""); };
-
-  /* Historial de ejemplo: días reales anteriores (alimento, gramos) */
-  const DIAS = [
-    { id: "lun19", nom: "lunes 19", corto: "Lun", n: 19, m: { desayuno: [["f27",100],["f08",30],["f65",100]], colacion: [["f43",160],["f26",10]], almuerzo: [["f14",150],["f32",90],["f19",120],["f11",150],["f25",5]], cena: [["f33",90],["f12",120],["f18",100],["f25",5]] } },
-    { id: "mar20", nom: "martes 20", corto: "Mar", n: 20, m: { desayuno: [["f08",40],["f28",200],["f21",120]], colacion: [["f20",150],["f27",100]], almuerzo: [["f10",150],["f01",90],["f18",100],["f06",100],["f25",5]], cena: [["f03",50],["f48",60],["f15",100],["f24",60]] } },
-    { id: "mie21", nom: "miércoles 21", corto: "Mié", n: 21, m: { desayuno: [["f03",50],["f48",60],["f24",60]], colacion: [["f40",150]], almuerzo: [["f10",130],["f39",130],["f01",80],["f15",80],["f25",5]], cena: [["f05",100],["f14",120],["f17",70],["f25",5]] } },
-    { id: "sab17", nom: "sábado 17", corto: "Sáb", n: 17, m: { desayuno: [["f27",150],["f23",100],["f62",15]], colacion: [["f55",150]], almuerzo: [["f11",200],["f31",90],["f49",120],["f25",5]], cena: [["f03",50],["f19",120],["f13",50],["f24",40]] } },
-    { id: "jue15", nom: "jueves 15", corto: "Jue", n: 15, m: { desayuno: [["f08",40],["f28",200],["f20",150]], colacion: [["f29",60],["f53",60]], almuerzo: [["f10",150],["f34",90],["f18",120]], cena: [["f33",90],["f59",120],["f15",100],["f25",5]] } },
-  ];
-  DIAS.forEach((d) => { d.tot = sum(Object.values(d.m).flat()); d.pct = Math.min(d.tot.kcal, META.kcal) / META.kcal * .6 + Math.min(d.tot.p, META.p) / META.p * .4; });
-  /* Hoy (jueves 22): desayuno y almuerzo registrados */
-  const HOY = { desayuno: [["f27",100],["f08",30],["f65",50]], almuerzo: [["f10",120],["f01",80],["f18",100],["f25",5]] };
-  /* Frecuentes para completar (porción habitual) */
-  const RELLENO = [["f27",120,"Yogur griego"],["f03",50,"1 huevo"],["f29",80,"Queso cottage"],["f26",20,"Almendras"],["f21",120,"1 plátano"],["f65",100,"2 higos"],["f48",60,"Pan integral"],["f62",15,"Nueces"],["f24",60,"Palta"]];
-  function sugerencias(falta, n = 3) {
-    return RELLENO.map(([id, g, txt]) => { const a = ap([id, g]); const sc = Math.min(a.p, Math.max(0, falta.p)) / Math.max(1, falta.p) * .6 + Math.min(a.kcal, Math.max(0, falta.kcal)) / Math.max(1, falta.kcal) * .4 - Math.max(0, a.kcal - falta.kcal - 40) / 200; return { id, g, txt, a, sc }; })
-      .sort((x, y) => y.sc - x.sc).slice(0, n);
+  const VAR = {
+    desayuno: [["Avena con leche y plátano", 14, [["f08",40],["f28",200],["f21",80]]], ["Yogur con avena e higo", 9, [["f27",150],["f08",30],["f65",100]]], ["Huevo, pan integral y palta", 8, [["f03",50],["f48",60],["f24",60]]], ["Yogur con frutos rojos y nueces", 5, [["f27",150],["f23",100],["f62",15]]], ["Avena con leche y manzana", 4, [["f08",40],["f28",200],["f20",150]]], ["Pan con queso y mandarina", 2, [["f13",60],["f29",60],["f43",80]]]],
+    almuerzo: [["Arroz, pollo y ensalada", 12, [["f10",150],["f01",100],["f18",100],["f25",5]]], ["Quinua con bonito y papa", 7, [["f14",150],["f32",100],["f11",120]]], ["Arroz con frijoles y pollo", 6, [["f10",120],["f39",120],["f01",80]]], ["Papa con pavo y zapallo", 5, [["f11",200],["f31",100],["f49",120],["f25",5]]], ["Arroz con salmón y brócoli", 3, [["f10",130],["f34",90],["f15",100]]], ["Lentejas con arroz y huevo", 3, [["f06",150],["f10",100],["f03",50]]]],
+    cena: [["Tilapia con camote y ensalada", 8, [["f33",120],["f12",150],["f18",100],["f25",5]]], ["Huevo, pan integral y brócoli", 7, [["f03",100],["f48",60],["f15",100]]], ["Tofu con quinua y zanahoria", 4, [["f05",120],["f14",150],["f17",70],["f25",5]]], ["Tilapia con yuca y brócoli", 3, [["f33",120],["f59",120],["f15",100]]], ["Huevo con tomate y pan", 3, [["f03",100],["f19",120],["f13",50]]]],
+    colacion: [["Manzana con yogur", 9, [["f20",150],["f27",80]]], ["Mandarina y almendras", 7, [["f43",120],["f26",10]]], ["Kiwi", 4, [["f40",150]]], ["Cottage con aguaymanto", 4, [["f29",60],["f53",60]]], ["Higo con nueces", 3, [["f65",100],["f62",8]]], ["Piña", 2, [["f55",150]]]],
+  };
+  function contar(el, a, b, ms = 700) { if (!el) return; if (RAP.v) { el.textContent = R(b); return; } const t0 = performance.now(); (function s(t) { const x = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - x, 3); el.textContent = R(a + (b - a) * e); if (x < 1) requestAnimationFrame(s); })(t0); }
+  const anillo = (pct, size, gr, col, cls = "") => { const r = (size - gr) / 2, c = 2 * Math.PI * r; return `<svg class="${cls}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--tint)" stroke-width="${gr}"/><circle class="arco" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${gr}" stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - Math.min(1, pct))).toFixed(1)}" data-c="${c.toFixed(1)}"/></svg>`; };
+  const ponerAnillo = (svg, pct) => { const a = svg && svg.querySelector(".arco"); if (a) a.style.strokeDashoffset = (+a.dataset.c * (1 - Math.min(1, pct))).toFixed(1); };
+  const stepper = (g) => `<span class="stepper"><button type="button" data-d="-1" aria-label="Menos">−</button><label><input type="number" inputmode="numeric" value="${g}" aria-label="Gramos">g</label><button type="button" data-d="1" aria-label="Más">+</button></span>`;
+  const paso = (g, d) => Math.max(5, g + d * (g >= 100 ? 10 : 5));
+  function atarStepper(sp, item, cb) {
+    const inp = $("input", sp);
+    sp.querySelectorAll("button").forEach((b) => b.onclick = (e) => { e.stopPropagation(); item[1] = paso(item[1], +b.dataset.d); inp.value = item[1]; cb(); });
+    inp.oninput = () => { const v = parseInt(inp.value, 10); if (v > 0) { item[1] = v; cb(); } }; inp.onfocus = () => inp.select();
   }
-  /* Candidatos reales para una comida, ordenados por cercanía a su meta */
-  const candidatos = (mom) => DIAS.map((d) => ({ dia: d, its: d.m[mom], t: sum(d.m[mom]) })).sort((a, b) => Math.abs(a.t.kcal - META.kcal * PCT[mom]) - Math.abs(b.t.kcal - META.kcal * PCT[mom]) + (b.t.p - a.t.p) * .5);
-  function contar(el, a, b, ms = 700, dec = 0) {
-    if (!el) return; const f = (x) => dec ? x.toFixed(dec) : R(x); if (RAP.v) { el.textContent = f(b); return; }
-    const t0 = performance.now(); (function s(t) { const x = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - x, 3); el.textContent = f(a + (b - a) * e); if (x < 1) requestAnimationFrame(s); })(t0);
+  const COLS = [["kcal", "calorias", "Calorías", "var(--c-kcal)", ""], ["p", "proteina", "Proteína", "var(--c-prot)", " g"], ["c", "carbohidratos", "Carbohid.", "var(--c-carb)", " g"], ["g", "grasas", "Grasa", "var(--c-gras)", " g"]];
+
+  /* =================== Pantalla común: avance + comidas + completado =================== */
+  function crearMenu(el, abrirVentana) {
+    const M = { el, dia: {}, previo: { kcal: 0, p: 0, c: 0, g: 0 } };
+    el.innerHTML = `<div class="isla"></div><div class="pant"><div class="hero"><div class="top"><span class="marca">NutriClínica</span><span>Reportes · Historial</span></div><h3>Menú de hoy <small>Jueves 22 oct</small></h3></div>
+      <div class="hoja">
+        <div class="card avance"><div class="av-top">${anillo(0, 84, 9, "var(--accent)", "ring")}<div class="info"><div class="grande n-num"><span class="pc">0</span><small>%</small></div><p>de tu meta de hoy<br><span class="n-num kk" style="color:var(--text)">0</span> de ${META.kcal} kcal</p></div></div>
+          <div class="nutris">${COLS.map(([k, ik, n, col, u]) => `<div class="nutri" data-k="${k}">${icoN(ik, 30)}<span class="val"><span class="n-num v">0</span>${u}</span><div class="barra"><i style="width:0;background:${col}"></i></div><small>${n} · <span class="pp">0</span>%</small></div>`).join("")}</div></div>
+        <p class="t-sec">Elige tus comidas</p>
+        <div class="comidas"></div>
+        <div class="final"></div>
+      </div><div class="navb"><span></span><span></span><span></span><span class="act"><i></i>Menú</span><span></span></div></div>`;
+    M.pintarComidas = (recien) => {
+      $(".comidas", el).innerHTML = MOMS.map(([k, n, e, p]) => { const its = M.dia[k], t = its ? sum(its) : null, meta = R(META.kcal * p);
+        return `<button type="button" class="comida ${its ? "lista" : ""} ${recien === k ? "recien" : ""}" data-m="${k}">${its ? '<span class="ok">✓</span>' : ""}<span class="emo">${e}</span><b>${n}</b>
+          ${its ? `<span class="icos">${its.slice(0, 4).map((it) => ico(it[0], 24)).join("")}</span><span class="est"><span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> de ${meta} kcal</span>` : `<span class="est">Meta ${meta} kcal<br>Toca para elegir</span>`}
+          <span class="mini"><i style="width:${its ? Math.min(100, t.kcal / meta * 100) : 0}%"></i></span></button>`; }).join("");
+      el.querySelectorAll(".comida").forEach((b) => b.onclick = () => abrirVentana(M, b.dataset.m, b));
+    };
+    M.actualizar = (recien) => {
+      const t = sum(Object.values(M.dia).flat()), p0 = M.previo; M.previo = t;
+      ponerAnillo($(".ring", el), t.kcal / META.kcal); contar($(".pc", el), p0.kcal / META.kcal * 100, t.kcal / META.kcal * 100, 900); contar($(".kk", el), p0.kcal, t.kcal, 900);
+      el.querySelectorAll(".nutri").forEach((n) => { const k = n.dataset.k; contar($(".v", n), p0[k], t[k], 900); contar($(".pp", n), p0[k] / META[k] * 100, t[k] / META[k] * 100, 900); $(".barra i", n).style.width = Math.min(100, t[k] / META[k] * 100) + "%";
+        if (recien && t[k] !== p0[k]) { const i = $(".ico", n); i.classList.remove("late"); void i.offsetWidth; i.classList.add("late"); } });
+      M.pintarComidas(recien);
+      const n = Object.keys(M.dia).length, f = $(".final", el);
+      if (n === 4) {
+        f.innerHTML = `<div class="completado"><h4>¡Menú completado!</h4><p>Tus 4 comidas cubren el <b class="n-num" style="color:#fff">${R(t.kcal / META.kcal * 100)}%</b> de tus calorías y el <b class="n-num" style="color:#fff">${R(t.p / META.p * 100)}%</b> de tu proteína.</p><button type="button" class="btn">→ Pasar al registro</button></div>`;
+        const c = $(".completado", f); const cols = ["#FFD447", "#FF7B8E", "#6CB2FF", "#7CF2C5", "#FFFFFF"];
+        for (let i = 0; i < 22; i++) { const s = document.createElement("i"); s.className = "confeti"; s.style.left = (Math.random() * 100) + "%"; s.style.background = cols[i % 5]; s.style.animationDelay = (Math.random() * .5) + "s"; c.appendChild(s); }
+        if (recien) setTimeout(() => $(".hoja", el).scrollTo({ top: 9999, behavior: "smooth" }), 300);
+      } else f.innerHTML = `<div class="pendiente">Te faltan ${4 - n} comida${4 - n === 1 ? "" : "s"} por elegir para completar el menú.</div>`;
+    };
+    M.confirmar = (mom, its) => { M.dia[mom] = its.map((x) => [x[0], x[1]]); M.actualizar(mom); };
+    M.actualizar();
+    return M;
   }
-  const anillo = (pct, size, grosor, color, extra = "") => { const r = (size - grosor) / 2, c = 2 * Math.PI * r; return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" ${extra}><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--tint)" stroke-width="${grosor}"/><circle class="arco" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="${grosor}" stroke-linecap="round" transform="rotate(-90 ${size / 2} ${size / 2})" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - Math.min(1, pct))).toFixed(1)}" data-c="${c.toFixed(1)}"/></svg>`; };
-  const ponerAnillo = (svg, pct) => { const a = svg.querySelector(".arco"); a.style.strokeDashoffset = (+a.dataset.c * (1 - Math.min(1, pct))).toFixed(1); };
-  const marco = (sub, cuerpo) => `<div class="isla"></div><div class="pant"><div class="hero"><div class="top"><span class="marca">NutriClínica</span><span>Reportes · Historial</span></div><h3>Menú del día <small>Jueves 22 oct</small></h3></div><div class="hoja">${cuerpo}</div>
-    <div class="navb"><span></span><span></span><span></span><span class="act"><i></i>Menú</span><span></span></div></div>`;
-  const listaIts = (its, nuevos = []) => `<div class="items">${its.map((it, i) => `<div class="it ${nuevos.includes(i) ? "nuevo" : ""}">${ico(it[0], 24)}<span class="nm">${corto(it[0])}</span><span class="gr">${it[1]} g · ${R(ap(it).kcal)} kcal</span></div>`).join("")}</div>`;
-  const macrosBar = (t) => `<div class="macros4">${[["kcal", "Calorías", "var(--c-kcal)", ""], ["p", "Proteína", "var(--c-prot)", " g"], ["c", "Carbohid.", "var(--c-carb)", " g"], ["g", "Grasa", "var(--c-gras)", " g"]].map(([k, n, col, u]) => `<div><span>${n}</span><div class="barra"><i style="width:${Math.min(100, t[k] / META[k] * 100)}%;background:${col}"></i></div><span><span class="n-num">${R(t[k] / META[k] * 100)}%</span></span></div>`).join("")}</div>`;
+  /* Resumen de la ventana (anillo de la comida) */
+  const resumenHTML = (mom) => `<div class="resumen">${anillo(0, 44, 5, "var(--accent)", "r-ring")}<div class="tx"><b><span class="n-num rk">0</span> de ${R(META.kcal * pctM[mom])} kcal</b><span class="rt">Nada elegido aún</span></div><span class="n-num rp" style="font-size:16px">0%</span></div>`;
+  function ponerResumen(v, mom, its, ant) {
+    const t = sum(its), meta = META.kcal * pctM[mom];
+    ponerAnillo($(".r-ring", v), t.kcal / meta); contar($(".rk", v), ant || 0, t.kcal, 400);
+    $(".rp", v).textContent = R(t.kcal / meta * 100) + "%"; $(".rt", v).innerHTML = its.length ? `<span class="n-num">${t.p.toFixed(1)}</span> g prot · <span class="n-num">${t.c.toFixed(1)}</span> g carb · <span class="n-num">${t.g.toFixed(1)}</span> g grasa` : "Nada elegido aún";
+    const r = $(".resumen", v); r.classList.remove("salta"); void r.offsetWidth; r.classList.add("salta");
+    return t.kcal;
+  }
+  const cabV = (mom) => { const m = MOMS.find((x) => x[0] === mom); return `<div class="v-cab"><span style="font-size:24px">${m[2]}</span><h4>${m[1]}<small>${VAR[mom].length} variantes tuyas · meta ${R(META.kcal * m[3])} kcal</small></h4><button type="button" class="cerrar" aria-label="Cerrar">✕</button></div>`; };
 
-  /* =========================== A · Mezcla de tus comidas =========================== */
-  const A = {
-    el: $("#telA"),
-    montar() {
-      this.sel = { colacion: 0, cena: 0 }; this.extra = []; this.render(true);
+  /* =================== Opción 1: carrusel de variantes =================== */
+  function ventana1(M, mom) {
+    const el = M.el; el.classList.add("ventana-abierta");
+    const vs = VAR[mom].map(([n, veces, its]) => ({ n, veces, base: its, por: 1, its: its.map((x) => [x[0], x[1]]) }));
+    let elegida = null, ant = 0;
+    el.insertAdjacentHTML("beforeend", `<div class="ventana"><div class="asa"></div>${cabV(mom)}${resumenHTML(mom)}<div class="v-cuerpo"><div class="carrusel"></div><div class="puntos">${vs.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div></div><button type="button" class="btn listo" disabled>Elige una variante</button></div>`);
+    const v = $(".ventana", el), car = $(".carrusel", v);
+    const tarjeta = (x, i) => { const t = sum(x.its), meta = META.kcal * pctM[mom];
+      return `<div class="var ${elegida === i ? "elegida" : ""}" data-i="${i}"><div class="portada">${x.its.slice(0, 4).map((it) => ico(it[0], 46)).join("")}${elegida === i ? '<span class="sello">✓ Elegida</span>' : ""}</div>
+        <h5>${x.n}</h5><div class="meta-v"><span class="veces">La preparaste ${x.veces} veces</span><span><span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> kcal · ${R(t.kcal / meta * 100)}%</span></div>
+        <div class="porciones" aria-label="Porciones">${[.5, 1, 1.5, 2].map((p) => `<button type="button" data-p="${p}" class="${x.por === p ? "on" : ""}">${p === .5 ? "½" : p === 1.5 ? "1½" : p}</button>`).join("")}</div>
+        <div style="display:flex;flex-direction:column;gap:5px">${x.its.map((it, j) => `<div class="it" data-j="${j}">${ico(it[0], 26)}<span class="nm">${corto(it[0])}</span>${stepper(it[1])}</div>`).join("")}</div>
+        <button type="button" class="btn elegir">${elegida === i ? "✓ Elegida" : "Elegir esta"}</button></div>`; };
+    const pintar = (sc) => { const s = car.scrollLeft; car.innerHTML = vs.map(tarjeta).join(""); car.scrollLeft = sc ?? s; atar(); };
+    const refrescarUna = (i) => { const old = car.querySelector(`.var[data-i="${i}"]`); old.outerHTML = tarjeta(vs[i], i); atar(); };
+    const elegir = (i) => { elegida = i; pintar(); ant = ponerResumen(v, mom, vs[i].its, ant); const b = $(".listo", v); b.disabled = false; b.textContent = `Confirmar ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()}`; };
+    const atar = () => car.querySelectorAll(".var").forEach((c) => { const i = +c.dataset.i, x = vs[i];
+      c.querySelectorAll(".porciones button").forEach((b) => b.onclick = () => { x.por = +b.dataset.p; x.its = x.base.map((it) => [it[0], R(it[1] * x.por / 5) * 5]); refrescarUna(i); if (elegida === i) ant = ponerResumen(v, mom, x.its, ant); });
+      c.querySelectorAll(".it").forEach((r) => atarStepper($(".stepper", r), x.its[+r.dataset.j], () => { if (elegida === i) ant = ponerResumen(v, mom, x.its, ant); const t = sum(x.its); $(".meta-v span:last-child", c).innerHTML = `<span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> kcal · ${R(t.kcal / (META.kcal * pctM[mom]) * 100)}%`; }));
+      $(".elegir", c).onclick = () => elegir(i); });
+    car.addEventListener("scroll", () => { const i = R(car.scrollLeft / (car.scrollWidth / vs.length)); v.querySelectorAll(".puntos i").forEach((p, j) => p.classList.toggle("on", j === i)); });
+    pintar(0);
+    const cerrar = async (ok) => { v.classList.add("cierra"); el.classList.remove("ventana-abierta"); await espera(330); v.remove(); if (ok) M.confirmar(mom, vs[elegida].its); };
+    $(".cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
+    return { v, car, elegir, vs, deslizar: (i) => car.scrollTo({ left: i * (car.scrollWidth / vs.length), behavior: RAP.v ? "auto" : "smooth" }), cerrar };
+  }
+
+  /* =================== Opción 2: arrastra al plato =================== */
+  const POS = [[50, 27], [74, 46], [66, 73], [36, 75], [24, 50], [32, 27], [56, 52]];
+  function ventana2(M, mom, desde) {
+    const el = M.el; const r0 = el.getBoundingClientRect(), rb = desde.getBoundingClientRect();
+    const ox = rb.left - r0.left + rb.width / 2, oy = rb.top - r0.top + rb.height / 2;
+    let elegidos = [], ant = 0;
+    el.insertAdjacentHTML("beforeend", `<div class="ventana zoom" style="--ox:${ox}px;--oy:${oy}px">${cabV(mom)}
+      <div class="plato-v">${anillo(0, 170, 7, "var(--accent)", "aro")}<div class="base"></div><div class="centro"><div><strong class="n-num pk">0</strong><span>kcal · <span class="pm">0</span>% de la meta</span></div></div></div>
+      <p class="pista">Arrastra una variante al plato o toca +</p>
+      <div class="v-cuerpo"><div class="elegidos"></div><p class="t-sec" style="margin-bottom:0">Tus variantes</p><div class="arrastrables">${VAR[mom].map(([n, veces, its], i) => `<div class="drag" data-i="${i}"><span class="agarre">⋮⋮</span><span class="icos">${its.slice(0, 3).map((it) => ico(it[0], 28)).join("")}</span><span class="nm">${n}<small>${R(sum(its).kcal)} kcal · ${veces} veces</small></span><button type="button" class="mas" aria-label="Agregar">+</button></div>`).join("")}</div></div>
+      <button type="button" class="btn listo" disabled>Pon algo en el plato</button></div>`);
+    const v = $(".ventana", el), plato = $(".plato-v", v);
+    const pintarPlato = () => {
+      plato.querySelectorAll(".en-plato").forEach((e) => { if (!elegidos.some((x) => x[0] === e.dataset.id)) e.remove(); });
+      elegidos.slice(0, 7).forEach((it) => { if (plato.querySelector(`[data-id="${it[0]}"]`)) return; const j = POS.findIndex((p, j) => !plato.querySelector(`[data-p="${j}"]`)); if (j < 0) return;
+        plato.insertAdjacentHTML("beforeend", `<span class="en-plato" data-id="${it[0]}" data-p="${j}" style="left:${POS[j][0]}%;top:${POS[j][1]}%;animation-delay:${(elegidos.indexOf(it) % 4) * 90}ms">${ico(it[0], 38)}</span>`); });
+      const t = sum(elegidos), meta = META.kcal * pctM[mom]; ponerAnillo($(".aro", plato), t.kcal / meta); contar($(".pk", v), ant, t.kcal, 500); ant = t.kcal; $(".pm", v).textContent = R(t.kcal / meta * 100);
+      $(".elegidos", v).innerHTML = elegidos.map((it, i) => `<div class="it sube" data-i="${i}">${ico(it[0], 26)}<span class="nm">${corto(it[0])}</span><span class="gr">${R(ap(it).kcal)} kcal</span>${stepper(it[1])}<button type="button" class="cerrar" style="width:24px;height:24px;font-size:11px" aria-label="Quitar">✕</button></div>`).join("");
+      v.querySelectorAll(".elegidos .it").forEach((r) => { const it = elegidos[+r.dataset.i]; atarStepper($(".stepper", r), it, () => { $(".gr", r).textContent = R(ap(it).kcal) + " kcal"; const t2 = sum(elegidos); ponerAnillo($(".aro", plato), t2.kcal / meta); $(".pk", v).textContent = R(t2.kcal); ant = t2.kcal; $(".pm", v).textContent = R(t2.kcal / meta * 100); });
+        $(".cerrar", r).onclick = () => { elegidos.splice(+r.dataset.i, 1); pintarPlato(); }; });
+      const b = $(".listo", v); b.disabled = !elegidos.length; b.textContent = elegidos.length ? `Confirmar ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()} · ${R(t.kcal)} kcal` : "Pon algo en el plato";
+    };
+    const soltar = (i) => { VAR[mom][i][2].forEach((it) => { const p = elegidos.find((x) => x[0] === it[0]); if (p) p[1] += it[1]; else elegidos.push([it[0], it[1]]); }); v.querySelector(`.drag[data-i="${i}"]`).classList.add("usada"); pintarPlato(); };
+    v.querySelectorAll(".drag").forEach((d) => {
+      $(".mas", d).onclick = (e) => { e.stopPropagation(); soltar(+d.dataset.i); };
+      d.addEventListener("pointerdown", (e) => {
+        if (e.target.closest(".mas")) return; e.preventDefault();
+        const vr = el.getBoundingClientRect(); const g = document.createElement("div"); g.className = "fantasma"; g.innerHTML = $(".icos", d).innerHTML; el.appendChild(g);
+        const mover = (ev) => { g.style.left = ev.clientX - vr.left - 30 + "px"; g.style.top = ev.clientY - vr.top - 20 + "px"; const pr = plato.getBoundingClientRect(); plato.classList.toggle("sobre", ev.clientX > pr.left && ev.clientX < pr.right && ev.clientY > pr.top && ev.clientY < pr.bottom); };
+        mover(e);
+        const fin = (ev) => { window.removeEventListener("pointermove", mover); window.removeEventListener("pointerup", fin); g.remove(); if (plato.classList.contains("sobre")) soltar(+d.dataset.i); plato.classList.remove("sobre"); };
+        window.addEventListener("pointermove", mover); window.addEventListener("pointerup", fin);
+      });
+    });
+    const cerrar = async (ok) => { v.classList.add("cierra"); await espera(330); v.remove(); if (ok) M.confirmar(mom, elegidos); };
+    $(".v-cab .cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
+    /* Arrastre simulado para la demo */
+    const arrastrar = async (i) => {
+      const d = v.querySelector(`.drag[data-i="${i}"]`); if (RAP.v) return soltar(i);
+      const vr = el.getBoundingClientRect(), dr = d.getBoundingClientRect(), pr = plato.getBoundingClientRect();
+      const g = document.createElement("div"); g.className = "fantasma"; g.innerHTML = $(".icos", d).innerHTML; g.style.transition = "left .7s cubic-bezier(.2,0,0,1), top .7s cubic-bezier(.2,0,0,1)";
+      g.style.left = dr.left - vr.left + 20 + "px"; g.style.top = dr.top - vr.top + "px"; el.appendChild(g); await espera(60);
+      g.style.left = pr.left - vr.left + pr.width / 2 - 40 + "px"; g.style.top = pr.top - vr.top + pr.height / 2 - 20 + "px"; await espera(450); plato.classList.add("sobre"); await espera(300);
+      g.remove(); plato.classList.remove("sobre"); soltar(i);
+    };
+    return { v, arrastrar, cerrar, elegidos: () => elegidos };
+  }
+
+  /* =================== Opción 3: arma por partes =================== */
+  const PARTES = [["Base", ["carbohidrato", "quinua", "menestra"]], ["Proteína", ["proteina"]], ["Lácteos", ["lacteo"]], ["Fruta", ["fruta"]], ["Verduras", ["vegetal"]], ["Extras", ["grasa"]]];
+  function ventana3(M, mom) {
+    const el = M.el; el.classList.add("push-abierta");
+    const por = {}; VAR[mom].forEach(([, , its]) => its.forEach(([id, g]) => { (por[id] = por[id] || []).push(g); }));
+    const porcion = (id) => R(por[id].reduce((a, b) => a + b, 0) / por[id].length / 5) * 5;
+    const cant = {}; let ant = 0, rapida = null;
+    const partes = PARTES.map(([n, cats]) => [n, Object.keys(por).filter((id) => cats.includes(BASE[id].cat))]).filter((p) => p[1].length);
+    el.insertAdjacentHTML("beforeend", `<div class="ventana push">${cabV(mom)}${resumenHTML(mom)}<div class="v-cuerpo">
+      <p class="t-sec" style="margin-bottom:0">Tus variantes · un toque</p><div class="rapidas">${VAR[mom].map(([n, , its], i) => `<button type="button" class="rapida" data-i="${i}"><span class="icos">${its.slice(0, 3).map((it) => ico(it[0], 20)).join("")}</span>${n}</button>`).join("")}</div>
+      ${partes.map(([n, ids]) => `<div class="parte"><h6>${n}</h6><div class="rejilla">${ids.map((id, i) => `<button type="button" class="tile" data-id="${id}" style="animation:sube .4s var(--e-over) ${i * 50}ms both">${ico(id, 34)}<span class="tn">${corto(id)}</span></button>`).join("")}</div></div>`).join("")}
+      <div class="elegidos"></div></div><button type="button" class="btn listo" disabled>Toca los alimentos que comerás</button></div>`);
+    const v = $(".ventana", el);
+    const its = () => Object.keys(cant).filter((id) => cant[id].n > 0).map((id) => [id, cant[id].g * cant[id].n]);
+    const ref = () => {
+      v.querySelectorAll(".tile").forEach((t) => { const c = cant[t.dataset.id]; t.classList.toggle("on", !!(c && c.n)); t.querySelectorAll(".badge,.menos").forEach((x) => x.remove()); if (c && c.n) t.insertAdjacentHTML("afterbegin", `<span class="badge">×${c.n}</span><span class="menos" role="button" aria-label="Quitar una porción">−</span>`); });
+      v.querySelectorAll(".tile .menos").forEach((m) => m.onclick = (e) => { e.stopPropagation(); const id = m.closest(".tile").dataset.id; cant[id].n--; rapida = null; ref(); });
+      const lista = its();
+      $(".elegidos", v).innerHTML = lista.length ? `<p class="t-sec" style="margin:4px 2px 2px">Tu ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()}</p>` + lista.map(([id, g]) => `<div class="it" data-id="${id}">${ico(id, 26)}<span class="nm">${corto(id)}</span><span class="gr">${R(ap([id, g]).kcal)} kcal</span>${stepper(g)}</div>`).join("") : "";
+      v.querySelectorAll(".elegidos .it").forEach((r) => { const id = r.dataset.id, obj = [id, cant[id].g * cant[id].n]; atarStepper($(".stepper", r), obj, () => { cant[id].g = obj[1] / cant[id].n; $(".gr", r).textContent = R(ap(obj).kcal) + " kcal"; ant = ponerResumen(v, mom, its(), ant); }); });
+      v.querySelectorAll(".rapida").forEach((b) => b.classList.toggle("on", +b.dataset.i === rapida));
+      ant = ponerResumen(v, mom, lista, ant);
+      const b = $(".listo", v); b.disabled = !lista.length; b.textContent = lista.length ? `Confirmar ${MOMS.find((m) => m[0] === mom)[1].toLowerCase()} · ${R(sum(lista).kcal)} kcal` : "Toca los alimentos que comerás";
+    };
+    v.querySelectorAll(".tile").forEach((t) => t.onclick = () => { const id = t.dataset.id; cant[id] = cant[id] || { n: 0, g: porcion(id) }; cant[id].n++; rapida = null; ref(); });
+    v.querySelectorAll(".rapida").forEach((b) => b.onclick = () => { Object.keys(cant).forEach((k) => delete cant[k]); VAR[mom][+b.dataset.i][2].forEach(([id, g]) => cant[id] = { n: 1, g }); rapida = +b.dataset.i; ref(); });
+    const cerrar = async (ok) => { v.classList.add("cierra"); el.classList.remove("push-abierta"); await espera(260); v.remove(); if (ok) M.confirmar(mom, its()); };
+    $(".v-cab .cerrar", v).onclick = () => cerrar(false); $(".listo", v).onclick = () => cerrar(true);
+    return { v, cerrar };
+  }
+
+  /* =================== Montaje y demos =================== */
+  const T = { 1: { el: $("#tel1"), vent: ventana1 }, 2: { el: $("#tel2"), vent: ventana2 }, 3: { el: $("#tel3"), vent: ventana3 } };
+  const montar = (k) => { T[k].M = crearMenu(T[k].el, (M, mom, b) => { T[k].W = T[k].vent(M, mom, b); }); return T[k].M; };
+  const abrir = async (k, mom, ms = 700) => { T[k].el.querySelector(`.comida[data-m="${mom}"]`).click(); await espera(ms); return T[k].W; };
+  const clic = async (el, ms = 400) => { if (el) { el.click(); await espera(ms); } };
+  const DEMOS = {
+    async 1() {
+      montar(1); await espera(900);
+      let W = await abrir(1, "desayuno"); W.deslizar(1); await espera(800); W.deslizar(2); await espera(800); W.deslizar(0); await espera(700);
+      W.elegir(0); await espera(500); await clic(W.v.querySelector('.var[data-i="0"] .porciones [data-p="1.5"]'), 600); await clic(W.v.querySelector(".listo"), 1500);
+      W = await abrir(1, "almuerzo"); W.deslizar(1); await espera(700); W.elegir(1); await espera(400); W.deslizar(1); await espera(500); await clic(W.v.querySelector(".listo"), 1300);
+      W = await abrir(1, "cena"); W.elegir(0); await espera(500); await clic(W.v.querySelector(".listo"), 1300);
+      W = await abrir(1, "colacion"); W.deslizar(1); await espera(600); W.elegir(1); await espera(500); await clic(W.v.querySelector(".listo"), 1000);
     },
-    total() { return sum(HOY.desayuno.concat(HOY.almuerzo, candidatos("colacion")[this.sel.colacion].its, candidatos("cena")[this.sel.cena].its, this.extra.map((x) => [x.id, x.g]))); },
-    render(prim, cambio) {
-      const t = this.total(), pct = t.kcal / META.kcal, falta = { kcal: META.kcal - t.kcal, p: META.p - t.p };
-      const tarjeta = (mom, nom) => {
-        if (HOY[mom]) return `<div class="card"><div class="card-h"><b>${nom}</b><span class="tag reg">✓ Registrado</span></div>${listaIts(HOY[mom])}<div class="pie-card"><span>Lo que comiste hoy</span><span class="n-num" style="color:var(--text)">${R(sum(HOY[mom]).kcal)} kcal</span></div></div>`;
-        const c = candidatos(mom)[this.sel[mom]], its = c.its.concat(mom === "colacion" ? this.extra.map((x) => [x.id, x.g]) : []);
-        const nuevos = mom === "colacion" ? this.extra.map((x, i) => c.its.length + i).filter((i, j) => this.extra[j].nuevo) : [];
-        return `<div class="card" data-m="${mom}"><div class="card-h"><b>${nom}</b><span class="flechas"><button type="button" data-d="-1" aria-label="Versión anterior">‹</button><button type="button" data-d="1" aria-label="Siguiente versión">›</button></span></div>
-          <div class="${cambio === mom ? "cambia" : ""}" style="--dx:${this.dx || 24}px"><div class="fuente">Como el ${c.dia.nom} · versión ${this.sel[mom] + 1} de ${DIAS.length}</div>${listaIts(its, nuevos)}</div>
-          <div class="pie-card"><span>Meta ${R(META.kcal * PCT[mom])} kcal</span><span class="n-num" style="color:var(--text)">${R(sum(its).kcal)} kcal</span></div></div>`;
-      };
-      const completo = pct >= .95 && t.p >= META.p * .95;
-      this.el.innerHTML = marco("", `
-        <div class="card"><div class="anillo">${anillo(prim ? 0 : this.ult || 0, 92, 10, "var(--accent)", 'class="ring"')}
-          <div class="info"><div class="grande n-num"><span class="pc">${R((this.ult || 0) * 100)}</span><small>%</small></div><p>de tu meta del día con este menú<br><span class="n-num" style="color:var(--text)">${R(t.kcal)}</span> de ${META.kcal} kcal</p></div></div>
-          <div style="margin-top:10px">${macrosBar(t)}</div></div>
-        ${completo ? `<div class="listo"><span style="font-size:22px">🎉</span><span><b>Menú completo: ${R(pct * 100)} %</b><br>Cubre tus calorías y tu proteína de hoy.</span></div>` : `
-        <div class="falta"><div class="t">⚠ Te faltan ${faltaTxt(falta)} para tu meta</div><div class="s">Para completar, agrega a la colación uno de tus frecuentes:</div>
-          <div class="sug">${sugerencias(falta).map((s) => `<button type="button" data-id="${s.id}" data-g="${s.g}">${ico(s.id, 28)}<span class="nm">${s.txt} · ${s.g} g<small>+${R(s.a.kcal)} kcal · +${s.a.p.toFixed(1)} g proteína</small></span><span class="mas">+</span></button>`).join("")}</div></div>`}
-        ${tarjeta("desayuno", "Desayuno")}${tarjeta("almuerzo", "Almuerzo")}${tarjeta("colacion", "Colación")}${tarjeta("cena", "Cena")}
-        <button type="button" class="btn">→ Pasar lo que falta al registro</button>`);
-      const ring = $(".ring", this.el); requestAnimationFrame(() => ponerAnillo(ring, pct)); contar($(".pc", this.el), (this.ult || 0) * 100, pct * 100);
-      this.ult = pct;
-      this.el.querySelectorAll(".card[data-m] .flechas button").forEach((b) => b.onclick = () => { const m = b.closest(".card").dataset.m; this.dx = +b.dataset.d * 24; this.sel[m] = (this.sel[m] + +b.dataset.d + DIAS.length) % DIAS.length; const sc = $(".hoja", this.el).scrollTop; this.extra.forEach((x) => x.nuevo = false); this.render(false, m); $(".hoja", this.el).scrollTop = sc; });
-      this.el.querySelectorAll(".sug button").forEach((b) => b.onclick = () => { const sc = $(".hoja", this.el).scrollTop; this.extra.forEach((x) => x.nuevo = false); this.extra.push({ id: b.dataset.id, g: +b.dataset.g, nuevo: true }); this.render(false); $(".hoja", this.el).scrollTop = sc; });
+    async 2() {
+      montar(2); await espera(900);
+      let W = await abrir(2, "desayuno"); await W.arrastrar(2); await espera(700);
+      const mas = W.v.querySelector(".elegidos .it .stepper button[data-d='1']"); await clic(mas, 300); await clic(W.v.querySelector(".listo"), 1500);
+      W = await abrir(2, "almuerzo"); await W.arrastrar(0); await espera(600); await clic(W.v.querySelector(".listo"), 1300);
+      W = await abrir(2, "cena"); await W.arrastrar(1); await espera(600); await clic(W.v.querySelector(".listo"), 1300);
+      W = await abrir(2, "colacion"); await W.arrastrar(0); await espera(500); await clic(W.v.querySelector(".listo"), 1000);
     },
-    async demo() {
-      this.montar(); await espera(1500);
-      const h = () => $(".hoja", this.el);
-      h().scrollTo({ top: 330, behavior: "smooth" }); await espera(900);
-      $(".card[data-m='cena'] .flechas [data-d='1']", this.el)?.click(); await espera(1100);
-      h().scrollTo({ top: 0, behavior: "smooth" }); await espera(700);
-      $(".sug button", this.el)?.click(); await espera(1400);
-      const b = $(".sug button", this.el); if (b) { b.click(); await espera(1200); }
+    async 3() {
+      montar(3); await espera(900);
+      let W = await abrir(3, "desayuno"); for (const id of ["f27", "f08", "f65", "f65"]) await clic(W.v.querySelector(`.tile[data-id="${id}"]`), 380); await espera(500); await clic(W.v.querySelector(".listo"), 1400);
+      W = await abrir(3, "almuerzo"); await clic(W.v.querySelector('.rapida[data-i="0"]'), 900); await clic(W.v.querySelector(".listo"), 1300);
+      W = await abrir(3, "cena"); await clic(W.v.querySelector('.rapida[data-i="1"]'), 800); await clic(W.v.querySelector(".listo"), 1300);
+      W = await abrir(3, "colacion"); await clic(W.v.querySelector('.tile[data-id="f20"]'), 400); await clic(W.v.querySelector('.tile[data-id="f27"]'), 500); await clic(W.v.querySelector(".listo"), 1000);
     },
   };
-
-  /* =========================== B · Línea del día =========================== */
-  const OPCS = [["Rápida", [["f21",120],["f26",15]]], ["Más proteína", [["f03",50],["f48",60]]], ["Ligera", [["f27",120],["f65",50]]], ["Más energía", [["f24",60],["f13",50]]]];
-  const B = {
-    el: $("#telB"),
-    montar() { this.hecho = { desayuno: true, almuerzo: true, colacion: false, cena: false }; this.sel = { colacion: 1, cena: 0 }; this.extra = null; this.render(true); },
-    its(mom) { if (HOY[mom]) return HOY[mom]; const base = candidatos(mom)[this.sel[mom]].its; return mom === "cena" && this.extra ? base.concat(this.extra) : base; },
-    render(prim) {
-      const reg = sum(MOMS.filter(([m]) => this.hecho[m]).flatMap(([m]) => this.its(m))), plan = sum(MOMS.filter(([m]) => !this.hecho[m]).flatMap(([m]) => this.its(m)));
-      const tot = { kcal: reg.kcal + plan.kcal, p: reg.p + plan.p, c: reg.c + plan.c, g: reg.g + plan.g };
-      const pr = reg.kcal / META.kcal, pt = tot.kcal / META.kcal, falta = { kcal: META.kcal - tot.kcal, p: META.p - tot.p };
-      const completo = pt >= .95 && tot.p >= META.p * .95, todoHecho = MOMS.every(([m]) => this.hecho[m]);
-      const nodo = ([mom, nom, hora]) => {
-        const hecho = this.hecho[mom], its = this.its(mom), c = !HOY[mom] ? candidatos(mom)[this.sel[mom]] : null;
-        return `<div class="nodo ${hecho ? "hecho" : ""}" data-m="${mom}"><div class="hora">${hora} · ${nom}</div><div class="card ${hecho ? "" : "fantasma"}">
-          <div class="card-h"><span class="fuente">${hecho ? (HOY[mom] ? "Registrado" : "Registrado ahora") : `Sugerido · como el ${c.dia.nom}`}</span><span class="tag ${hecho ? "reg" : "plan"}">${hecho ? "✓" : "Pendiente"} · <span class="n-num">${R(sum(its).kcal)}</span> kcal</span></div>
-          ${listaIts(its)}${hecho ? "" : `<div class="acc"><button type="button" class="cambiar">↻ Otra de mis comidas</button><button type="button" class="pri comi">✓ Lo comí</button></div>`}</div></div>`;
-      };
-      this.el.innerHTML = marco("", `
-        <div class="card"><div class="card-h"><b>Tu día</b><span class="n-num" style="font-size:20px"><span class="pt">${R((this.ultT || 0) * 100)}</span>%</span></div>
-          <div class="prog"><span class="r" style="width:${prim ? 0 : Math.min(100, pr * 100)}%"></span><span class="p" style="width:${prim ? 0 : Math.max(0, Math.min(100, pt * 100) - Math.min(100, pr * 100))}%"></span></div>
-          <div class="leyenda"><span><i style="background:var(--accent)"></i>Comido <b class="n-num" style="color:var(--text)">${R(pr * 100)}%</b></span><span><i class="p" style="background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--accent) 55%,transparent) 0 3px,transparent 3px 6px)"></i>Con lo planificado <b class="n-num" style="color:var(--text)">${R(pt * 100)}%</b></span></div>
-          <div style="margin-top:9px">${macrosBar(tot)}</div></div>
-        ${todoHecho && completo ? `<div class="listo"><span style="font-size:22px">🏆</span><span><b>Día cumplido: ${R(pt * 100)} %</b><br>Registraste todo y llegaste a tu meta.</span></div>` : ""}
-        <div class="linea">${MOMS.map(nodo).join("")}</div>
-        ${completo ? "" : `<div class="falta"><div class="t">✦ Completa tu día · faltan ${faltaTxt(falta)}</div><div class="s">Elige una opción para sumar a la cena:</div>
-          <div class="opciones">${OPCS.map(([n, its], i) => { const a = sum(its); return `<div class="opc"><b>${n}</b><div class="its">${its.map((it) => ico(it[0], 26)).join("")}<span>${its.map((it) => corto(it[0]).split(" ")[0]).join(" + ")}</span></div><div class="aporta">+<span class="n-num">${R(a.kcal)}</span> kcal · +<span class="n-num">${a.p.toFixed(1)}</span> g prot · llegas al <span class="n-num">${R((tot.kcal + a.kcal) / META.kcal * 100)}%</span></div><button type="button" data-o="${i}">Agregar</button></div>`; }).join("")}</div></div>`}`);
-      contar($(".pt", this.el), (this.ultT || 0) * 100, pt * 100); this.ultT = pt;
-      if (prim) requestAnimationFrame(() => { const s = this.el.querySelectorAll(".prog span"); s[0].style.width = Math.min(100, pr * 100) + "%"; s[1].style.width = Math.max(0, Math.min(100, pt * 100) - Math.min(100, pr * 100)) + "%"; });
-      this.el.querySelectorAll(".nodo").forEach((n) => { const m = n.dataset.m;
-        const cb = $(".cambiar", n); if (cb) cb.onclick = () => { this.sel[m] = (this.sel[m] + 1) % DIAS.length; this.keep(() => this.render()); };
-        const co = $(".comi", n); if (co) co.onclick = () => { this.hecho[m] = true; this.keep(() => this.render()); }; });
-      this.el.querySelectorAll(".opc button").forEach((b) => b.onclick = () => { this.extra = OPCS[+b.dataset.o][1]; this.keep(() => this.render()); });
-    },
-    keep(f) { const sc = $(".hoja", this.el).scrollTop; f(); $(".hoja", this.el).scrollTop = sc; },
-    async demo() {
-      this.montar(); await espera(1600); const h = () => $(".hoja", this.el);
-      h().scrollTo({ top: 560, behavior: "smooth" }); await espera(1000);
-      const op = this.el.querySelectorAll(".opc button")[1]; if (op) { op.click(); await espera(1000); }
-      h().scrollTo({ top: 250, behavior: "smooth" }); await espera(800);
-      $(".nodo[data-m='colacion'] .comi", this.el)?.click(); await espera(900);
-      $(".nodo[data-m='cena'] .comi", this.el)?.click(); await espera(500);
-      h().scrollTo({ top: 0, behavior: "smooth" }); await espera(600);
-    },
-  };
-
-  /* =========================== C · Semana con anillos =========================== */
-  const C = {
-    el: $("#telC"),
-    montar() { this.plantilla = null; this.extra = []; this.dia = "hoy"; this.render(true); },
-    diaHoy() {
-      const p = this.plantilla ? DIAS.find((d) => d.id === this.plantilla) : null;
-      return { desayuno: HOY.desayuno, colacion: (p ? p.m.colacion : []).concat(this.extra), almuerzo: HOY.almuerzo, cena: p ? p.m.cena : [] };
-    },
-    render(prim) {
-      const semana = [DIAS[0], DIAS[1], DIAS[2], "hoy", "vie", "sab", "dom"];
-      const dHoy = this.diaHoy(), tHoy = sum(Object.values(dHoy).flat());
-      const pctDe = (t) => t.kcal / META.kcal;
-      const vista = this.dia === "hoy" ? { nom: "Hoy, jueves 22", m: dHoy, t: tHoy, editable: true } : (() => { const d = DIAS.find((x) => x.id === this.dia); return { nom: `${d.nom[0].toUpperCase()}${d.nom.slice(1)}`, m: d.m, t: d.tot, editable: false }; })();
-      const pct = pctDe(vista.t), falta = { kcal: META.kcal - vista.t.kcal, p: META.p - vista.t.p };
-      const completo = pct >= .95 && vista.t.p >= META.p * .95;
-      const chip = (d, i) => {
-        if (d === "hoy") return `<button type="button" class="dia ${this.dia === "hoy" ? "on" : ""}" data-d="hoy"><small>Jue</small>${anillo(prim ? 0 : pctDe(tHoy), 34, 4, "var(--accent)", 'class="r-hoy"')}<span class="pc n-num">${R(pctDe(tHoy) * 100)}%</span></button>`;
-        if (typeof d === "string") return `<button type="button" class="dia" disabled style="opacity:.55"><small>${{ vie: "Vie", sab: "Sáb", dom: "Dom" }[d]}</small>${anillo(0, 34, 4, "var(--accent)")}<span class="pc">${{ vie: 23, sab: 24, dom: 25 }[d]}</span></button>`;
-        return `<button type="button" class="dia ${this.dia === d.id ? "on" : ""}" data-d="${d.id}"><small>${d.corto}</small>${anillo(prim ? 0 : pctDe(d.tot), 34, 4, pctDe(d.tot) >= .95 ? "var(--ok)" : "var(--c-kcal)")}<span class="pc n-num">${R(pctDe(d.tot) * 100)}%</span></button>`;
-      };
-      const filas = MOMS.map(([m, nom]) => { const its = vista.m[m]; const pend = !its.length;
-        return `<div class="fila-c">${pend ? `<span class="ico" style="width:28px;height:28px;border-radius:50%;border:1.5px dashed var(--border)"></span>` : `<span class="icos">${its.slice(0, 3).map((it) => ico(it[0], 26)).join("")}</span>`}
-          <span class="nm"><b>${nom}</b>${vista.editable && HOY[m] ? ' <span class="tag reg">✓</span>' : ""}<small>${pend ? "Elige una plantilla para completarlo" : its.map((it) => corto(it[0])).join(", ")}</small></span><span class="n-num">${pend ? "—" : R(sum(its).kcal)}</span></div>`; }).join("");
-      const mejores = [...DIAS].sort((a, b) => b.pct - a.pct).slice(0, 4);
-      this.el.innerHTML = marco("", `
-        <div class="semana">${semana.map(chip).join("")}</div>
-        <div class="card"><div class="card-h"><b>${vista.nom}</b><span class="n-num" style="font-size:20px"><span class="pc-g">${R((this.ultC || 0) * 100)}</span>%</span></div>
-          <div class="aros">${[["kcal", "Calorías", "var(--c-kcal)"], ["p", "Proteína", "var(--c-prot)"], ["c", "Carbohid.", "var(--c-carb)"], ["g", "Grasa", "var(--c-gras)"]].map(([k, n, col]) => `<div>${anillo(prim ? 0 : vista.t[k] / META[k], 50, 6, col, `data-k="${k}"`)}<span class="n-num" style="color:var(--text);font-size:12px;margin-top:-34px;margin-bottom:16px">${R(vista.t[k] / META[k] * 100)}%</span><span>${n}</span></div>`).join("")}</div></div>
-        ${vista.editable ? `<p class="fuente" style="margin:2px 2px -4px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Completa con uno de tus mejores días</p>
-        <div class="plantillas">${mejores.map((d) => `<button type="button" class="plantilla ${this.plantilla === d.id ? "on" : ""}" data-p="${d.id}"><span class="icos">${d.m.cena.slice(0, 3).map((it) => ico(it[0], 22)).join("")}</span><span>Como el ${d.nom}</span><span class="pct n-num">cumpliste ${R(d.pct * 100)}%</span></button>`).join("")}</div>` : ""}
-        <div class="card">${filas}</div>
-        ${vista.editable && this.plantilla ? (completo ? `<div class="listo"><span style="font-size:22px">🎉</span><span><b>Tu día llega al ${R(pct * 100)} %</b><br>Calorías y proteína cubiertas.</span></div>` : `
-        <div class="falta"><div class="t">Para llegar al 100 % faltan ${faltaTxt(falta)}</div><div class="s">Toca uno para sumarlo a la colación:</div>
-          <div class="sug">${sugerencias(falta).map((s) => `<button type="button" data-id="${s.id}" data-g="${s.g}">${ico(s.id, 28)}<span class="nm">${s.txt} · ${s.g} g<small>llegas al ${R((vista.t.kcal + s.a.kcal) / META.kcal * 100)} % · +${s.a.p.toFixed(1)} g proteína</small></span><span class="mas">+</span></button>`).join("")}</div></div>`) : ""}
-        ${vista.editable ? `<button type="button" class="btn">→ Pasar el menú al registro</button>` : `<button type="button" class="btn sec rep">↻ Repetir este día como plantilla</button>`}`);
-      contar($(".pc-g", this.el), (this.ultC || 0) * 100, pct * 100); this.ultC = pct;
-      if (prim) requestAnimationFrame(() => { this.el.querySelectorAll(".dia svg").forEach((s, i) => { const d = semana[i]; if (d === "hoy") ponerAnillo(s, pctDe(tHoy)); else if (typeof d !== "string") ponerAnillo(s, pctDe(d.tot)); }); this.el.querySelectorAll(".aros svg").forEach((s) => ponerAnillo(s, vista.t[s.dataset.k] / META[s.dataset.k])); });
-      this.el.querySelectorAll(".dia[data-d]").forEach((b) => b.onclick = () => { this.dia = b.dataset.d; this.render(true); });
-      this.el.querySelectorAll(".plantilla").forEach((b) => b.onclick = () => { this.plantilla = b.dataset.p; this.extra = []; this.keep(); });
-      this.el.querySelectorAll(".sug button").forEach((b) => b.onclick = () => { this.extra.push([b.dataset.id, +b.dataset.g]); this.keep(); });
-      const rep = $(".rep", this.el); if (rep) rep.onclick = () => { this.plantilla = this.dia; this.dia = "hoy"; this.render(true); };
-    },
-    keep() { const sc = $(".hoja", this.el).scrollTop; this.render(true); $(".hoja", this.el).scrollTop = sc; },
-    async demo() {
-      this.montar(); await espera(1500);
-      $(".dia[data-d='mar20']", this.el)?.click(); await espera(1500);
-      $(".dia[data-d='hoy']", this.el)?.click(); await espera(900);
-      this.el.querySelectorAll(".plantilla")[1]?.click(); await espera(1200);
-      $(".hoja", this.el).scrollTo({ top: 260, behavior: "smooth" }); await espera(800);
-      $(".sug button", this.el)?.click(); await espera(1000);
-    },
-  };
-
-  const todos = { A, B, C };
-  Object.values(todos).forEach((m) => m.montar());
-  $("#demo").onclick = () => Object.values(todos).forEach((m) => m.demo());
-  $("#reinicia").onclick = () => Object.values(todos).forEach((m) => m.montar());
-  document.querySelectorAll("[data-solo]").forEach((b) => b.onclick = () => todos[b.dataset.solo].demo());
+  Object.keys(T).forEach(montar);
+  $("#demo").onclick = () => Object.keys(DEMOS).forEach((k) => DEMOS[k]());
+  $("#reinicia").onclick = () => Object.keys(T).forEach(montar);
+  document.querySelectorAll("[data-solo]").forEach((b) => b.onclick = () => DEMOS[b.dataset.solo]());
   document.querySelectorAll("[data-tema]").forEach((b) => b.onclick = () => { document.querySelectorAll("[data-tema]").forEach((x) => x.setAttribute("aria-pressed", x === b)); document.querySelectorAll(".tel").forEach((t) => t.classList.toggle("oscuro", b.dataset.tema === "oscuro")); });
   try { if (matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light") $("[data-tema='oscuro']").click(); } catch (e) {}
+  window.__T = T; window.__abrir = abrir;
   setTimeout(() => $("#demo").click(), 700);
 })();
 </script>
