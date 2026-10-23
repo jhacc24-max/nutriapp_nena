@@ -175,3 +175,9 @@ Pega aquí la tabla que exporta el selector ("Lista para 09-ICONOS"):
 - Barra de navegación: Heroicons v2 **sólidos** con degradado multicolor y animación de latido, por pedido expreso del usuario (la base pide Lineal en la barra, con relleno solo en el activo). Los íconos inactivos se ven atenuados.
 - Heroicons no trae íconos de comida, pulso ni agua; para contenido nutricional la base recomienda Phosphor. Pendiente de decidir si se migra.
 - Set actual de la barra: Perfil (usuario), Registro (portapapeles), Panel (gráfico circular), Menú (calendario), Opciones (engranaje).
+- **Íconos de contenido nutricional: set propio** en `iconos/nutri/` (pendiente de aprobación; aún no integrado en `index.html`). Multicolor tipo emoji con volumen suave, SVG dibujado a mano, sin dependencias. Vista: `iconos/nutri/catalogo-iconos-nutri.html`.
+  - **Alimentos:** un ícono para cada uno de los 62 alimentos de la base (por `id`). Los alimentos nuevos lo toman por palabra clave del nombre y, si no hay coincidencia, por categoría.
+  - **Nutrición / a limitar / otros:** como la referencia (rayo, balanza, fotos, papa, carne, palta, trigo, gotas S y T, terrones, salero, gota de agua, medalla, botella, zapatilla, luna).
+  - **Vitaminas:** osito de goma de un color por vitamina con el nombre en el pecho (A, B1, B2, B3, B5, B6, B12, C, D, E, K; folato = B9).
+  - **Minerales:** cubo con el símbolo químico y el número atómico (Ca, Fe, Mg, P, K, Zn, Se, Cu, Mn y Na para sodio).
+  - Uso: `NutriIconos.alimento(alimento, 40)` en la tarjeta de comida (40 px) y `NutriIconos.svg(clave, 30)` en listas. Animación al tocar: `icon-pop`; bebidas, lácteos y envases: `icon-jelly`.
