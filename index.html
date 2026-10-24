@@ -589,6 +589,110 @@
   .mh-resto .qc-tile { animation: none; }
   .mh-parte h3 { margin: 2px 2px 5px; font-size: 11.5px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
   @media (prefers-reduced-motion: reduce) { .qc-hoja, .qc-tile, .qc-ficha, .qc-recipientes, .qc-rop, .mh-ventana, .mh-ring svg, .mh-completado, .mh-comida, .peso-in, .sube { animation: none !important; } }
+
+  /* ===== Panel didáctico (pn-*) ===== */
+  .pn-cuadro, .pn-heroe, .pn-ayer, .pn-cumple { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; color: var(--text); }
+  .pn-ayer { padding: 16px; margin-bottom: 18px; border-color: color-mix(in srgb, var(--st-bajo) 40%, var(--border)); background: linear-gradient(180deg, color-mix(in srgb, var(--st-bajo) 7%, var(--surface)), var(--surface) 140px); }
+  .pn-ayer-cab { display: grid; grid-template-columns: 64px 1fr 28px; align-items: center; gap: 12px; position: relative; }
+  .pn-ayer-n { position: absolute; left: 0; top: 0; width: 64px; height: 64px; display: grid; place-items: center; font-size: 12px; color: var(--text-2); pointer-events: none; }
+  .pn-ayer-n b { font-size: 20px; color: var(--text); }
+  .pn-ayer-cab .tx { display: flex; flex-direction: column; min-width: 0; }
+  .pn-ayer-cab .eti { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--st-bajo); font-weight: 700; }
+  .pn-ayer-cab .tx b { font-size: 18px; line-height: 1.2; }
+  .pn-ayer-cab .tx small { font-size: 12px; color: var(--text-2); }
+  .pn-x { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--text-2); background: var(--bg); }
+  .pn-leyenda { font-size: 11px; color: var(--text-2); margin: 10px 0 8px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+  .pn-ok { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .pn-ok span { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--st-meta); background: color-mix(in srgb, var(--st-meta) 12%, transparent); border-radius: 999px; padding: 3px 10px 3px 4px; }
+  .pn-ayer .pn-cuadro { margin-top: 10px; background: var(--bg); }
+  .pn-entendido { width: 100%; margin-top: 12px; height: 42px; border-radius: 14px; background: var(--hero); color: var(--on-hero); font-weight: 600; font-size: 14px; }
+
+  .pn-cuadros { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .pn-cuadro { padding: 14px; position: relative; overflow: hidden; animation: nutriSube .5s cubic-bezier(.22,1,.36,1) both; }
+  .pn-cuadro::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--n); opacity: .85; }
+  .pn-cuadro .cab { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .pn-cuadro .ico { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: color-mix(in srgb, var(--n) 16%, transparent); }
+  .pn-cuadro .tit { display: flex; flex-direction: column; min-width: 0; }
+  .pn-cuadro .tit b { font-size: 15.5px; }
+  .pn-cuadro .tit small { font-size: 11px; color: var(--text-2); line-height: 1.3; }
+  .pn-cuadro .chip, .pn-heroe .chip { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 9px; white-space: nowrap; background: var(--tint); color: var(--text-2); }
+  .est-bajo > .cab .chip, .pn-heroe.est-bajo .chip { background: color-mix(in srgb, var(--st-bajo) 15%, transparent); color: var(--st-bajo); }
+  .est-meta > .cab .chip, .pn-heroe.est-meta .chip { background: color-mix(in srgb, var(--st-meta) 15%, transparent); color: var(--st-meta); }
+  .est-exceso > .cab .chip, .pn-heroe.est-exceso .chip { background: color-mix(in srgb, var(--st-exceso) 15%, transparent); color: var(--st-exceso); }
+  .pn-cuadro .frase, .pn-heroe .frase { font-size: 13.5px; line-height: 1.45; margin: 8px 0 0; }
+  .pn-cuadro .nota, .pn-heroe .nota { font-size: 12.5px; line-height: 1.45; color: var(--text-2); background: var(--bg); border-radius: 12px; padding: 8px 10px; margin: 8px 0 0; }
+  .pn-cuadro .sub, .pn-heroe .sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 10px 0 6px; }
+  .pn-cuadro .ver, .pn-heroe .ver { margin-top: 10px; font-size: 12.5px; font-weight: 600; color: var(--accent); }
+
+  .pn-barra { margin-top: 2px; }
+  .pn-barra .pista { position: relative; height: 16px; border-radius: 9px; background: var(--tint); }
+  .pn-barra .relleno { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 9px; transition: width 1.1s cubic-bezier(.22,1,.36,1), background .4s; }
+  .pn-barra .sobra { position: absolute; top: 0; bottom: 0; border-radius: 0 9px 9px 0; background: repeating-linear-gradient(135deg, rgb(255 255 255 / .45) 0 4px, transparent 4px 8px); transition: width 1.1s cubic-bezier(.22,1,.36,1); }
+  .pn-barra .bandera { position: absolute; top: -6px; bottom: -6px; width: 0; border-left: 2.5px dashed var(--text); }
+  .pn-barra .bandera b { position: absolute; top: -5px; left: -1px; width: 12px; height: 9px; background: var(--text); clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .pn-barra .marcas { position: relative; min-height: 22px; display: flex; padding-right: 92px; margin-top: 6px; font-size: 12px; }
+  .pn-barra .marcas > span:first-child b { font-size: 15px; }
+  .pn-barra .marcas .pct { font-style: normal; font-size: 11px; color: var(--text-2); }
+  .pn-barra .marcas .meta { position: absolute; top: 0; right: 0; color: var(--text-2); white-space: nowrap; }
+  .pn-barra .marcas .meta b { color: var(--text); }
+
+  .pn-fichas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .pn-ficha { display: flex; align-items: center; gap: 7px; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 6px 8px; animation: nutriSube .4s cubic-bezier(.22,1,.36,1) both; }
+  .pn-ficha > span:last-child { display: flex; flex-direction: column; min-width: 0; font-size: 11.5px; line-height: 1.25; color: var(--text-2); }
+  .pn-ficha b { font-size: 13px; color: var(--text); }
+  .pn-ficha em { font-style: normal; font-size: 10px; color: var(--accent); font-weight: 600; }
+  .pn-ficha.habitual { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+
+  .pn-comidas { margin-top: 10px; background: var(--bg); border-radius: 14px; padding: 8px 10px; }
+  .pn-ayer .pn-comidas { background: var(--surface); }
+  .pn-comidas .tt { font-size: 11.5px; font-weight: 600; color: var(--text-2); }
+  .pn-comidas .cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; }
+  .pn-comidas .col { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; color: var(--text-2); }
+  .pn-comidas .pal { width: 22px; height: 38px; border-radius: 6px; background: var(--tint); display: flex; align-items: flex-end; overflow: hidden; }
+  .pn-comidas .pal i { display: block; width: 100%; background: var(--text-2); opacity: .45; border-radius: 6px; transition: height .8s; }
+  .pn-comidas .col.on { color: var(--text); font-weight: 700; }
+  .pn-comidas .col.on .pal i { background: var(--n); opacity: 1; }
+  .pn-comidas .v { font-size: 11px; }
+
+  .pn-detalle { margin-top: 8px; }
+  .pn-detalle > span { font-size: 12px; font-weight: 700; }
+  .pn-detalle p { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; align-items: center; font-size: 12px; color: var(--text-2); margin: 3px 0 0; }
+  .pn-detalle p b { color: var(--text); font-weight: 600; }
+
+  .pn-heroe { padding: 20px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 18px; text-align: center; }
+  .pn-heroe .fichas-w, .pn-heroe .pn-fichas { width: 100%; text-align: left; }
+  .pn-heroe .sub { align-self: flex-start; }
+  .pn-sec-tit { display: flex; flex-direction: column; margin: 0 2px 10px; }
+  .pn-sec-tit b { font-size: 16px; color: var(--text); }
+  .pn-sec-tit span { font-size: 12px; color: var(--text-2); }
+  .pn-general { font-size: 13px; color: var(--text-2); background: var(--surface); border: 1px dashed var(--border); border-radius: 16px; padding: 10px 12px; margin: 0 0 10px; }
+
+  .pn-cumple { padding: 16px; margin-bottom: 18px; }
+  .pn-cumple-cab { display: flex; align-items: center; gap: 8px; }
+  .pn-cumple-cab b { flex: 1; font-size: 15px; }
+  .pn-seg { display: flex; background: var(--bg); border-radius: 999px; padding: 3px; }
+  .pn-seg button { font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; color: var(--text-2); transition: background .25s, color .25s; }
+  .pn-seg button.on { background: var(--hero); color: var(--on-hero); }
+  .pn-resumen-cumple { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 12px; }
+  .pn-resumen-cumple > div { display: flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 16px; padding: 8px; }
+  .pn-resumen-cumple > div > span { display: flex; flex-direction: column; font-size: 12px; color: var(--text-2); line-height: 1.25; }
+  .pn-resumen-cumple b { font-size: 20px; color: var(--text); white-space: nowrap; } .pn-resumen-cumple b em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--text-2); }
+  .pn-resumen-cumple small { font-size: 11px; }
+  .pn-semana { display: grid; grid-template-columns: 26px repeat(7, 1fr); gap: 6px 4px; align-items: center; justify-items: center; }
+  .pn-semana .dia { font-size: 11px; color: var(--text-2); text-transform: capitalize; }
+  .pn-semana .dia.hoy { color: var(--accent); font-weight: 700; }
+  .pn-semana .bola { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 700; animation: icPop .45s cubic-bezier(.34,1.56,.64,1) both; }
+  .pn-semana .bola.sin { border: 2px dashed var(--border); color: var(--text-2); }
+  .pn-mes { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .pn-mes .cua { aspect-ratio: 1; border-radius: 8px; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: #fff; animation: icPop .4s cubic-bezier(.34,1.56,.64,1) both; }
+  .pn-mes .cua.sin { border: 1.5px dashed var(--border); color: var(--text-2); }
+  .pn-mes .cua.hoy { outline: 2px solid var(--text); outline-offset: 1px; }
+  .pn-mes .pie { grid-column: 1 / -1; font-size: 11px; color: var(--text-2); margin: 2px 0 0; }
+  .pn-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pn-datos > span { display: flex; flex-direction: column; font-size: 11px; color: var(--text-2); background: var(--bg); border-radius: 14px; padding: 8px 10px; }
+  .pn-datos b { font-size: 13px; color: var(--text); margin-top: 2px; }
+  @keyframes icPop { from { transform: scale(.4); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .pn-cuadro, .pn-ficha, .pn-semana .bola, .pn-mes .cua { animation: none !important; } .pn-barra .relleno, .pn-barra .sobra { transition: none; } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -839,8 +943,7 @@ const FOOD_DB = [
   { id: "f06", nombre: "Lentejas cocidas", categoria: "menestra", porcionBaseG: 100, kcal: 116, proteinasG: 9, carbohidratosG: 20, fibraG: 7.9, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 2, potasioMg: 369, azucaresG: 1.8 },
   { id: "f07", nombre: "Garbanzos cocidos", categoria: "menestra", porcionBaseG: 100, kcal: 164, proteinasG: 8.9, carbohidratosG: 27, fibraG: 7.6, grasasG: 2.6, grasasSaturadasG: 0.3, sodioMg: 7, potasioMg: 291, azucaresG: 4.8 },
   { id: "f35", nombre: "Tarwi / chocho desamargado", categoria: "menestra", porcionBaseG: 100, kcal: 180, proteinasG: 19, carbohidratosG: 10, fibraG: 5, grasasG: 9, grasasSaturadasG: 1.5, sodioMg: 5, potasioMg: 350, azucaresG: 0 },
-  { id: "f38", nombre: "Arveja verde partida cocida", categoria: "menestra", porcionBaseG: 100, kcal: 118, proteinasG: 8.3, carbohidratosG: 21, fibraG: 8.3, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 2, potasioMg: 296, azucaresG: 3 },
-  { id: "f66", nombre: "Arveja verde partida (seca, cruda)", categoria: "menestra", porcionBaseG: 100, kcal: 341, proteinasG: 24.6, carbohidratosG: 60.4, fibraG: 25.5, grasasG: 1.2, grasasSaturadasG: 0.2, sodioMg: 15, potasioMg: 981, azucaresG: 8 },
+  { id: "f38", nombre: "Arveja partida cocida", categoria: "menestra", porcionBaseG: 100, kcal: 118, proteinasG: 8.3, carbohidratosG: 21, fibraG: 8.3, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 2, potasioMg: 296, azucaresG: 3 },
   { id: "f39", nombre: "Frijol cocido", categoria: "menestra", porcionBaseG: 100, kcal: 127, proteinasG: 8.7, carbohidratosG: 22.8, fibraG: 7.4, grasasG: 0.5, grasasSaturadasG: 0.1, sodioMg: 1, potasioMg: 355, azucaresG: 0.3 },
   { id: "f08", nombre: "Avena en hojuelas", categoria: "carbohidrato", porcionBaseG: 100, kcal: 389, proteinasG: 16.9, carbohidratosG: 66, fibraG: 10.6, grasasG: 6.9, grasasSaturadasG: 1.2, sodioMg: 2, potasioMg: 429, azucaresG: 0 },
   { id: "f09", nombre: "Arroz integral cocido", categoria: "carbohidrato", porcionBaseG: 100, kcal: 123, proteinasG: 2.7, carbohidratosG: 26, fibraG: 1.8, grasasG: 1, grasasSaturadasG: 0.2, sodioMg: 4, potasioMg: 86, azucaresG: 0 },
@@ -1374,6 +1477,20 @@ function semillaDelDia() {
   return h;
 }
 
+/* Alimentos que la persona come seguido (últimos 21 días), para que las sugerencias salgan de
+   su propia mesa antes que de la base general. Se calcula una vez por día. */
+let cacheHabituales = null;
+function alimentosHabituales() {
+  const hoy = hoyISO();
+  if (cacheHabituales && cacheHabituales.fecha === hoy) return cacheHabituales.mapa;
+  const mapa = {};
+  for (let i = 1; i <= 21; i++) {
+    try { const l = JSON.parse(localStorage.getItem("nutriapp_log_" + fechaISOOffset(i)) || "[]"); new Set(l.map((it) => it.alimento && it.alimento.id)).forEach((id) => { if (id) mapa[id] = (mapa[id] || 0) + 1; }); } catch {}
+  }
+  cacheHabituales = { fecha: hoy, mapa };
+  return mapa;
+}
+
 function sugerirAlimentos(nutrienteKey, cantidadFaltante, restricciones, n = 4) {
   if (!(cantidadFaltante > 0)) return [];
   const candidatos = FOOD_DB
@@ -1400,8 +1517,11 @@ function sugerirAlimentos(nutrienteKey, cantidadFaltante, restricciones, n = 4) 
     .map((f, i) => ({ f, k: (seed * (i + 7) + i) % 997 }))
     .sort((a, b) => a.k - b.k)
     .map((x) => x.f);
-  const elegidos = orden.slice(0, Math.min(n, orden.length));
-  return elegidos.map((f) => ({ nombre: f.nombre, gramos: Math.max(Math.round((cantidadFaltante / f[nutrienteKey]) * 100), 5) }));
+  /* Primero hasta 2 alimentos que la persona ya come seguido y que aportan bien este nutriente */
+  const hab = alimentosHabituales();
+  const propios = candidatos.slice(0, Math.max(12, Math.ceil(candidatos.length / 2))).filter((f) => hab[f.id] >= 2).sort((a, b) => hab[b.id] - hab[a.id]).slice(0, 2);
+  const elegidos = [...propios, ...orden.filter((f) => !propios.includes(f))].slice(0, Math.min(n, candidatos.length));
+  return elegidos.map((f) => ({ nombre: f.nombre, alimento: f, habitual: propios.includes(f), gramos: Math.max(Math.round((cantidadFaltante / f[nutrienteKey]) * 100), 5) }));
 }
 
 /* Patrón clínico frecuente (saciedad precoz: adultos mayores, post-quirúrgicos, oncológicos):
@@ -1465,12 +1585,12 @@ function sugerirCombosEnergeticos(requerimiento, totales, restricciones, protein
     if (f.carbohidratosG > 0) opciones.push((carbFaltante / f.carbohidratosG) * 100);
     if (f.grasasG > 0) opciones.push((grasaFaltante / f.grasasG) * 100);
     const gramos = Math.max(Math.round(Math.min(...opciones) / 5) * 5, 10);
-    return { nombre: f.nombre, gramos };
+    return { nombre: f.nombre, alimento: f, gramos };
   });
 }
 
 function generarSugerencias(requerimiento, totales, perfil, log) {
-  if (totales.kcal === 0) return [{ mensaje: "Aún no registras alimentos hoy. Comienza a registrar para recibir sugerencias personalizadas.", opciones: [] }];
+  if (totales.kcal === 0) return [{ clave: "general", mensaje: "Aún no registras alimentos hoy. Comienza a registrar para recibir sugerencias personalizadas.", opciones: [] }];
   const restricciones = requerimiento.restricciones || {};
   const sugerencias = [];
 
@@ -1482,7 +1602,7 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
     const totalesDesayuno = calcularTotalesLog(log.filter((it) => it.momento === "desayuno"));
     if (totalesDesayuno.proteinasG > 0 && totalesDesayuno.proteinasG < 15) {
       sugerencias.push({
-        mensaje: `Tu desayuno de hoy aportó solo ${Math.round(totalesDesayuno.proteinasG)} g de proteína. En personas mayores se recomienda repartir la proteína en todas las comidas principales (no solo en el almuerzo o la cena) para aprovechar mejor la masa muscular. Prueba agregar:`,
+        clave: "proteinasG", nota: true, mensaje: `Tu desayuno de hoy aportó solo ${Math.round(totalesDesayuno.proteinasG)} g de proteína. En personas mayores se recomienda repartir la proteína en todas las comidas principales (no solo en el almuerzo o la cena) para aprovechar mejor la masa muscular. Prueba agregar:`,
         opciones: sugerirAlimentos("proteinasG", 20 - totalesDesayuno.proteinasG, restricciones).slice(0, 3),
       });
     }
@@ -1510,58 +1630,58 @@ function generarSugerencias(requerimiento, totales, perfil, log) {
      aquí se reemplaza la sugerencia habitual de "completa tus kcal" por una más conservadora. */
   if (enRiesgoAlto && kcalFaltante > requerimiento.get * 0.3) {
     sugerencias.push({
-      mensaje: `Detecté riesgo de desnutrición y hoy la ingesta quedó bastante por debajo de tu meta calórica. En este contexto, subir la comida de golpe hasta cubrir todo el déficit no es lo más seguro: existe riesgo de síndrome de realimentación (caída brusca de potasio, fósforo y magnesio). Lo recomendable es aumentar la ingesta de forma gradual en 3-5 días, con control médico y de electrolitos, en vez de intentar cubrir todo hoy mismo.`,
+      clave: "kcal", nota: true, mensaje: `Detecté riesgo de desnutrición y hoy la ingesta quedó bastante por debajo de tu meta calórica. En este contexto, subir la comida de golpe hasta cubrir todo el déficit no es lo más seguro: existe riesgo de síndrome de realimentación (caída brusca de potasio, fósforo y magnesio). Lo recomendable es aumentar la ingesta de forma gradual en 3-5 días, con control médico y de electrolitos, en vez de intentar cubrir todo hoy mismo.`,
       opciones: [],
     });
   } else if (esDeficitTriple) {
     sugerencias.push({
-      mensaje: `Hoy te faltan calorías (${Math.round(kcalFaltante)} kcal), carbohidratos (${Math.round(carbFaltante)} g) y grasas (${Math.round(grasaFaltante)} g) a la vez${proteinaCubierta ? ", pero tu proteína ya está cubierta" : ""}. En vez de comer más cantidad, conviene fortificar lo que ya comes con combos energéticos concentrados${proteinaCubierta ? " y bajos en proteína, para no pasarte de tu meta" : ""}:`,
+      clave: "kcal", nota: true, mensaje: `Hoy te faltan calorías (${Math.round(kcalFaltante)} kcal), carbohidratos (${Math.round(carbFaltante)} g) y grasas (${Math.round(grasaFaltante)} g) a la vez${proteinaCubierta ? ", pero tu proteína ya está cubierta" : ""}. En vez de comer más cantidad, conviene fortificar lo que ya comes con combos energéticos concentrados${proteinaCubierta ? " y bajos en proteína, para no pasarte de tu meta" : ""}:`,
       opciones: sugerirCombosEnergeticos(requerimiento, totales, restricciones, proteinaCubierta),
     });
   } else if (perfil.objetivo !== "perdida" && kcalFaltante > requerimiento.get * 0.1) {
     sugerencias.push({
-      mensaje: `Te faltan ${Math.round(kcalFaltante)} kcal para tu meta de ${perfil.objetivo === "ganancia_muscular" ? "ganancia muscular" : "mantenimiento"}. Puedes completarlas con cualquiera de estas opciones:`,
+      clave: "kcal", nota: false, mensaje: `Te faltan ${Math.round(kcalFaltante)} kcal para tu meta de ${perfil.objetivo === "ganancia_muscular" ? "ganancia muscular" : "mantenimiento"}. Puedes completarlas con cualquiera de estas opciones:`,
       opciones: sugerirAlimentos("kcal", kcalFaltante, restricciones),
     });
   }
   if (perfil.objetivo === "perdida" && totales.kcal > requerimiento.get) {
-    sugerencias.push({ mensaje: `Superaste tu objetivo calórico de hoy por ${Math.round(totales.kcal - requerimiento.get)} kcal.`, opciones: [] });
+    sugerencias.push({ clave: "kcal", nota: true, mensaje: `Superaste tu objetivo calórico de hoy por ${Math.round(totales.kcal - requerimiento.get)} kcal.`, opciones: [] });
   }
 
   if (proteinaFaltante > requerimiento.proteinasG * 0.15) {
     sugerencias.push({
-      mensaje: `Te faltan ${Math.round(proteinaFaltante)} g de proteína. Algunas opciones para cubrirlos:`,
+      clave: "proteinasG", nota: false, mensaje: `Te faltan ${Math.round(proteinaFaltante)} g de proteína. Algunas opciones para cubrirlos:`,
       opciones: sugerirAlimentos("proteinasG", proteinaFaltante, restricciones),
     });
   }
 
   if (!esDeficitTriple && carbFaltante > requerimiento.carbohidratosG * 0.15) {
     sugerencias.push({
-      mensaje: `Te faltan ${Math.round(carbFaltante)} g de carbohidratos. Algunas opciones:`,
+      clave: "carbohidratosG", nota: false, mensaje: `Te faltan ${Math.round(carbFaltante)} g de carbohidratos. Algunas opciones:`,
       opciones: sugerirAlimentos("carbohidratosG", carbFaltante, restricciones),
     });
   }
 
   if (!esDeficitTriple && grasaFaltante > requerimiento.grasasG * 0.15) {
     sugerencias.push({
-      mensaje: `Te faltan ${Math.round(grasaFaltante)} g de grasas. Algunas opciones:`,
+      clave: "grasasG", nota: false, mensaje: `Te faltan ${Math.round(grasaFaltante)} g de grasas. Algunas opciones:`,
       opciones: sugerirAlimentos("grasasG", grasaFaltante, restricciones),
     });
   }
 
   if (totales.sodioMg > requerimiento.sodioMg) {
-    sugerencias.push({ mensaje: `Superaste tu límite de sodio (${Math.round(totales.sodioMg)} / ${requerimiento.sodioMg} mg). Modera procesados o enlatados en tu próxima comida.`, opciones: [] });
+    sugerencias.push({ clave: "sodioMg", nota: true, mensaje: `Superaste tu límite de sodio (${Math.round(totales.sodioMg)} / ${requerimiento.sodioMg} mg). Modera procesados o enlatados en tu próxima comida.`, opciones: [] });
   }
 
   if (totales.fibraG < requerimiento.fibraG * 0.6) {
     const fibraFaltante = requerimiento.fibraG - totales.fibraG;
     sugerencias.push({
-      mensaje: `Tu fibra está baja (${Math.round(totales.fibraG)} / ${requerimiento.fibraG} g). Algunas opciones:`,
+      clave: "fibraG", nota: false, mensaje: `Tu fibra está baja (${Math.round(totales.fibraG)} / ${requerimiento.fibraG} g). Algunas opciones:`,
       opciones: sugerirAlimentos("fibraG", fibraFaltante, restricciones),
     });
   }
 
-  if (sugerencias.length === 0) sugerencias.push({ mensaje: "Vas muy bien encaminado respecto a tu meta de hoy.", opciones: [] });
+  if (sugerencias.length === 0) sugerencias.push({ clave: "general", nota: false, mensaje: "Vas muy bien encaminado respecto a tu meta de hoy.", opciones: [] });
   return sugerencias;
 }
 
@@ -2149,7 +2269,7 @@ function DesglosePreview({ alimento, gramos }) {
 const ALIMENTO_POR_ID = Object.fromEntries(FOOD_DB.map((f) => [f.id, f]));
 /* Peso de una unidad (g) y porción habitual (g) por alimento; si no está, se usa la categoría. */
 const PORCION_UNIDAD = { f03: 50, f37: 33, f21: 120, f20: 150, f22: 180, f43: 80, f24: 150, f13: 40, f48: 30, f40: 75, f42: 150, f54: 170, f65: 50, f11: 150, f12: 150, f61: 5, f26: 1.2, f62: 5, f19: 120, f17: 70, f41: 200, f44: 300, f53: 5, f59: 200, f52: 30 };
-const PORCION_HABITUAL = { f66: 50, f01: 120, f31: 120, f32: 120, f33: 120, f34: 120, f05: 100, f10: 150, f09: 150, f14: 150, f18: 100, f08: 40, f28: 240, f27: 120, f29: 60, f25: 5, f60: 10, f26: 15, f62: 15, f30: 30, f24: 75, f15: 100, f49: 120, f50: 60, f51: 100, f36: 150, f56: 100, f57: 200, f58: 150, f55: 100, f23: 100 };
+const PORCION_HABITUAL = { f01: 120, f31: 120, f32: 120, f33: 120, f34: 120, f05: 100, f10: 150, f09: 150, f14: 150, f18: 100, f08: 40, f28: 240, f27: 120, f29: 60, f25: 5, f60: 10, f26: 15, f62: 15, f30: 30, f24: 75, f15: 100, f49: 120, f50: 60, f51: 100, f36: 150, f56: 100, f57: 200, f58: 150, f55: 100, f23: 100 };
 const PORCION_CATEGORIA = { proteina: 120, menestra: 150, carbohidrato: 150, quinua: 150, vegetal: 100, fruta: 120, grasa: 10, lacteo: 200 };
 const porcionDe = (a) => Math.round(PORCION_HABITUAL[a.id] || PORCION_UNIDAD[a.id] || PORCION_CATEGORIA[a.categoria] || 100);
 function porcionesRapidas(a) {
@@ -2169,7 +2289,7 @@ function momentoPorHora() {
   try { h = Number(new Date().toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/Lima" })); } catch {}
   return h < 11 ? "desayuno" : h < 16 ? "almuerzo" : h < 19 ? "colacion" : "cena";
 }
-/* Busca por palabras: "arveja verde partida" encuentra "Arveja verde partida cocida" */
+/* Busca por palabras: "arveja partida" encuentra "Arveja partida cocida" */
 const coincideBusqueda = (f, q) => { const n = normalizarTexto(f.nombre), ps = q.split(/\s+/).filter(Boolean); return n.includes(q) || ps.every((w) => n.includes(w) || (w.length > 3 && n.includes(w.replace(/s$/, "")))) || CLAVES_TEXTO.some(([k, id]) => id === f.id && k.startsWith(q)); };
 const sumaMacros = (items) => items.reduce((s, it) => { const t = calcularTotalesItem(it.alimento, it.gramos); return { kcal: s.kcal + t.kcal, p: s.p + t.proteinasG, c: s.c + t.carbohidratosG, g: s.g + t.grasasG }; }, { kcal: 0, p: 0, c: 0, g: 0 });
 const metaMomento = (requerimiento, momento) => (requerimiento.get || 0) * ((MEAL_DEFS.find((m) => m.key === momento) || {}).pct || 0.25);
@@ -2262,7 +2382,7 @@ function variantesPorMomento(hist, momento, requerimiento) {
 
 /* Intérprete de "Escribe lo que comiste": reconoce los alimentos de la base y calcula los
    gramos (exactos si se escribieron, estimados si se dijo "una taza", "medio plátano"...). */
-const CLAVES_TEXTO = [["arroz integral","f09"],["pan integral","f48"],["clara","f37"],["pechuga de pavo","f31"],["pavo","f31"],["pavita","f31"],["pollo","f01"],["pechuga","f01"],["gallina","f01"],["huevo","f03"],["bonito","f32"],["atun","f32"],["pescado","f32"],["tilapia","f33"],["salmon","f34"],["tofu","f05"],["lenteja","f06"],["garbanzo","f07"],["tarwi","f35"],["chocho","f35"],["arveja","f38"],["frijol","f39"],["frejol","f39"],["avena","f08"],["arroz","f10"],["camote","f12"],["batata","f12"],["papa","f11"],["pan","f13"],["quinua","f14"],["quinoa","f14"],["arracacha","f36"],["racacha","f36"],["brocoli","f15"],["zanahoria","f17"],["ensalada","f18"],["lechuga","f18"],["tomate","f19"],["zapallo","f49"],["pimiento","f50"],["coliflor","f51"],["olluco","f52"],["manzana","f20"],["platano","f21"],["banana","f21"],["mandarina","f43"],["naranja","f22"],["fresa","f23"],["frutilla","f23"],["arandano","f23"],["kiwi","f40"],["mango","f41"],["durazno","f42"],["melocoton","f42"],["chirimoya","f44"],["aguaymanto","f53"],["pera","f54"],["pina","f55"],["uva","f56"],["sandia","f57"],["melon","f58"],["higo","f65"],["yuca","f59"],["miel","f60"],["palta","f24"],["aguacate","f24"],["aceituna","f61"],["aceite","f25"],["almendra","f26"],["nuez","f62"],["nueces","f62"],["semilla de calabaza","f45"],["ajonjoli","f46"],["girasol","f47"],["yogur","f27"],["yogurt","f27"],["leche","f28"],["queso","f29"],["cottage","f29"],["batido","f30"],["whey","f30"],["ensure","f63"]].filter(([, id]) => ALIMENTO_POR_ID[id]);
+const CLAVES_TEXTO = [["arroz integral","f09"],["pan integral","f48"],["clara","f37"],["pechuga de pavo","f31"],["pavo","f31"],["pavita","f31"],["pollo","f01"],["pechuga","f01"],["gallina","f01"],["huevo","f03"],["bonito","f32"],["atun","f32"],["pescado","f32"],["tilapia","f33"],["salmon","f34"],["tofu","f05"],["lenteja","f06"],["garbanzo","f07"],["tarwi","f35"],["chocho","f35"],["arveja","f38"],["alverja","f38"],["frijol","f39"],["frejol","f39"],["avena","f08"],["arroz","f10"],["camote","f12"],["batata","f12"],["papa","f11"],["pan","f13"],["quinua","f14"],["quinoa","f14"],["arracacha","f36"],["racacha","f36"],["brocoli","f15"],["zanahoria","f17"],["ensalada","f18"],["lechuga","f18"],["tomate","f19"],["zapallo","f49"],["pimiento","f50"],["coliflor","f51"],["olluco","f52"],["manzana","f20"],["platano","f21"],["banana","f21"],["mandarina","f43"],["naranja","f22"],["fresa","f23"],["frutilla","f23"],["arandano","f23"],["kiwi","f40"],["mango","f41"],["durazno","f42"],["melocoton","f42"],["chirimoya","f44"],["aguaymanto","f53"],["pera","f54"],["pina","f55"],["uva","f56"],["sandia","f57"],["melon","f58"],["higo","f65"],["yuca","f59"],["miel","f60"],["palta","f24"],["aguacate","f24"],["aceituna","f61"],["aceite","f25"],["almendra","f26"],["nuez","f62"],["nueces","f62"],["semilla de calabaza","f45"],["ajonjoli","f46"],["girasol","f47"],["yogur","f27"],["yogurt","f27"],["leche","f28"],["queso","f29"],["cottage","f29"],["batido","f30"],["whey","f30"],["ensure","f63"]].filter(([, id]) => ALIMENTO_POR_ID[id]);
 const NUM_TEXTO = { medio: .5, media: .5, un: 1, una: 1, uno: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6 };
 const RELLENO_TEXTO = /^(y|e|de|del|el|la|los|las|un|una|unos|unas|con|a|al|para|tomar|tome|bebi|comi|almorce|desayune|cene|tambien|luego|mas|plancha|hervid[oa]s?|sancochad[oa]s?|cocid[oa]s?|fresc[oa]s?|natural|hoy|en|mi|me|poco|algo)$/;
 const momentoDeTexto = (t) => /desayun/.test(t) ? "desayuno" : /almorc|almuerz/.test(t) ? "almuerzo" : /\bcen[ae]/.test(t) ? "cena" : /colaci|merienda|lonche/.test(t) ? "colacion" : null;
@@ -4707,13 +4827,133 @@ function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, agregarPes
   );
 }
 
-/* Alerta que aparece una vez al iniciar cada día: resume si se cumplió la meta de ayer,
-   señala en qué comida se originó cualquier déficit o exceso y sugiere alimentos concretos
-   para corregirlo hoy. Se recuerda con localStorage para no repetirse el mismo día. */
+/* ===================================================================================
+   Panel didáctico (2026-10-23): un cuadro por cada valor que se mide, con una barra que
+   compara "lo que comiste" con "tu meta" (banderita), una frase en lenguaje simple y las
+   sugerencias de ese mismo nutriente dentro del cuadro. Así cada nutriente aparece una sola vez.
+   =================================================================================== */
+const NUTRI_PANEL = [
+  { key: "kcal", clave: "calorias", label: "Calorías", art: "tus calorías", unidad: "kcal", meta: (r) => r.get, tipo: "rango", tol: 0.1, color: "var(--accent-energy)" },
+  { key: "proteinasG", clave: "proteina", label: "Proteína", art: "tu proteína", unidad: "g", meta: (r) => r.proteinasG, tipo: "minimo", min: 0.9, color: "var(--accent-protein)", para: "mantener y reparar tus músculos" },
+  { key: "carbohidratosG", clave: "carbohidratos", label: "Carbohidratos", art: "tus carbohidratos", unidad: "g", meta: (r) => r.carbohidratosG, tipo: "rango", tol: 0.15, color: "var(--accent-carb)", para: "tener energía durante el día" },
+  { key: "grasasG", clave: "grasas", label: "Grasas", art: "tus grasas", unidad: "g", meta: (r) => r.grasasG, tipo: "rango", tol: 0.15, color: "var(--accent-fat)", para: "tus hormonas y absorber vitaminas" },
+  { key: "fibraG", clave: "fibra", label: "Fibra", art: "tu fibra", unidad: "g", meta: (r) => r.fibraG, tipo: "minimo", min: 0.85, color: "var(--accent-fiber)", para: "una buena digestión" },
+  { key: "sodioMg", clave: "sodio", label: "Sodio", art: "tu sodio", unidad: "mg", meta: (r) => r.sodioMg, tipo: "maximo", color: "#4F8FC7", para: "cuidar tu presión (es un límite, no una meta)" },
+];
+function estadoNutriente(n, valor, meta) {
+  if (!(meta > 0)) return "cero";
+  if (!(valor > 0)) return n.tipo === "maximo" ? "meta" : "cero";
+  const p = valor / meta;
+  if (n.tipo === "maximo") return p > 1 ? "exceso" : "meta";
+  if (n.tipo === "minimo") return p < n.min ? "bajo" : "meta";
+  return p > 1 + n.tol ? "exceso" : p < 1 - n.tol ? "bajo" : "meta";
+}
+const fmtN = (v) => Math.round(v).toLocaleString("es-PE");
+/* Fracción en palabras para que el % se entienda sin pensar */
+const fraccionEnPalabras = (p) => p < 0.2 ? "muy poco" : p < 0.4 ? "como un tercio" : p < 0.6 ? "como la mitad" : p < 0.8 ? "como dos tercios" : "casi todo";
+function fraseNutriente(n, valor, meta, est, cuando) {
+  const u = n.unidad, ayer = cuando === "ayer";
+  if (est === "cero") return ayer ? `Ayer no registraste ${n.label.toLowerCase()}.` : `Aún no registras alimentos con ${n.label.toLowerCase()} hoy.`;
+  if (n.tipo === "maximo") return est === "exceso"
+    ? `${ayer ? "Comiste" : "Llevas"} ${fmtN(valor)} ${u} y tu límite es ${fmtN(meta)} ${u}: ${ayer ? "te pasaste" : "ya pasaste"} ${fmtN(valor - meta)} ${u}.`
+    : `${ayer ? "Comiste" : "Llevas"} ${fmtN(valor)} ${u} de un máximo de ${fmtN(meta)} ${u}. ${ayer ? "Bien, no pasaste" : "Aún te quedan " + fmtN(meta - valor) + " " + u + " antes de"} el límite.`;
+  if (est === "bajo") return `${ayer ? "Comiste" : "Llevas"} ${fmtN(valor)} ${u} de los ${fmtN(meta)} ${u} que necesitas: ${fraccionEnPalabras(valor / meta)}. ${ayer ? "Te faltaron" : "Te faltan"} ${fmtN(meta - valor)} ${u}.`;
+  if (est === "exceso") return `${ayer ? "Comiste" : "Llevas"} ${fmtN(valor)} ${u} y tu meta era ${fmtN(meta)} ${u}: ${ayer ? "te pasaste" : "ya pasaste"} ${fmtN(valor - meta)} ${u} (${Math.round((valor / meta - 1) * 100)} % más).`;
+  return `¡Bien! ${ayer ? "Comiste" : "Llevas"} ${fmtN(valor)} ${u}, dentro de tu meta de ${fmtN(meta)} ${u}.`;
+}
+const CHIP_ESTADO = { cero: "Sin datos", bajo: "Faltó", meta: "✓ En tu meta", exceso: "Te pasaste" };
+const CHIP_ESTADO_HOY = { cero: "Aún nada", bajo: "Te falta", meta: "✓ En tu meta", exceso: "Te pasaste" };
+
+/* Barra con banderita: el relleno es lo que comiste, la banderita es tu meta (o tu límite) */
+function BarraMeta({ valor, meta, unidad, est, tipo, retraso = 0 }) {
+  const [listo, setListo] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setListo(true), 80 + retraso); return () => clearTimeout(t); }, [retraso]);
+  const tope = Math.max(valor, meta) * 1.12 || 1;
+  const pv = Math.min(1, valor / tope), pm = meta / tope;
+  const color = est === "cero" ? "var(--border)" : COLOR_ESTADO[est];
+  return (
+    <div className="pn-barra" role="img" aria-label={`${fmtN(valor)} ${unidad} de ${fmtN(meta)} ${unidad}`}>
+      <div className="pista">
+        <i className="relleno" style={{ width: listo ? `${pv * 100}%` : 0, background: color }} />
+        {valor > meta && <i className="sobra" style={{ left: `${pm * 100}%`, width: listo ? `${(pv - pm) * 100}%` : 0 }} />}
+        <span className="bandera" style={{ left: `${pm * 100}%` }}><b /></span>
+      </div>
+      <div className="marcas">
+        <span style={{ color }}><b className="num-u">{fmtN(listo ? valor : 0)}</b> {unidad}{tipo !== "maximo" && meta > 0 && <em className="pct"> · {Math.round(valor / meta * 100)} % de tu meta</em>}</span>
+        <span className="meta">⚑ {tipo === "maximo" ? "límite" : "meta"} <b className="num-u">{fmtN(meta)}</b></span>
+      </div>
+    </div>
+  );
+}
+
+/* Alimentos sugeridos como fichas con su ícono y gramos */
+function FichasAlimentos({ opciones }) {
+  if (!opciones || !opciones.length) return null;
+  return (
+    <div className="pn-fichas">
+      {opciones.map((o, i) => (
+        <span key={i} className={`pn-ficha ${o.habitual ? "habitual" : ""}`} style={{ animationDelay: `${i * 60}ms` }}>
+          <IconoAlimento alimento={o.alimento || { nombre: o.nombre }} size={26} />
+          <span><b className="num-u">{o.gramos} g</b>{nombreCortoPanel(o.nombre)}{o.habitual && <em>★ lo sueles comer</em>}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+const nombreCortoPanel = (n) => n.replace(/\s*\(.*?\)\s*/g, " ").trim();
+
+/* En qué comida se originó: 4 columnitas, se resalta la más baja (o la más alta si te pasaste) */
+function AporteComidas({ porMomento, n, resaltar }) {
+  const vals = MOMENTOS_KEYS.map((m) => (porMomento[m] || {})[n.key] || 0);
+  const max = Math.max(...vals, 1);
+  const objetivo = resaltar === "max" ? Math.max(...vals) : Math.min(...vals);
+  const idx = vals.indexOf(objetivo);
+  return (
+    <div className="pn-comidas">
+      <span className="tt">{resaltar === "max" ? "¿Dónde se pasó?" : "¿Dónde faltó?"}</span>
+      <div className="cols">
+        {MOMENTOS_KEYS.map((m, i) => (
+          <span key={m} className={`col ${i === idx ? "on" : ""}`}>
+            <span className="v num-u">{fmtN(vals[i])}</span>
+            <span className="pal"><i style={{ height: `${Math.max(6, (vals[i] / max) * 100)}%` }} /></span>
+            <span className="m">{MOMENTO_EMOJI[m]} {MOMENTO_LABEL_CAPITALIZADO[m].slice(0, 4)}.</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Un cuadro por nutriente */
+function CuadroNutriente({ n, valor, meta, cuando, i = 0, opciones, notas, porMomento, log, abierto, onAbrir }) {
+  const est = estadoNutriente(n, valor, meta);
+  const chips = cuando === "ayer" ? CHIP_ESTADO : CHIP_ESTADO_HOY;
+  return (
+    <div className={`pn-cuadro est-${est}`} style={{ "--n": n.color, animationDelay: `${i * 70}ms` }}>
+      <div className="cab">
+        <span className="ico"><IconoAlimento clave={n.clave} size={30} /></span>
+        <span className="tit"><b>{n.label}</b>{n.para && <small>Sirve para {n.para}</small>}</span>
+        <span className="chip">{chips[est]}</span>
+      </div>
+      <BarraMeta valor={valor} meta={meta} unidad={n.unidad} est={est} tipo={n.tipo} retraso={i * 90} />
+      <p className="frase">{fraseNutriente(n, valor, meta, est, cuando)}</p>
+      {porMomento && (est === "bajo" || est === "exceso") && <AporteComidas porMomento={porMomento} n={n} resaltar={est === "exceso" ? "max" : "min"} />}
+      {(notas || []).map((t, k) => <p key={k} className="nota">💡 {t}</p>)}
+      {opciones && opciones.length > 0 && <>
+        <p className="sub">{cuando === "ayer" ? "Hoy puedes compensarlo con una de estas:" : "Para completarlo hoy, elige una de estas:"}</p>
+        <FichasAlimentos opciones={opciones} />
+      </>}
+      {log && valor > 0 && <button type="button" className="ver" onClick={onAbrir}>{abierto ? "Ocultar de dónde vino ▴" : "Ver de dónde vino ▾"}</button>}
+      {abierto && log && <CuadroNutrienteDetalle n={n} log={log} />}
+    </div>
+  );
+}
+
+/* "Así te fue ayer": puntaje + un cuadro por nutriente (los que faltaron o se pasaron, completos;
+   los cumplidos, como fichas pequeñas con ✓) */
 function AlertaInicioDia({ requerimiento }) {
   const [analisis, setAnalisis] = useState(null);
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     const hoy = hoyISO();
     let yaVista = null;
@@ -4722,38 +4962,134 @@ function AlertaInicioDia({ requerimiento }) {
     const a = analizarDiaAnterior(requerimiento);
     if (a) { setAnalisis(a); setVisible(true); }
   }, []);
-
   if (!visible || !analisis) return null;
-
-  const cerrar = () => {
-    try { localStorage.setItem("nutriapp_alerta_vista", hoyISO()); } catch {}
-    setVisible(false);
-  };
-
-  const recomendaciones = generarRecomendacionesDiaAnterior(analisis, requerimiento);
-
+  const cerrar = () => { try { localStorage.setItem("nutriapp_alerta_vista", hoyISO()); } catch {} setVisible(false); };
+  const filas = NUTRI_PANEL.map((n) => { const valor = analisis.totales[n.key] || 0, meta = n.meta(requerimiento) || 0; return { n, valor, meta, est: estadoNutriente(n, valor, meta) }; });
+  const ok = filas.filter((f) => f.est === "meta"), mal = filas.filter((f) => f.est === "bajo" || f.est === "exceso");
+  const puntaje = ok.length / filas.length;
+  const fechaTxt = new Date(analisis.fecha + "T12:00:00Z").toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Lima" });
   return (
-    <div className="nutri-panel rounded-2xl p-5 mb-5 nutri-fade-in" style={!analisis.cumplioTodo ? { borderColor: "#E3B7AF" } : undefined}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className={analisis.cumplioTodo ? "nutri-brand-text" : "nutri-warn"}><IconAlert size={16} /></span>
-          <span className="text-sm font-medium nutri-ink">{analisis.cumplioTodo ? "¡Buen trabajo ayer!" : "Antes de empezar: así te fue ayer"}</span>
+    <div className="pn-ayer nutri-fade-in">
+      <div className="pn-ayer-cab">
+        <AnilloAvance pct={puntaje} size={64} grosor={8} />
+        <span className="pn-ayer-n"><span><b className="num-u">{ok.length}</b>/{filas.length}</span></span>
+        <div className="tx">
+          <span className="eti">Antes de empezar</span>
+          <b>{mal.length === 0 ? "¡Ayer cumpliste todo!" : "Así te fue ayer"}</b>
+          <small>{fechaTxt} · {ok.length} de {filas.length} metas cumplidas</small>
         </div>
-        <button onClick={cerrar} className="nutri-muted"><IconX size={16} /></button>
+        <button onClick={cerrar} className="pn-x" aria-label="Cerrar"><IconX size={16} /></button>
       </div>
-      <ul className="space-y-2.5">
-        {recomendaciones.map((r, i) => (
-          <li key={i} className="text-xs pl-3 border-l-2" style={{ borderColor: r.tipo === "excedido" ? "#E3B7AF" : r.tipo === "logro" ? "#9FC79A" : "#C9C3B2" }}>
-            <p className={r.tipo === "excedido" ? "nutri-warn leading-relaxed" : "nutri-muted leading-relaxed"}>{r.mensaje}</p>
-            {r.opciones && r.opciones.length > 0 && (
-              <ul className="mt-1 space-y-0.5">
-                {r.opciones.map((o, j) => <li key={j} className="nutri-ink">· {o.gramos} g de {o.nombre}</li>)}
-              </ul>
-            )}
-          </li>
+      <p className="pn-leyenda">La barra es lo que comiste; la banderita ⚑ es tu meta. <span style={{ color: "var(--st-meta)" }}>● en meta</span> <span style={{ color: "var(--st-bajo)" }}>● faltó</span> <span style={{ color: "var(--st-exceso)" }}>● te pasaste</span></p>
+      {ok.length > 0 && <div className="pn-ok">{ok.map(({ n }) => <span key={n.key}><IconoAlimento clave={n.clave} size={20} />{n.label} ✓</span>)}</div>}
+      {mal.map(({ n, valor, meta, est }, i) => (
+        <CuadroNutriente key={n.key} n={n} valor={valor} meta={meta} cuando="ayer" i={i} porMomento={analisis.porMomento}
+          opciones={est === "bajo" && n.tipo !== "maximo" ? sugerirAlimentos(n.key, meta - valor, requerimiento.restricciones, 3) : null}
+          notas={est === "exceso" ? [n.key === "sodioMg" ? "Hoy evita procesados, embutidos, enlatados y caldos en cubito." : "Hoy modera un poco la comida que más aportó."] : null} />
+      ))}
+      <button onClick={cerrar} className="pn-entendido">Entendido, continuar</button>
+    </div>
+  );
+}
+
+/* Hoy: calorías arriba (anillo grande) y debajo un cuadro por cada otro nutriente.
+   Las sugerencias van dentro del cuadro del nutriente al que corresponden. */
+function NutrientesDeHoy({ totales, requerimiento, log, sugerencias }) {
+  const [abierto, setAbierto] = useState(null);
+  const de = (k) => sugerencias.filter((s) => s.clave === k);
+  const ops = (k) => de(k).filter((s) => !s.nota || (s.opciones && s.opciones.length)).flatMap((s) => s.opciones || []).slice(0, 4);
+  const notas = (k) => de(k).filter((s) => s.nota).map((s) => s.mensaje);
+  const kcal = NUTRI_PANEL[0], metaK = requerimiento.get || 0, estK = estadoNutriente(kcal, totales.kcal, metaK);
+  const generales = de("general");
+  return (
+    <>
+      <div className={`pn-heroe est-${estK}`}>
+        <GaugeRadial label="Calorías" valor={totales.kcal} meta={metaK} unidad="kcal" color="var(--accent-energy)" tamano="lg" modo="numero" />
+        <span className="chip">{CHIP_ESTADO_HOY[estK]}</span>
+        <p className="frase">{fraseNutriente(kcal, totales.kcal, metaK, estK, "hoy")}</p>
+        <div className="flex gap-2 flex-wrap justify-center text-xs nutri-muted">
+          {requerimiento.prescripcionActiva ? <span className="nutri-pildora">Objetivo por prescripción médica</span> : <><span className="nutri-pildora">GEB {requerimiento.geb} kcal</span><span className="nutri-pildora">GET {requerimiento.get} kcal</span></>}
+        </div>
+        {notas("kcal").map((t, k) => <p key={k} className="nota">💡 {t}</p>)}
+        {ops("kcal").length > 0 && <><p className="sub">Para completarlo hoy, elige una de estas:</p><FichasAlimentos opciones={ops("kcal")} /></>}
+        {totales.kcal > 0 && <button type="button" className="ver" onClick={() => setAbierto(abierto === "kcal" ? null : "kcal")}>{abierto === "kcal" ? "Ocultar de dónde vino ▴" : "Ver de dónde vino ▾"}</button>}
+        {abierto === "kcal" && <div className="w-full text-left"><CuadroNutrienteDetalle n={kcal} log={log} /></div>}
+      </div>
+      <div className="pn-sec-tit"><b>Tus nutrientes de hoy</b><span>Un cuadro por cada uno, con lo que te falta y qué comer.</span></div>
+      {generales.map((g, k) => <p key={k} className="pn-general">{g.mensaje}</p>)}
+      <div className="pn-cuadros">
+        {NUTRI_PANEL.slice(1).map((n, i) => (
+          <CuadroNutriente key={n.key} n={n} valor={totales[n.key] || 0} meta={n.meta(requerimiento) || 0} cuando="hoy" i={i}
+            opciones={ops(n.key)} notas={notas(n.key)} log={log} abierto={abierto === n.key} onAbrir={() => setAbierto(abierto === n.key ? null : n.key)} />
         ))}
-      </ul>
-      <button onClick={cerrar} className="text-xs nutri-brand-text mt-3 underline">Entendido, continuar</button>
+      </div>
+    </>
+  );
+}
+function CuadroNutrienteDetalle({ n, log }) {
+  const grupos = MOMENTOS_KEYS.map((m) => ({ m, items: log.filter((it) => it.momento === m && it.alimento).map((it) => ({ ...it, ap: calcularTotalesItem(it.alimento, it.gramos)[n.key] })).filter((x) => x.ap > 0.5).sort((a, b) => b.ap - a.ap) })).filter((g) => g.items.length);
+  return grupos.map((g) => (
+    <div key={g.m} className="pn-detalle"><span>{MOMENTO_EMOJI[g.m]} {MOMENTO_LABEL_CAPITALIZADO[g.m]}</span>
+      {g.items.map((it, k) => <p key={k}><IconoAlimento alimento={it.alimento} size={18} /><span>{nombreCortoPanel(it.alimento.nombre)} · <span className="num-u">{fmtN(it.gramos)}</span> g</span><b className="num-u">{fmtN(it.ap)} {n.unidad}</b></p>)}
+    </div>
+  ));
+}
+
+/* Cumplimiento de la meta: semana como 7 días con círculos por calorías y proteína, y el mes
+   como calendario de cuadritos. Verde = en meta, naranja = faltó, rojo = te pasaste, gris = sin registro. */
+function diasDeCumplimiento(dias, requerimiento, logHoy) {
+  const out = [];
+  for (let i = dias - 1; i >= 0; i--) {
+    const fecha = fechaISOOffset(i);
+    let log = [];
+    if (i === 0 && logHoy) log = logHoy; else { try { log = JSON.parse(localStorage.getItem("nutriapp_log_" + fecha) || "[]"); } catch {} }
+    if (!log.length) { out.push({ fecha, hoy: i === 0, sin: true }); continue; }
+    const t = calcularTotalesLog(log);
+    out.push({ fecha, hoy: i === 0, kcal: t.kcal, prot: t.proteinasG, estK: estadoNutriente(NUTRI_PANEL[0], t.kcal, requerimiento.get), estP: estadoNutriente(NUTRI_PANEL[1], t.proteinasG, requerimiento.proteinasG) });
+  }
+  return out;
+}
+const COLOR_DIA = (d, k) => d.sin ? "transparent" : COLOR_ESTADO[d[k]] || "var(--border)";
+function CumplimientoMeta({ requerimiento, log }) {
+  const [vista, setVista] = useState("semana");
+  const semana = useMemo(() => diasDeCumplimiento(7, requerimiento, log), [requerimiento, log]);
+  const mes = useMemo(() => diasDeCumplimiento(30, requerimiento, log), [requerimiento, log]);
+  const datos = vista === "semana" ? semana : mes;
+  const con = datos.filter((d) => !d.sin);
+  const enK = con.filter((d) => d.estK === "meta").length, enP = con.filter((d) => d.estP === "meta").length;
+  const promK = con.length ? con.reduce((a, d) => a + d.kcal, 0) / con.length : 0, promP = con.length ? con.reduce((a, d) => a + d.prot, 0) / con.length : 0;
+  const diaCorto = (f) => new Date(f + "T12:00:00Z").toLocaleDateString("es-PE", { weekday: "short", timeZone: "America/Lima" }).replace(".", "").slice(0, 3);
+  const diaNum = (f) => Number(f.slice(8, 10));
+  // Racha: días seguidos (terminando ayer u hoy) en meta de calorías
+  let racha = 0; for (let i = mes.length - 1; i >= 0; i--) { const d = mes[i]; if (d.hoy && d.sin) continue; if (!d.sin && d.estK === "meta") racha++; else break; }
+  return (
+    <div className="pn-cumple">
+      <div className="pn-cumple-cab">
+        <span className="nutri-brand-text"><IconSparkles size={15} /></span><b>Cumplimiento de la meta</b>
+        <div className="pn-seg">{[["semana", "Semana"], ["mes", "Mes"]].map(([k, l]) => <button key={k} type="button" className={vista === k ? "on" : ""} onClick={() => setVista(k)}>{l}</button>)}</div>
+      </div>
+      <div className="pn-resumen-cumple">
+        <div><AnilloAvance pct={con.length ? enK / con.length : 0} size={54} grosor={7} /><span><b className="num-u">{enK}<em> de {con.length} días</em></b><small>en tu meta de calorías</small></span></div>
+        <div><AnilloAvance pct={con.length ? enP / con.length : 0} size={54} grosor={7} /><span><b className="num-u">{enP}<em> de {con.length} días</em></b><small>en tu meta de proteína</small></span></div>
+      </div>
+      {vista === "semana" ? (
+        <div className="pn-semana" key="s">
+          <span className="fila-tit" />{semana.map((d) => <span key={d.fecha} className={`dia ${d.hoy ? "hoy" : ""}`}>{d.hoy ? "hoy" : diaCorto(d.fecha)}</span>)}
+          <span className="fila-tit"><IconoAlimento clave="calorias" size={18} /></span>{semana.map((d, i) => <span key={d.fecha} className={`bola ${d.sin ? "sin" : ""}`} style={{ background: COLOR_DIA(d, "estK"), animationDelay: `${i * 50}ms` }} title={d.sin ? "Sin registro" : `${fmtN(d.kcal)} kcal`}>{d.sin ? "–" : d.estK === "meta" ? "✓" : d.estK === "exceso" ? "▲" : "▼"}</span>)}
+          <span className="fila-tit"><IconoAlimento clave="proteina" size={18} /></span>{semana.map((d, i) => <span key={d.fecha} className={`bola ${d.sin ? "sin" : ""}`} style={{ background: COLOR_DIA(d, "estP"), animationDelay: `${i * 50 + 120}ms` }} title={d.sin ? "Sin registro" : `${fmtN(d.prot)} g`}>{d.sin ? "–" : d.estP === "meta" ? "✓" : "▼"}</span>)}
+        </div>
+      ) : (
+        <div className="pn-mes" key="m">
+          {mes.map((d, i) => <span key={d.fecha} className={`cua ${d.sin ? "sin" : ""} ${d.hoy ? "hoy" : ""}`} style={{ background: COLOR_DIA(d, "estK"), animationDelay: `${i * 18}ms` }} title={d.sin ? "Sin registro" : `${fmtN(d.kcal)} kcal`}>{diaNum(d.fecha)}</span>)}
+          <p className="pie">Cada cuadrito es un día y su color muestra tus calorías.</p>
+        </div>
+      )}
+      <p className="pn-leyenda"><span style={{ color: "var(--st-meta)" }}>● en meta</span> <span style={{ color: "var(--st-bajo)" }}>● faltó</span> <span style={{ color: "var(--st-exceso)" }}>● te pasaste</span> <span>○ sin registro</span></p>
+      <div className="pn-datos">
+        <span>Promedio por día<b><span className="num-u">{fmtN(promK)}</span> kcal · <span className="num-u">{fmtN(promP)}</span> g prot</b></span>
+        <span>Racha en meta<b>{racha ? `🔥 ${racha} día${racha === 1 ? "" : "s"} seguido${racha === 1 ? "" : "s"}` : "Empieza hoy"}</b></span>
+      </div>
+      <p className="text-[11px] nutri-muted mt-2">"En meta de calorías" = dentro de ±10 % de tu objetivo. "En meta de proteína" = al menos 90 % de tu objetivo.</p>
     </div>
   );
 }
@@ -4761,32 +5097,22 @@ function AlertaInicioDia({ requerimiento }) {
 function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, importarPesos, corregirPeso, eliminarPeso, aguaMl, registrarAgua }) {
   const totales = calcularTotalesLog(log);
   const sugerencias = useMemo(() => generarSugerencias(requerimiento, totales, perfil, log), [requerimiento, totales, perfil, log]);
-  const resumenSemanal = useMemo(() => resumenCumplimiento(7, requerimiento), [requerimiento, log]);
-  const resumenMensual = useMemo(() => resumenCumplimiento(30, requerimiento), [requerimiento, log]);
   const pesosOrdenados = [...pesos].sort((a, b) => a.fecha.localeCompare(b.fecha));
   const ultimoPeso = pesosOrdenados[pesosOrdenados.length - 1];
   const pesoAnterior = pesosOrdenados[pesosOrdenados.length - 2];
   const deltaPeso = ultimoPeso && pesoAnterior ? ultimoPeso.pesoKg - pesoAnterior.pesoKg : null;
-  const fila = (label, val, max, unidad, colorClass) => (
-    <div className="mb-4">
-      <div className="flex justify-between items-center text-xs mb-1.5"><span className="nutri-ink font-medium flex items-center gap-1.5"><span className={`inline-block w-2.5 h-2.5 rounded-full ${colorClass}`} />{label}</span><span className="nutri-muted tabular-nums">{Math.round(val)} / {Math.round(max)} {unidad} · <b className="nutri-ink font-semibold">{max > 0 ? Math.round((val / max) * 100) : 0}%</b></span></div>
-      <Bar value={val} max={max} colorClass={colorClass} />
-    </div>
-  );
+
   return (
     <div className="nutri-pagina">
       <div className="nutri-hero-titulo">
         <h1 className="nutri-serif text-2xl nutri-ink mb-1">Panel del día</h1>
-        <p className="text-sm nutri-muted mb-6">Ingesta consumida frente a tus requerimientos calculados.</p>
+        <p className="text-sm nutri-muted mb-6">Lo que comiste hoy frente a tus metas, explicado simple.</p>
       </div>
       <div className="nutri-sheet px-5 pt-6 pb-24">
       <AlertaInicioDia requerimiento={requerimiento} />
-      <div className="nutri-panel nutri-gauge-card rounded-2xl p-6 flex flex-col items-center mb-5">
-        <GaugeRadial label="Calorías" valor={totales.kcal} meta={requerimiento.get} unidad="kcal" color="var(--accent-energy)" tamano="lg" modo="numero" />
-        <div className="flex gap-4 mt-4 text-xs nutri-muted">
-          {requerimiento.prescripcionActiva ? <span className="nutri-pildora">Objetivo por prescripción médica</span> : <><span className="nutri-pildora">GEB {requerimiento.geb} kcal</span><span className="nutri-pildora">GET {requerimiento.get} kcal</span></>}
-        </div>
-      </div>
+      <NutrientesDeHoy totales={totales} requerimiento={requerimiento} log={log} sugerencias={sugerencias} />
+
+      <CumplimientoMeta requerimiento={requerimiento} log={log} />
 
       {requerimiento.suplementos.length > 0 && (
         <div className="nutri-panel rounded-2xl p-5 mb-5">
@@ -4850,25 +5176,6 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
         </div>
       </div>
 
-      <div className="nutri-panel rounded-2xl p-5 mb-5">
-        <div className="flex items-center gap-2 mb-3"><span className="nutri-brand-text"><IconSparkles size={15} /></span><span className="text-sm font-medium nutri-ink">Cumplimiento de la meta</span></div>
-        <div className="grid grid-cols-2 gap-4 mb-2">
-          <div>
-            <p className="text-xs nutri-muted mb-1">Esta semana ({resumenSemanal.diasConDatos}/{resumenSemanal.diasTotales} días registrados)</p>
-            <p className="text-sm nutri-ink">{resumenSemanal.diasCumpleKcal}/{resumenSemanal.diasConDatos || 0} días en meta de kcal</p>
-            <p className="text-sm nutri-ink">{resumenSemanal.diasCumpleProteina}/{resumenSemanal.diasConDatos || 0} días en meta de proteína</p>
-            {resumenSemanal.diasConDatos > 0 && <p className="text-xs nutri-muted mt-1">Promedio: {Math.round(resumenSemanal.promedioKcal)} kcal / {Math.round(resumenSemanal.promedioProteina)} g prot</p>}
-          </div>
-          <div>
-            <p className="text-xs nutri-muted mb-1">Este mes ({resumenMensual.diasConDatos}/{resumenMensual.diasTotales} días registrados)</p>
-            <p className="text-sm nutri-ink">{resumenMensual.diasCumpleKcal}/{resumenMensual.diasConDatos || 0} días en meta de kcal</p>
-            <p className="text-sm nutri-ink">{resumenMensual.diasCumpleProteina}/{resumenMensual.diasConDatos || 0} días en meta de proteína</p>
-            {resumenMensual.diasConDatos > 0 && <p className="text-xs nutri-muted mt-1">Promedio: {Math.round(resumenMensual.promedioKcal)} kcal / {Math.round(resumenMensual.promedioProteina)} g prot</p>}
-          </div>
-        </div>
-        <p className="text-[11px] nutri-muted">"En meta de kcal" = dentro de ±10% del objetivo diario. "En meta de proteína" = al menos 90% del objetivo diario.</p>
-      </div>
-
       {requerimiento.interacciones.length > 0 && (
         <div className="nutri-panel rounded-2xl p-5 mb-5 nutri-warn-bg" style={{ borderColor: "#E3B7AF" }}>
           <div className="flex items-center gap-2 mb-3"><span className="nutri-warn"><IconAlert size={16} /></span><span className="text-sm font-medium nutri-ink">Interacciones fármaco-nutriente a vigilar</span></div>
@@ -4881,36 +5188,6 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
         </div>
       )}
 
-      <div className="nutri-panel rounded-2xl p-5 mb-5">
-        <div className="flex items-center gap-2 mb-3"><span className="nutri-brand-text"><IconSparkles size={15} /></span><span className="text-sm font-medium nutri-ink">Sugerencias para hoy</span></div>
-        <ul className="space-y-3">
-          {sugerencias.map((s, i) => (
-            <li key={i} className="text-xs pl-3 border-l-2" style={{ borderColor: "#C9C3B2" }}>
-              <p className="nutri-muted leading-relaxed">{s.mensaje}</p>
-              {s.opciones && s.opciones.length > 0 && (
-                <ul className="mt-1.5 space-y-1">
-                  {s.opciones.map((o, j) => (
-                    <li key={j} className="nutri-ink">· {o.gramos} g de {o.nombre}</li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="nutri-panel rounded-2xl p-5 mb-5">
-        <span className="text-sm font-medium nutri-ink block mb-3">Macronutrientes</span>
-        {fila("Proteínas", totales.proteinasG, requerimiento.proteinasG, "g", "nutri-accent-protein")}
-        {fila("Carbohidratos", totales.carbohidratosG, requerimiento.carbohidratosG, "g", "nutri-accent-carb")}
-        {fila("Grasas", totales.grasasG, requerimiento.grasasG, "g", "nutri-accent-fat")}
-        {fila("Fibra", totales.fibraG, requerimiento.fibraG, "g", "nutri-accent-fiber")}
-        {fila("Sodio", totales.sodioMg, requerimiento.sodioMg, "mg", "nutri-accent-energy")}
-      </div>
-      <div className="nutri-panel rounded-2xl p-5">
-        <span className="text-sm font-medium nutri-ink block mb-1">Cumplimiento de metas de hoy</span>
-        <p className="text-xs nutri-muted mb-1">Cada anillo es un nutriente frente a tu meta diaria.</p>
-        <PanelMetas totales={totales} requerimiento={requerimiento} log={log} />
-      </div>
       </div>
     </div>
   );
