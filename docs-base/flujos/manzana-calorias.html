@@ -1,0 +1,253 @@
+<title>Manzana de calorías</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Tres simulaciones con alimentos (no líquidos) para el gráfico de calorías del Panel.
+   Colores de interfaz = roles de la paleta Turquesa de NutriApp; los alimentos usan sus colores propios. */
+:root {
+  --bg:#EDF9F7; --surface:#FFFFFF; --tint:#D6F4F1; --hero:#003330; --accent:#007D76;
+  --text:#0C1917; --text-2:#546866; --border:#D6E1DF; --page:#E3EFED;
+  --bajo:#E07A12; --meta:#16A34A; --exceso:#E5484D;
+  --plato:#FFFFFF; --plato-borde:#DCE6E4; --mesa:#CFE7E3;
+  --f-display:'Fraunces', Georgia, serif; --f-body:'Inter', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#021210; --surface:#071E1C; --tint:#032F2C; --hero:#00635D; --accent:#43B6AD;
+  --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --page:#010B0A;
+  --bajo:#FFA94D; --meta:#3DD68C; --exceso:#FF6B6F; --plato:#E9EEED; --plato-borde:#9FB1AE; --mesa:#0A2A27; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg:#021210; --surface:#071E1C; --tint:#032F2C; --hero:#00635D; --accent:#43B6AD;
+  --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330; --page:#010B0A;
+  --bajo:#FFA94D; --meta:#3DD68C; --exceso:#FF6B6F; --plato:#E9EEED; --plato-borde:#9FB1AE; --mesa:#0A2A27; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--text); font-family: var(--f-body); padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input { font: inherit; color: inherit; }
+.top { max-width: 1100px; margin: 0 auto 18px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: end; }
+.top .tx { flex: 1 1 360px; min-width: 0; }
+.top h1 { font-family: var(--f-display); font-size: 28px; margin: 0 0 6px; text-wrap: balance; }
+.top p { margin: 0; color: var(--text-2); line-height: 1.5; font-size: 14.5px; max-width: 62ch; }
+.sim { flex: 1 1 300px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.sim label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); display: flex; justify-content: space-between; }
+.sim label b { color: var(--text); letter-spacing: 0; font-size: 14px; font-variant-numeric: tabular-nums; }
+.sim input { width: 100%; accent-color: var(--accent); }
+.rap { display: flex; gap: 6px; flex-wrap: wrap; }
+.rap button { border: 1px solid var(--border); background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+.rap button:hover, .rap button:focus-visible { border-color: var(--accent); outline: none; }
+.grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
+.op { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.op header { display: flex; gap: 10px; align-items: baseline; }
+.op header span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.op header b { font-size: 16px; }
+.op .por { font-size: 12.5px; color: var(--text-2); line-height: 1.45; margin: 0; }
+.escena { border-radius: 18px; padding: 14px 10px; min-height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 30%, color-mix(in srgb, var(--mesa) 70%, var(--bg)), var(--bg)); }
+.dato { text-align: center; font-variant-numeric: tabular-nums; }
+.dato b { font-size: 26px; } .dato small { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 3px 10px; }
+.chip.bajo { background: color-mix(in srgb, var(--bajo) 16%, transparent); color: var(--bajo); }
+.chip.meta { background: color-mix(in srgb, var(--meta) 16%, transparent); color: var(--meta); }
+.chip.exceso { background: color-mix(in srgb, var(--exceso) 16%, transparent); color: var(--exceso); }
+svg text { font-family: var(--f-body); }
+.rodaja { transition: transform .7s cubic-bezier(.34,1.45,.64,1), opacity .4s; transform-box: view-box; }
+.pieza { transition: transform .6s cubic-bezier(.34,1.6,.64,1), opacity .3s; }
+#mz-relleno, #mz-mordida { transition: all .9s cubic-bezier(.22,1,.36,1); }
+.brillo-meta { animation: brillo 1.6s ease-in-out infinite; }
+@keyframes brillo { 50% { opacity: .35; } }
+.sacude { animation: sacude .5s ease-in-out 2; transform-origin: 50% 90%; transform-box: fill-box; }
+@keyframes sacude { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .rodaja, .pieza, #mz-relleno, #mz-mordida { transition: none !important; } .brillo-meta, .sacude { animation: none !important; } }
+</style>
+
+<div class="top">
+  <div class="tx">
+    <h1>Tus calorías con alimentos</h1>
+    <p>Tres simulaciones sólidas, sin líquidos, para la parte de arriba del Panel. Todas usan el ejemplo real (708 de 1,300 kcal). Mueve el control o toca los botones para ver cómo avanzan durante el día, cuándo llegan a la meta y qué pasa si te pasas.</p>
+  </div>
+  <div class="sim">
+    <label for="sl">Simular calorías del día <b id="slv">708 kcal · 54 %</b></label>
+    <input id="sl" type="range" min="0" max="1700" step="10" value="708">
+    <div class="rap"><button data-v="0">Inicio del día</button><button data-v="325">Después del desayuno</button><button data-v="708">Ahora (708)</button><button data-v="1250">En meta</button><button data-v="1560">Te pasaste</button></div>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="op">
+    <header><span>Opción 1</span><b>Manzana que se corta en el plato</b></header>
+    <div class="escena"><svg id="s1" viewBox="0 0 260 260" width="260" height="260" role="img" aria-label="Plato visto desde arriba con rodajas de manzana"></svg><div class="dato" id="d1"></div></div>
+    <p class="por">El plato se ve desde arriba. La manzana entera está al centro; a medida que comes, se corta en 8 rodajas que salen hacia el plato (cada una es 1/8 de tu meta) y la manzana del centro se achica. Si te pasas, las rodajas extra salen con borde rojo.</p>
+  </section>
+
+  <section class="op">
+    <header><span>Opción 2</span><b>Manzana 3D que se colorea</b></header>
+    <div class="escena"><svg id="s2" viewBox="0 0 240 260" width="240" height="260" role="img" aria-label="Manzana en 3D que se colorea desde abajo"></svg><div class="dato" id="d2"></div></div>
+    <p class="por">Parecido al vaso, pero con la manzana: empieza como un dibujo claro y se va pintando de rojo desde abajo, con brillo y sombra en 3D. Al llegar a la meta brilla la hoja; si te pasas, se ve un mordisco y la manzana tiembla.</p>
+  </section>
+
+  <section class="op">
+    <header><span>Opción 3</span><b>Plato que se arma</b></header>
+    <div class="escena"><svg id="s3" viewBox="0 0 260 260" width="260" height="260" role="img" aria-label="Plato que se llena por comidas"></svg><div class="dato" id="d3"></div></div>
+    <p class="por">Otro alimento: el plato visto desde arriba tiene cuatro partes, una por comida, del tamaño sugerido (25, 35, 30 y 10 %). Cada parte se llena de alimentos que caen al plato mientras sumas calorías en esa comida.</p>
+  </section>
+</div>
+
+<script>
+var META = 1300, NS = 'http://www.w3.org/2000/svg';
+var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function el(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+function txt(p, x, y, s, a) { var t = el('text', Object.assign({ x: x, y: y, 'font-size': 11, fill: 'var(--text-2)' }, a || {}), p); t.textContent = s; return t; }
+function tf(e, x, y, rot, sc) { e.style.transformOrigin = '0 0'; e.style.transformBox = 'view-box'; e.style.transform = 'translate(' + x + 'px,' + y + 'px) rotate(' + (rot || 0) + 'deg) scale(' + sc + ')'; }
+function fmt(n) { return Math.round(n).toLocaleString('es-PE'); }
+function estado(v) { var p = v / META; return p > 1.1 ? 'exceso' : p >= 0.9 ? 'meta' : 'bajo'; }
+function chip(v) { var e = estado(v); return '<span class="chip ' + e + '">' + (e === 'exceso' ? 'Te pasaste ' + fmt(v - META) + ' kcal' : e === 'meta' ? '✓ En tu meta' : 'Te faltan ' + fmt(META - v) + ' kcal') + '</span>'; }
+function grad(defs, id, stops, radial, attrs) { var g = el(radial ? 'radialGradient' : 'linearGradient', Object.assign({ id: id }, attrs || {}), defs); stops.forEach(function (s) { el('stop', { offset: s[0], 'stop-color': s[1], 'stop-opacity': s[2] == null ? 1 : s[2] }, g); }); return g; }
+
+/* ====================== Opción 1 · rodajas en el plato ====================== */
+var s1 = document.getElementById('s1'), d1 = el('defs', {}, s1), C = 130;
+grad(d1, 'p1plato', [[0, 'var(--plato)'], [.82, 'var(--plato)'], [1, 'var(--plato-borde)']], true);
+grad(d1, 'p1piel', [[0, '#FF6B5E'], [.55, '#E0302A'], [1, '#9E1418']], true, { cx: .38, cy: .35, r: .7 });
+grad(d1, 'p1pulpa', [[0, '#FFF6DA'], [1, '#F6E2A8']], true);
+el('ellipse', { cx: C + 4, cy: C + 8, rx: 118, ry: 116, fill: '#000', opacity: .12 }, s1);
+el('circle', { cx: C, cy: C, r: 118, fill: 'url(#p1plato)', stroke: 'var(--plato-borde)', 'stroke-width': 2 }, s1);
+el('circle', { cx: C, cy: C, r: 86, fill: 'none', stroke: 'var(--plato-borde)', 'stroke-width': 1.5, opacity: .7 }, s1);
+// rodaja vista de frente (media luna de manzana), apuntando hacia afuera
+function rodaja(p, exceso) {
+  var g = el('g', {}, p);
+  el('path', { d: 'M-15 -6 Q0 -30 15 -6 Q8 4 0 4 Q-8 4 -15 -6Z', fill: 'url(#p1pulpa)', stroke: exceso ? 'var(--exceso)' : '#C92A25', 'stroke-width': exceso ? 3 : 2.6, 'stroke-linejoin': 'round' }, g);
+  el('path', { d: 'M-3 -10 q3 -4 6 0', fill: 'none', stroke: '#C9A25E', 'stroke-width': 1.2 }, g);
+  el('ellipse', { cx: -2.5, cy: -6, rx: 1.4, ry: 2.4, fill: '#5A3418' }, g);
+  el('ellipse', { cx: 2.5, cy: -6, rx: 1.4, ry: 2.4, fill: '#5A3418' }, g);
+  return g;
+}
+var rodajas = [], extras = [];
+for (var i = 0; i < 8; i++) { var r = rodaja(s1); r.classList.add('rodaja'); rodajas.push(r); }
+for (var j = 0; j < 4; j++) { var r2 = rodaja(s1, true); r2.classList.add('rodaja'); extras.push(r2); }
+var manzana1 = el('g', { class: 'rodaja' }, s1);
+el('circle', { cx: 0, cy: 0, r: 40, fill: 'url(#p1piel)' }, manzana1);
+el('ellipse', { cx: -12, cy: -14, rx: 12, ry: 7, fill: '#fff', opacity: .35, transform: 'rotate(-30)' }, manzana1);
+el('path', { d: 'M0 -4 q2 -12 -2 -18', stroke: '#6B3E1E', 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }, manzana1);
+el('path', { d: 'M1 -18 q14 -10 22 -2 q-12 8 -22 2Z', fill: '#4CAF50' }, manzana1);
+el('circle', { cx: 0, cy: -2, r: 4, fill: '#8C1D1A', opacity: .5 }, manzana1);
+function dib1(v) {
+  var p = v / META, n = Math.min(8, p * 8);
+  rodajas.forEach(function (r, k) {
+    var a = (k / 8) * 360 - 90 + 22.5, f = Math.max(0, Math.min(1, n - k));
+    var rad = a * Math.PI / 180, R = 70 - (1 - f) * 40;
+    var x = C + Math.cos(rad) * R, y = C + Math.sin(rad) * R;
+    tf(r, x, y, a + 90, 0.4 + f * 1.25);
+    r.style.opacity = f > 0 ? 1 : 0;
+  });
+  var ex = Math.max(0, (p - 1) * 8);
+  extras.forEach(function (r, k) {
+    var a = (k / 4) * 360 - 90 + 45, f = Math.max(0, Math.min(1, ex - k)), rad = a * Math.PI / 180;
+    tf(r, C + Math.cos(rad) * 104, C + Math.sin(rad) * 104, a + 90, 0.3 + f * 0.85);
+    r.style.opacity = f > 0 ? 1 : 0;
+  });
+  var resto = Math.max(0, 1 - Math.min(p, 1));
+  tf(manzana1, C, C, 0, resto > 0 ? 0.25 + resto * 0.75 : 0);
+  document.getElementById('d1').innerHTML = '<b>' + fmt(v) + '</b><small>de ' + fmt(META) + ' kcal · ' + Math.min(8, Math.floor(n)) + ' de 8 rodajas · ' + Math.round(p * 100) + ' %</small>' + chip(v);
+}
+
+/* ====================== Opción 2 · manzana 3D que se colorea ====================== */
+var s2 = document.getElementById('s2'), d2 = el('defs', {}, s2);
+var FORMA = 'M120 78 C150 52 208 58 214 120 C220 182 178 236 146 238 C134 239 128 232 120 232 C112 232 106 239 94 238 C62 236 20 182 26 120 C32 58 90 52 120 78Z';
+var cp = el('clipPath', { id: 'mzclip' }, d2); el('path', { d: FORMA }, cp);
+var mk = el('mask', { id: 'mzmask', maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 240, height: 260 }, d2); el('rect', { width: 240, height: 260, fill: '#fff' }, mk);
+var mordida = el('circle', { id: 'mz-mordida', cx: 222, cy: 132, r: 0, fill: '#000' }, mk);
+var MZ = el('g', { mask: 'url(#mzmask)' }, s2);
+grad(d2, 'mzrojo', [[0, '#FF7A6B'], [.5, '#E5322B'], [1, '#8E1015']], true, { cx: .35, cy: .35, r: .8 });
+grad(d2, 'mzexc', [[0, '#FF9A8E'], [1, '#B3121A']], true, { cx: .35, cy: .35, r: .8 });
+grad(d2, 'mzsombra', [[0, '#000', 0], [.7, '#000', 0], [1, '#000', .28]], true, { cx: .42, cy: .4, r: .62 });
+grad(d2, 'mzluz', [[0, '#fff', .75], [1, '#fff', 0]], true);
+grad(d2, 'mzvacio', [[0, '#FFF7E6'], [1, '#F1E3C4']], true, { cx: .4, cy: .35, r: .8 });
+el('ellipse', { cx: 122, cy: 246, rx: 82, ry: 9, fill: '#000', opacity: .16 }, s2);
+el('path', { d: FORMA, fill: 'url(#mzvacio)' }, MZ);
+var cuerpo2 = el('g', { 'clip-path': 'url(#mzclip)' }, MZ);
+var relleno = el('rect', { id: 'mz-relleno', x: 0, y: 240, width: 240, height: 240, fill: 'url(#mzrojo)' }, cuerpo2);
+// pecas de la cáscara (solo sobre la parte coloreada)
+var pecas = el('g', { opacity: .5 }, cuerpo2);
+[[70, 200], [160, 190], [190, 140], [60, 130], [110, 214], [150, 110], [90, 100], [176, 210]].forEach(function (q) { el('circle', { cx: q[0], cy: q[1], r: 1.6, fill: '#FFE1A8' }, pecas); });
+var borde2 = el('line', { x1: 0, x2: 240, y1: 240, y2: 240, stroke: '#fff', 'stroke-width': 2, opacity: .7, 'stroke-dasharray': '2 5' }, cuerpo2);
+el('path', { d: FORMA, fill: 'url(#mzsombra)' }, MZ);
+el('ellipse', { cx: 82, cy: 112, rx: 22, ry: 34, fill: 'url(#mzluz)', transform: 'rotate(-22 82 112)' }, MZ);
+el('path', { d: FORMA, fill: 'none', stroke: '#C7A97A', 'stroke-width': 2, opacity: .55 }, MZ);
+el('path', { d: 'M120 80 C118 62 124 46 132 36', stroke: '#6B3E1E', 'stroke-width': 6, fill: 'none', 'stroke-linecap': 'round' }, s2);
+var hoja = el('path', { d: 'M130 50 C150 26 186 28 196 40 C176 60 146 62 130 50Z', fill: '#4CAF50' }, s2);
+el('path', { d: 'M132 50 C152 44 172 40 194 40', stroke: '#2E7D32', 'stroke-width': 1.5, fill: 'none' }, s2);
+var lineaMeta = el('line', { x1: 14, x2: 226, y1: 76, y2: 76, stroke: 'var(--text)', 'stroke-width': 1.5, 'stroke-dasharray': '4 4', opacity: .6 }, s2);
+txt(s2, 226, 70, 'meta', { 'text-anchor': 'end', 'font-size': 10 });
+var TOPE = 68, BASE = 240, prevEst2 = '';
+function dib2(v) {
+  var p = Math.min(v / META, 1), y = BASE - p * (BASE - TOPE);
+  relleno.setAttribute('y', y); borde2.setAttribute('y1', y); borde2.setAttribute('y2', y);
+  borde2.style.opacity = p > 0.02 && p < 0.99 ? .7 : 0;
+  relleno.setAttribute('fill', v > META * 1.1 ? 'url(#mzexc)' : 'url(#mzrojo)');
+  mordida.setAttribute('r', v > META * 1.1 ? Math.min(30, 10 + (v - META * 1.1) / 15) : 0);
+  var e = estado(v);
+  hoja.setAttribute('class', e === 'meta' ? 'brillo-meta' : '');
+  if (e === 'exceso' && prevEst2 !== 'exceso' && !reduce) { s2.classList.remove('sacude'); void s2.getBBox(); s2.classList.add('sacude'); }
+  prevEst2 = e;
+  document.getElementById('d2').innerHTML = '<b>' + fmt(v) + '</b><small>de ' + fmt(META) + ' kcal · ' + Math.round(v / META * 100) + ' %</small>' + chip(v);
+}
+
+/* ====================== Opción 3 · plato que se arma ====================== */
+var s3 = document.getElementById('s3'), d3 = el('defs', {}, s3);
+grad(d3, 'p3plato', [[0, 'var(--plato)'], [.84, 'var(--plato)'], [1, 'var(--plato-borde)']], true);
+el('ellipse', { cx: C + 4, cy: C + 8, rx: 118, ry: 116, fill: '#000', opacity: .12 }, s3);
+el('circle', { cx: C, cy: C, r: 118, fill: 'url(#p3plato)', stroke: 'var(--plato-borde)', 'stroke-width': 2 }, s3);
+var MEALS = [{ n: 'Desayuno', p: .25, c: '#F2B84B' }, { n: 'Almuerzo', p: .35, c: '#E07A12' }, { n: 'Colación', p: .10, c: '#E5484D' }, { n: 'Cena', p: .30, c: '#7C5CC4' }];
+// alimentos simples dibujados (vista desde arriba)
+var COMIDA = {
+  huevo: function (g) { el('ellipse', { rx: 11, ry: 9, fill: '#fff', stroke: '#E8E1D2' }, g); el('circle', { r: 4.5, fill: '#F7B500' }, g); },
+  pan: function (g) { el('rect', { x: -10, y: -9, width: 20, height: 18, rx: 6, fill: '#C98A4B' }, g); el('rect', { x: -7, y: -6, width: 14, height: 12, rx: 4, fill: '#F2D19A' }, g); },
+  palta: function (g) { el('ellipse', { rx: 8, ry: 11, fill: '#5E8C2E' }, g); el('ellipse', { rx: 6, ry: 9, fill: '#C9E27A' }, g); el('circle', { cy: 2, r: 3.5, fill: '#8A5A2B' }, g); },
+  arroz: function (g) { el('circle', { r: 12, fill: '#FAF7EE', stroke: '#E8E1D2' }, g); for (var k = 0; k < 6; k++) el('ellipse', { cx: Math.cos(k) * 6, cy: Math.sin(k * 2) * 5, rx: 2, ry: 1, fill: '#E3DCCB' }, g); },
+  pollo: function (g) { el('path', { d: 'M-12 -4 Q-8 -12 6 -10 Q14 -6 12 4 Q6 12 -6 9 Q-14 4 -12 -4Z', fill: '#D99A55' }, g); el('path', { d: 'M-6 -4 L6 -6 M-6 2 L8 0', stroke: '#B0702F', 'stroke-width': 1.5 }, g); },
+  brocoli: function (g) { el('rect', { x: -2, y: 0, width: 4, height: 9, fill: '#7FB04A' }, g); [[-6, -2], [0, -7], [6, -2], [0, -1]].forEach(function (q) { el('circle', { cx: q[0], cy: q[1], r: 5.5, fill: '#3E8E2F' }, g); }); },
+  manzana: function (g) { el('circle', { r: 9, fill: '#E0302A' }, g); el('path', { d: 'M0 -9 q4 -5 8 -3', stroke: '#4CAF50', 'stroke-width': 2.5, fill: 'none' }, g); },
+  pescado: function (g) { el('ellipse', { rx: 13, ry: 7, fill: '#B9C7D6' }, g); el('path', { d: 'M12 0 l7 -6 v12z', fill: '#9AAABC' }, g); el('circle', { cx: -7, cy: -1, r: 1.5, fill: '#33404D' }, g); },
+  camote: function (g) { el('ellipse', { rx: 12, ry: 7, fill: '#E58A3A', transform: 'rotate(-20)' }, g); },
+  tomate: function (g) { el('circle', { r: 7, fill: '#E2483D' }, g); el('path', { d: 'M-3 -6 l3 2 l3 -2', stroke: '#3E8E2F', 'stroke-width': 1.5, fill: 'none' }, g); }
+};
+var MENU = [['huevo', 'pan', 'palta', 'pan'], ['arroz', 'pollo', 'brocoli', 'tomate', 'arroz'], ['manzana', 'manzana'], ['pescado', 'camote', 'brocoli', 'tomate']];
+var a0 = -90, piezas = [];
+MEALS.forEach(function (m, i) {
+  var a1 = a0 + m.p * 360, r0 = a0 * Math.PI / 180, r1 = a1 * Math.PI / 180, R = 104;
+  el('path', { d: 'M' + C + ' ' + C + ' L' + (C + R * Math.cos(r0)) + ' ' + (C + R * Math.sin(r0)) + ' A' + R + ' ' + R + ' 0 ' + (m.p > .5 ? 1 : 0) + ' 1 ' + (C + R * Math.cos(r1)) + ' ' + (C + R * Math.sin(r1)) + 'Z', fill: m.c, opacity: .08, stroke: 'var(--plato-borde)', 'stroke-width': 1.2 }, s3);
+  var lista = MENU[i];
+  lista.forEach(function (tipo, k) {
+    var t = (k + 0.5) / lista.length, ang = (a0 + (a1 - a0) * (0.18 + 0.64 * t)) * Math.PI / 180, rr = 38 + (k % 2 ? 36 : 58) * (m.p < .15 ? .8 : 1);
+    var g = el('g', { class: 'pieza' }, s3); COMIDA[tipo](g);
+    piezas.push({ g: g, meal: i, k: k, n: lista.length, x: C + Math.cos(ang) * rr, y: C + Math.sin(ang) * rr });
+  });
+  a0 = a1;
+});
+el('circle', { cx: C, cy: C, r: 24, fill: 'var(--plato)', stroke: 'var(--plato-borde)' }, s3);
+var c3 = txt(s3, C, C + 5, '', { 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, fill: '#0C1917' });
+var anillo3 = el('circle', { cx: C, cy: C, r: 118, fill: 'none', stroke: 'var(--exceso)', 'stroke-width': 5, 'stroke-dasharray': '6 6', opacity: 0 }, s3);
+var ORDEN = [0, 1, 2, 3]; // desayuno, almuerzo, colación, cena (orden del día)
+function reparto(v) { var r = [0, 0, 0, 0], resto = v; ORDEN.forEach(function (i, k) { var cap = META * MEALS[i].p, x = k === 3 ? resto : Math.min(resto, cap); r[i] = x; resto -= x; }); return r; }
+function dib3(v) {
+  var r = reparto(v);
+  piezas.forEach(function (q) {
+    var f = r[q.meal] / (META * MEALS[q.meal].p), on = f * q.n > q.k + 0.15;
+    tf(q.g, q.x, on ? q.y : q.y - 30, 0, on ? 1.35 : 0.4);
+    q.g.style.opacity = on ? 1 : 0;
+  });
+  c3.textContent = Math.round(v / META * 100) + '%';
+  anillo3.setAttribute('opacity', v > META * 1.1 ? .9 : 0);
+  var llenas = MEALS.filter(function (m, i) { return r[i] >= META * m.p * 0.9; }).map(function (m) { return m.n.toLowerCase(); });
+  document.getElementById('d3').innerHTML = '<b>' + fmt(v) + '</b><small>de ' + fmt(META) + ' kcal' + (llenas.length ? ' · completo: ' + llenas.join(', ') : '') + '</small>' + chip(v);
+}
+
+/* ====================== control ====================== */
+var sl = document.getElementById('sl'), slv = document.getElementById('slv');
+function todo(v) { v = Number(v); slv.textContent = fmt(v) + ' kcal · ' + Math.round(v / META * 100) + ' %'; dib1(v); dib2(v); dib3(v); }
+sl.addEventListener('input', function () { todo(sl.value); });
+document.querySelectorAll('.rap button').forEach(function (b) { b.addEventListener('click', function () { ir(Number(b.dataset.v)); }); });
+function ir(dest) {
+  if (reduce) { sl.value = dest; todo(dest); return; }
+  var desde = Number(sl.value), t0 = performance.now();
+  (function paso(t) { var x = Math.min(1, (t - t0) / 1100), e = 1 - Math.pow(1 - x, 3), v = Math.round((desde + (dest - desde) * e) / 10) * 10; sl.value = v; todo(v); if (x < 1) requestAnimationFrame(paso); })(t0);
+}
+todo(708);
+</script>
