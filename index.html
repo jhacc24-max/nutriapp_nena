@@ -871,6 +871,33 @@
   .nb-item small { font-size: 11px; line-height: 1.3; }
   .nb-color .nb-ico { width: 34px; height: 34px; border-radius: 11px; }
   .nb-color .nb-ico svg { width: 18px; height: 18px; }
+
+  /* ===== Íconos de nutrientes + detalle que crece desde el ícono (shared-element) ===== */
+  .pn-iconos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+  .pn-ico-btn { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 6px 9px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); color: var(--text); text-align: center; animation: tcEntra .45s cubic-bezier(.22,1,.36,1) both; transition: transform .15s, opacity .2s; }
+  .pn-ico-btn:active { transform: scale(.95); }
+  .pn-ico-btn.oculto { opacity: 0; }
+  .pn-ico-btn .ic { position: relative; width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; background: color-mix(in srgb, var(--n) 15%, var(--surface)); }
+  .pn-ico-btn .marca { position: absolute; right: -5px; top: -5px; width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 10px; font-weight: 800; color: #fff; background: var(--border); border: 2px solid var(--surface); }
+  .pn-ico-btn.est-bajo .marca { background: var(--st-bajo); } .pn-ico-btn.est-meta .marca { background: var(--st-meta); } .pn-ico-btn.est-exceso .marca { background: var(--st-exceso); }
+  .pn-ico-btn b { font-size: 12px; line-height: 1.15; }
+  .pn-ico-btn small { font-size: 11px; color: var(--text-2); }
+  .pn-ico-btn.est-bajo small { color: var(--st-bajo); } .pn-ico-btn.est-meta small { color: var(--st-meta); } .pn-ico-btn.est-exceso small { color: var(--st-exceso); }
+  .pn-ico-btn .mini { width: 70%; height: 4px; border-radius: 2px; background: var(--tint); overflow: hidden; }
+  .pn-ico-btn .mini i { display: block; height: 100%; border-radius: 2px; background: var(--border); }
+  .pn-ico-btn.est-bajo .mini i { background: var(--st-bajo); } .pn-ico-btn.est-meta .mini i { background: var(--st-meta); } .pn-ico-btn.est-exceso .mini i { background: var(--st-exceso); }
+  .pn-ico-ayuda { font-size: 11.5px; color: var(--text-2); text-align: center; margin: 8px 0 0; }
+  .pn-ayer .pn-ico-btn { background: var(--surface); }
+  .pn-hoy-iconos { gap: 0; }
+  .pn-det-capa { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 14px calc(16px + env(safe-area-inset-bottom, 0px)); background: rgb(0 0 0 / .4); transition: background .35s; }
+  .pn-det-capa.fase-entra, .pn-det-capa.fase-sale { background: rgb(0 0 0 / 0); }
+  .pn-det { position: relative; width: 100%; max-width: 26rem; max-height: 100%; overflow-y: auto; border-radius: 24px; background: var(--bg); box-shadow: 0 30px 60px -24px rgb(0 0 0 / .55); transform-origin: top left; transition: transform .38s cubic-bezier(.22,1,.36,1), border-radius .38s; scrollbar-width: none; }
+  .pn-det-cont { transition: opacity .2s .12s; }
+  .fase-entra .pn-det-cont, .fase-sale .pn-det-cont { opacity: 0; transition-delay: 0s; }
+  .pn-det .pn-cuadro { margin: 0; border: 0; border-radius: 24px; animation: none; padding-top: 16px; }
+  .pn-det-x { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: var(--tint); color: var(--text); font-size: 13px; display: grid; place-items: center; z-index: 2; }
+  .pn-det .pn-cuadro .cab { padding-right: 34px; }
+  @media (prefers-reduced-motion: reduce) { .pn-ico-btn { animation: none; } .pn-det, .pn-det-cont, .pn-det-capa { transition: none; } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -934,7 +961,7 @@ function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
 
 /* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
 /* Debe coincidir con VERSION de sw.js: sirve para confirmar en el teléfono que ya se cargó la última versión */
-const VERSION_APP = "v13 · 23 oct 2026";
+const VERSION_APP = "v14 · 24 oct 2026";
 const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
 const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
 function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
@@ -5204,6 +5231,64 @@ function CuadroNutriente({ n, valor, meta, cuando, i = 0, opciones, notas, porMo
   );
 }
 
+/* Fila de íconos por nutriente: al tocar uno, su cuadro completo crece desde el ícono
+   (07-MOTION: shared-element) y al tocar fuera vuelve a su lugar. */
+const CHIP_CORTO = { cero: "—", bajo: "▼", meta: "✓", exceso: "▲" };
+function IconosNutrientes({ filas, cuando, render }) {
+  const [abierto, setAbierto] = useState(null); // { key, rect }
+  const refs = useRef({});
+  const abrir = (key) => { const el = refs.current[key]; setAbierto({ key, rect: el ? el.getBoundingClientRect() : null }); };
+  return (
+    <>
+      <div className="pn-iconos">
+        {filas.map(({ n, valor, meta, est }, i) => {
+          const pct = meta > 0 ? Math.round((valor / meta) * 100) : 0;
+          return (
+            <button key={n.key} type="button" ref={(el) => (refs.current[n.key] = el)} className={`pn-ico-btn est-${est} ${abierto && abierto.key === n.key ? "oculto" : ""}`} style={{ "--n": n.color, animationDelay: `${i * 60}ms` }} onClick={() => abrir(n.key)} aria-label={`${n.label}: ${fmtN(valor)} de ${fmtN(meta)} ${n.unidad}`}>
+              <span className="ic"><IconoAlimento clave={n.clave} size={30} /><i className="marca">{CHIP_CORTO[est]}</i></span>
+              <b>{n.label}</b>
+              <small>{n.tipo === "maximo" ? (est === "exceso" ? "te pasaste" : "en límite") : <><span className="num-u">{pct}</span> %</>}</small>
+              <span className="mini"><i style={{ width: `${Math.min(100, pct)}%` }} /></span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="pn-ico-ayuda">Toca un nutriente para ver {cuando === "ayer" ? "cómo te fue y cómo compensarlo" : "lo que te falta y qué comer"}.</p>
+      {abierto && <DetalleNutriente origen={abierto.rect} onCerrar={() => setAbierto(null)}>{render(abierto.key)}</DetalleNutriente>}
+    </>
+  );
+}
+function DetalleNutriente({ origen, onCerrar, children }) {
+  const ref = useRef(null);
+  const [fase, setFase] = useState("entra");
+  const desde = () => {
+    const el = ref.current; if (!el || !origen) return null;
+    const r = el.getBoundingClientRect();
+    return `translate(${origen.left - r.left}px, ${origen.top - r.top}px) scale(${origen.width / r.width}, ${origen.height / r.height})`;
+  };
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setFase("abierto"); return; }
+    const t = desde();
+    if (t) { el.style.transition = "none"; el.style.transform = t; el.style.borderRadius = "18px"; }
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = ""; el.style.transform = ""; el.style.borderRadius = ""; setFase("abierto"); }));
+  }, []);
+  useEffect(() => { const k = (e) => e.key === "Escape" && cerrar(); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); });
+  const cerrar = () => {
+    const el = ref.current; setFase("sale");
+    const t = matchMedia("(prefers-reduced-motion: reduce)").matches ? null : desde();
+    if (el && t) { el.style.transform = t; el.style.borderRadius = "18px"; }
+    setTimeout(onCerrar, t ? 380 : 0);
+  };
+  return ReactDOM.createPortal(
+    <div className={`pn-det-capa fase-${fase}`} onClick={cerrar}>
+      <div className="pn-det" ref={ref} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <div className="pn-det-cont">{children}</div>
+        <button type="button" className="pn-det-x" onClick={cerrar} aria-label="Cerrar">✕</button>
+      </div>
+    </div>, document.body);
+}
+
 /* "Así te fue ayer": puntaje + un cuadro por nutriente (los que faltaron o se pasaron, completos;
    los cumplidos, como fichas pequeñas con ✓) */
 function AlertaInicioDia({ requerimiento }) {
@@ -5236,12 +5321,11 @@ function AlertaInicioDia({ requerimiento }) {
         <button onClick={cerrar} className="pn-x" aria-label="Cerrar"><IconX size={16} /></button>
       </div>
       <p className="pn-leyenda">La barra es lo que comiste; la banderita ⚑ es tu meta. <span style={{ color: "var(--st-meta)" }}>● en meta</span> <span style={{ color: "var(--st-bajo)" }}>● faltó</span> <span style={{ color: "var(--st-exceso)" }}>● te pasaste</span></p>
-      {ok.length > 0 && <div className="pn-ok">{ok.map(({ n }) => <span key={n.key}><IconoAlimento clave={n.clave} size={20} />{n.label} ✓</span>)}</div>}
-      {mal.map(({ n, valor, meta, est }, i) => (
-        <CuadroNutriente key={n.key} n={n} valor={valor} meta={meta} cuando="ayer" i={i} porMomento={analisis.porMomento}
+      <IconosNutrientes filas={filas} cuando="ayer" render={(key) => { const { n, valor, meta, est } = filas.find((f) => f.n.key === key); return (
+        <CuadroNutriente n={n} valor={valor} meta={meta} cuando="ayer" porMomento={analisis.porMomento}
           opciones={est === "bajo" && n.tipo !== "maximo" ? sugerirAlimentos(n.key, meta - valor, requerimiento.restricciones, 3) : null}
           notas={est === "exceso" ? [n.key === "sodioMg" ? "Hoy evita procesados, embutidos, enlatados y caldos en cubito." : "Hoy modera un poco la comida que más aportó."] : null} />
-      ))}
+      ); }} />
       <button onClick={cerrar} className="pn-entendido">Entendido, continuar</button>
     </div>
   );
@@ -5270,16 +5354,18 @@ function NutrientesDeHoy({ totales, requerimiento, log, sugerencias }) {
         {totales.kcal > 0 && <button type="button" className="ver" onClick={() => setAbierto(abierto === "kcal" ? null : "kcal")}>{abierto === "kcal" ? "Ocultar de dónde vino ▴" : "Ver de dónde vino ▾"}</button>}
         {abierto === "kcal" && <div className="w-full text-left"><CuadroNutrienteDetalle n={kcal} log={log} /></div>}
       </div>
-      <div className="pn-sec-tit"><b>Tus nutrientes de hoy</b><span>Un cuadro por cada uno, con lo que te falta y qué comer.</span></div>
-      {generales.map((g, k) => <p key={k} className="pn-general">{g.mensaje}</p>)}
-      <div className="pn-cuadros">
-        {NUTRI_PANEL.slice(1).map((n, i) => (
-          <CuadroNutriente key={n.key} n={n} valor={totales[n.key] || 0} meta={n.meta(requerimiento) || 0} cuando="hoy" i={i}
-            opciones={ops(n.key)} notas={notas(n.key)} log={log} abierto={abierto === n.key} onAbrir={() => setAbierto(abierto === n.key ? null : n.key)} />
-        ))}
+      <div className="nutri-panel rounded-2xl p-4 mb-5 pn-hoy-iconos">
+        <div className="pn-sec-tit"><b>Tus nutrientes de hoy</b><span>Lo que llevas de cada uno frente a tu meta.</span></div>
+        {generales.map((g, k) => <p key={k} className="pn-general">{g.mensaje}</p>)}
+        <IconosNutrientes cuando="hoy" filas={NUTRI_PANEL.slice(1).map((n) => { const valor = totales[n.key] || 0, meta = n.meta(requerimiento) || 0; return { n, valor, meta, est: estadoNutriente(n, valor, meta) }; })}
+          render={(key) => { const n = NUTRI_PANEL.find((x) => x.key === key); return <DetalleHoy n={n} valor={totales[n.key] || 0} meta={n.meta(requerimiento) || 0} opciones={ops(n.key)} notas={notas(n.key)} log={log} />; }} />
       </div>
     </>
   );
+}
+function DetalleHoy(props) {
+  const [ver, setVer] = useState(false);
+  return <CuadroNutriente {...props} cuando="hoy" abierto={ver} onAbrir={() => setVer((v) => !v)} />;
 }
 function CuadroNutrienteDetalle({ n, log }) {
   const grupos = MOMENTOS_KEYS.map((m) => ({ m, items: log.filter((it) => it.momento === m && it.alimento).map((it) => ({ ...it, ap: calcularTotalesItem(it.alimento, it.gramos)[n.key] })).filter((x) => x.ap > 0.5).sort((a, b) => b.ap - a.ap) })).filter((g) => g.items.length);
