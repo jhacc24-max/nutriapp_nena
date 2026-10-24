@@ -554,11 +554,16 @@
   .mh-nutris.compacto .mh-nutri { padding: 6px 3px; border-radius: 12px; gap: 2px; }
   .mh-nutris.compacto .mh-nutri small { font-size: 10px; }
   .mh-buscados { margin-bottom: 4px; }
-  .mh-comida .mh-macros { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
-  .mh-comida .mh-macros > span { display: grid; grid-template-columns: 26px 1fr 30px; align-items: center; gap: 5px; }
-  .mh-comida .mh-macros em { font-style: normal; font-size: 10px; color: var(--text-2); }
-  .mh-comida .mh-macros em:last-child { text-align: right; }
-  .mh-comida .mh-macros .mini { margin-top: 0; }
+  .mh-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+  .mh-lista li { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text); }
+  .mh-lista li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mh-lista li em { font-style: normal; font-size: 11px; color: var(--text-2); }
+  .mh-lista li.reg span { color: var(--text-2); }
+  .mh-lista li.mas { display: block; font-size: 11px; color: var(--accent); font-weight: 600; }
+  .mh-tag { align-self: flex-start; font-size: 10px; font-weight: 600; color: var(--accent); background: var(--tint); border-radius: 999px; padding: 2px 7px; }
+  .mh-comida .est { margin-top: auto; }
+  .mh-origen { font-size: 12px; color: var(--text-2); text-align: center; margin: 8px 0 0; }
+  .mh-origen b { color: var(--text); }
   .mh-v-cuerpo { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px; }
   .mh-v-cuerpo::-webkit-scrollbar { display: none; }
   .mh-rapidas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; padding-bottom: 2px; }
@@ -834,7 +839,8 @@ const FOOD_DB = [
   { id: "f06", nombre: "Lentejas cocidas", categoria: "menestra", porcionBaseG: 100, kcal: 116, proteinasG: 9, carbohidratosG: 20, fibraG: 7.9, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 2, potasioMg: 369, azucaresG: 1.8 },
   { id: "f07", nombre: "Garbanzos cocidos", categoria: "menestra", porcionBaseG: 100, kcal: 164, proteinasG: 8.9, carbohidratosG: 27, fibraG: 7.6, grasasG: 2.6, grasasSaturadasG: 0.3, sodioMg: 7, potasioMg: 291, azucaresG: 4.8 },
   { id: "f35", nombre: "Tarwi / chocho desamargado", categoria: "menestra", porcionBaseG: 100, kcal: 180, proteinasG: 19, carbohidratosG: 10, fibraG: 5, grasasG: 9, grasasSaturadasG: 1.5, sodioMg: 5, potasioMg: 350, azucaresG: 0 },
-  { id: "f38", nombre: "Arveja partida cocida", categoria: "menestra", porcionBaseG: 100, kcal: 118, proteinasG: 8.3, carbohidratosG: 21, fibraG: 8.3, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 2, potasioMg: 296, azucaresG: 3 },
+  { id: "f38", nombre: "Arveja verde partida cocida", categoria: "menestra", porcionBaseG: 100, kcal: 118, proteinasG: 8.3, carbohidratosG: 21, fibraG: 8.3, grasasG: 0.4, grasasSaturadasG: 0.1, sodioMg: 2, potasioMg: 296, azucaresG: 3 },
+  { id: "f66", nombre: "Arveja verde partida (seca, cruda)", categoria: "menestra", porcionBaseG: 100, kcal: 341, proteinasG: 24.6, carbohidratosG: 60.4, fibraG: 25.5, grasasG: 1.2, grasasSaturadasG: 0.2, sodioMg: 15, potasioMg: 981, azucaresG: 8 },
   { id: "f39", nombre: "Frijol cocido", categoria: "menestra", porcionBaseG: 100, kcal: 127, proteinasG: 8.7, carbohidratosG: 22.8, fibraG: 7.4, grasasG: 0.5, grasasSaturadasG: 0.1, sodioMg: 1, potasioMg: 355, azucaresG: 0.3 },
   { id: "f08", nombre: "Avena en hojuelas", categoria: "carbohidrato", porcionBaseG: 100, kcal: 389, proteinasG: 16.9, carbohidratosG: 66, fibraG: 10.6, grasasG: 6.9, grasasSaturadasG: 1.2, sodioMg: 2, potasioMg: 429, azucaresG: 0 },
   { id: "f09", nombre: "Arroz integral cocido", categoria: "carbohidrato", porcionBaseG: 100, kcal: 123, proteinasG: 2.7, carbohidratosG: 26, fibraG: 1.8, grasasG: 1, grasasSaturadasG: 0.2, sodioMg: 4, potasioMg: 86, azucaresG: 0 },
@@ -2143,7 +2149,7 @@ function DesglosePreview({ alimento, gramos }) {
 const ALIMENTO_POR_ID = Object.fromEntries(FOOD_DB.map((f) => [f.id, f]));
 /* Peso de una unidad (g) y porción habitual (g) por alimento; si no está, se usa la categoría. */
 const PORCION_UNIDAD = { f03: 50, f37: 33, f21: 120, f20: 150, f22: 180, f43: 80, f24: 150, f13: 40, f48: 30, f40: 75, f42: 150, f54: 170, f65: 50, f11: 150, f12: 150, f61: 5, f26: 1.2, f62: 5, f19: 120, f17: 70, f41: 200, f44: 300, f53: 5, f59: 200, f52: 30 };
-const PORCION_HABITUAL = { f01: 120, f31: 120, f32: 120, f33: 120, f34: 120, f05: 100, f10: 150, f09: 150, f14: 150, f18: 100, f08: 40, f28: 240, f27: 120, f29: 60, f25: 5, f60: 10, f26: 15, f62: 15, f30: 30, f24: 75, f15: 100, f49: 120, f50: 60, f51: 100, f36: 150, f56: 100, f57: 200, f58: 150, f55: 100, f23: 100 };
+const PORCION_HABITUAL = { f66: 50, f01: 120, f31: 120, f32: 120, f33: 120, f34: 120, f05: 100, f10: 150, f09: 150, f14: 150, f18: 100, f08: 40, f28: 240, f27: 120, f29: 60, f25: 5, f60: 10, f26: 15, f62: 15, f30: 30, f24: 75, f15: 100, f49: 120, f50: 60, f51: 100, f36: 150, f56: 100, f57: 200, f58: 150, f55: 100, f23: 100 };
 const PORCION_CATEGORIA = { proteina: 120, menestra: 150, carbohidrato: 150, quinua: 150, vegetal: 100, fruta: 120, grasa: 10, lacteo: 200 };
 const porcionDe = (a) => Math.round(PORCION_HABITUAL[a.id] || PORCION_UNIDAD[a.id] || PORCION_CATEGORIA[a.categoria] || 100);
 function porcionesRapidas(a) {
@@ -2163,6 +2169,8 @@ function momentoPorHora() {
   try { h = Number(new Date().toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/Lima" })); } catch {}
   return h < 11 ? "desayuno" : h < 16 ? "almuerzo" : h < 19 ? "colacion" : "cena";
 }
+/* Busca por palabras: "arveja verde partida" encuentra "Arveja verde partida cocida" */
+const coincideBusqueda = (f, q) => { const n = normalizarTexto(f.nombre), ps = q.split(/\s+/).filter(Boolean); return n.includes(q) || ps.every((w) => n.includes(w) || (w.length > 3 && n.includes(w.replace(/s$/, "")))) || CLAVES_TEXTO.some(([k, id]) => id === f.id && k.startsWith(q)); };
 const sumaMacros = (items) => items.reduce((s, it) => { const t = calcularTotalesItem(it.alimento, it.gramos); return { kcal: s.kcal + t.kcal, p: s.p + t.proteinasG, c: s.c + t.carbohidratosG, g: s.g + t.grasasG }; }, { kcal: 0, p: 0, c: 0, g: 0 });
 const metaMomento = (requerimiento, momento) => (requerimiento.get || 0) * ((MEAL_DEFS.find((m) => m.key === momento) || {}).pct || 0.25);
 
@@ -2356,7 +2364,7 @@ function HojaQueComiste({ fecha, logDia, recipientes, historial, requerimiento, 
   const resultados = useMemo(() => {
     const q = normalizarTexto(busqueda);
     if (!q) return null;
-    return FOOD_DB.filter((f) => normalizarTexto(f.nombre).includes(q) || CLAVES_TEXTO.some(([k, id]) => id === f.id && k.startsWith(q))).slice(0, 16);
+    return FOOD_DB.filter((f) => coincideBusqueda(f, q)).slice(0, 16);
   }, [busqueda]);
   const abrirFicha = (alimento) => { const en = plato.find((x) => x.alimento.id === alimento.id && x.origen === "buscar"); setFicha({ alimento, g: en ? en.gramos : porcionDe(alimento), recId: "ninguno", carneUid: null }); };
   const recFicha = ficha ? recipientes.find((r) => r.id === ficha.recId) : null;
@@ -2601,7 +2609,7 @@ function NutrisComida({ total, metas, compacto }) {
 /* Ventana de una comida: variantes de un toque arriba; lo elegido sube con sus pesos y el resto
    baja a "¿Algo más?". Las animaciones de subir/bajar usan la técnica FLIP. */
 const PARTES_MENU = [["Base", ["carbohidrato", "quinua", "menestra"]], ["Proteína", ["proteina"]], ["Lácteos", ["lacteo"]], ["Fruta", ["fruta"]], ["Verduras", ["vegetal"]], ["Extras", ["grasa"]]];
-function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar, onCerrar }) {
+function VentanaComida({ momento, variantes, inicial, requerimiento, base, onConfirmar, onCerrar }) {
   const [sel, setSel] = useState(() => (inicial || []).map((it) => ({ alimento: it.alimento, gramos: it.gramos })));
   const [variante, setVariante] = useState(null);
   const [nuevos, setNuevos] = useState([]);
@@ -2612,7 +2620,7 @@ function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar
   const resultados = useMemo(() => {
     const q = normalizarTexto(busqueda);
     if (!q) return null;
-    return FOOD_DB.filter((f) => normalizarTexto(f.nombre).includes(q) || CLAVES_TEXTO.some(([k, id]) => id === f.id && k.startsWith(q))).slice(0, 16);
+    return FOOD_DB.filter((f) => coincideBusqueda(f, q)).slice(0, 16);
   }, [busqueda]);
   const disponibles = useMemo(() => {
     const ids = new Set(); variantes.forEach((v) => v.items.forEach((it) => ids.add(it.alimento.id)));
@@ -2634,19 +2642,24 @@ function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar
   const sumar = (a) => { capturar(); setVariante(null); setSel((s) => s.some((x) => x.alimento.id === a.id) ? s : [...s, { alimento: a, gramos: porcionVar(a) }]); setNuevos([a.id]); };
   const sumarBuscado = (a) => { sumar(a); setBusqueda(""); if (contRef.current) contRef.current.scrollTo({ top: 0, behavior: "smooth" }); };
   const quitar = (i) => { capturar(); setVariante(null); setSel((s) => s.filter((_, j) => j !== i)); setNuevos([]); };
-  const t = sumaMacros(sel), pm = t.kcal / (meta || 1);
+  const t = sumaMacros(sel);
+  /* El avance es del DÍA: lo ya registrado + las otras comidas del menú + lo elegido aquí */
+  const b = base || { kcal: 0, p: 0, c: 0, g: 0 };
+  const dia = { kcal: b.kcal + t.kcal, p: b.p + t.p, c: b.c + t.c, g: b.g + t.g };
+  const metasDia = { kcal: requerimiento.get || 1, p: requerimiento.proteinasG || 1, c: requerimiento.carbohidratosG || 1, g: requerimiento.grasasG || 1 };
+  const pm = dia.kcal / metasDia.kcal;
   const elegidos = new Set(sel.map((x) => x.alimento.id));
   const partes = PARTES_MENU.map(([n, cats]) => [n, disponibles.filter((a) => cats.includes(a.categoria) && !elegidos.has(a.id))]).filter((p) => p[1].length);
   const cerrar = (ok) => { setSaliendo(true); setTimeout(() => (ok ? onConfirmar(sel) : onCerrar()), 260); };
   const nom = MOMENTO_LABEL_CAPITALIZADO[momento];
   return (
     <div className={`mh-ventana ${saliendo ? "sale" : ""}`} role="dialog" aria-modal="true" aria-label={nom}>
-      <div className="mh-v-cab"><span className="emo">{MOMENTO_EMOJI[momento]}</span><h2>{nom}<small>Meta <span className="num-u">{Math.round(meta)}</span> kcal</small></h2><button type="button" className="qc-x" aria-label="Cerrar" onClick={() => cerrar(false)}>✕</button></div>
+      <div className="mh-v-cab"><span className="emo">{MOMENTO_EMOJI[momento]}</span><h2>{nom}<small>Sugerido para esta comida: ~<span className="num-u">{Math.round(meta)}</span> kcal</small></h2><button type="button" className="qc-x" aria-label="Cerrar" onClick={() => cerrar(false)}>✕</button></div>
       <div className="mh-resumen">
         <AnilloAvance pct={pm} size={46} grosor={5} />
-        <div className="tx"><b><span className="num-u"><NumeroAnimado valor={t.kcal} duracion={400} /></span> de {Math.round(meta)} kcal</b><span>{sel.length ? TEXTO_ESTADO(pm) : "Elige una variante, busca o toca alimentos"}</span></div>
+        <div className="tx"><b>Tu día: <span className="num-u"><NumeroAnimado valor={dia.kcal} duracion={400} /></span> de {Math.round(metasDia.kcal)} kcal</b><span>{sel.length ? <>Esta comida suma <b className="num-u" style={{ display: "inline", fontSize: "inherit" }}>{Math.round(t.kcal)}</b> kcal · {TEXTO_ESTADO(pm)}</> : "Elige una variante, busca o toca alimentos"}</span></div>
         <span className="num-u pct" style={{ color: colorEstado(pm) }}>{Math.round(pm * 100)}%</span>
-        <NutrisComida total={t} metas={metas} compacto />
+        <NutrisComida total={dia} metas={metasDia} compacto />
       </div>
       <div className="mh-v-cuerpo" ref={contRef}>
         <label className="qc-buscador">
@@ -2698,7 +2711,7 @@ function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar
   );
 }
 
-function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync }) {
+function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync, log = [] }) {
   const hoy = hoyISO();
   const historial = useHistorialComidas(pacienteId);
   const clave = "nutriapp_menu_hoy_" + hoy;
@@ -2727,7 +2740,11 @@ function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync }) {
   }, [plan, pacienteId]);
 
   const variantes = useMemo(() => Object.fromEntries(MOMENTOS_KEYS.map((m) => [m, variantesPorMomento(historial, m, requerimiento)])), [historial, requerimiento]);
-  const total = sumaMacros(Object.values(plan).flat());
+  const regHoy = log.filter((it) => it.alimento && (!it.fecha || it.fecha === hoy));
+  const totalReg = sumaMacros(regHoy), totalPlan = sumaMacros(Object.values(plan).flat());
+  const total = { kcal: totalReg.kcal + totalPlan.kcal, p: totalReg.p + totalPlan.p, c: totalReg.c + totalPlan.c, g: totalReg.g + totalPlan.g };
+  const regDe = (m) => regHoy.filter((it) => it.momento === m);
+  const baseSin = (m) => { const x = sumaMacros(plan[m] || []); return { kcal: total.kcal - x.kcal, p: total.p - x.p, c: total.c - x.c, g: total.g - x.g }; };
   const n = MOMENTOS_KEYS.filter((m) => plan[m] && plan[m].length).length;
   const confirmar = (m, items) => { setPlan((p) => ({ ...p, [m]: items })); setAbierta(null); setRecien(m); setLatir((x) => x + 1); setTimeout(() => setRecien(null), 800); };
   const pasarAlRegistro = () => {
@@ -2743,14 +2760,23 @@ function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync }) {
       </div>
       <div className="nutri-sheet px-5 pt-6 pb-24">
         <AvanceDia total={total} requerimiento={requerimiento} latir={latir} />
+        {(totalReg.kcal > 0 || totalPlan.kcal > 0) && <p className="mh-origen">Ya registrado hoy: <b className="num-u">{Math.round(totalReg.kcal)}</b> kcal · En tu menú: <b className="num-u">{Math.round(totalPlan.kcal)}</b> kcal</p>}
         <p className="qc-tsec" style={{ marginTop: 16 }}>Elige tus comidas</p>
         <div className="mh-comidas">
-          {MOMENTOS_KEYS.map((m) => { const its = plan[m], meta = metaMomento(requerimiento, m), tk = its ? sumaMacros(its).kcal : 0; return (
-            <button key={m} type="button" className={`mh-comida ${its && its.length ? "lista" : ""} ${recien === m ? "recien" : ""}`} onClick={() => setAbierta(m)}>
-              {its && its.length > 0 && <span className="ok">✓</span>}
+          {MOMENTOS_KEYS.map((m) => { const its = plan[m] || [], reg = regDe(m), meta = metaMomento(requerimiento, m), tk = sumaMacros(its).kcal + sumaMacros(reg).kcal, pd = tk / (requerimiento.get || 1); return (
+            <button key={m} type="button" className={`mh-comida ${its.length || reg.length ? "lista" : ""} ${recien === m ? "recien" : ""}`} onClick={() => setAbierta(m)}>
+              {(its.length > 0 || reg.length > 0) && <span className="ok">✓</span>}
               <span className="emo">{MOMENTO_EMOJI[m]}</span><b>{MOMENTO_LABEL_CAPITALIZADO[m]}</b>
-              {its && its.length ? <><span className="icos">{its.slice(0, 4).map((it) => <IconoAlimento key={it.alimento.id} alimento={it.alimento} size={24} />)}</span><span className="est"><b className="num-u">{Math.round(tk)}</b> de {Math.round(meta)} kcal</span></> : <span className="est">Meta <span className="num-u">{Math.round(meta)}</span> kcal<br />Toca para elegir</span>}
-              <span className="mh-macros">{(() => { const tm = its ? sumaMacros(its) : { kcal: 0, p: 0, c: 0, g: 0 }, mm = metasMomento(requerimiento, m); return [["kcal", "kcal"], ["p", "P"], ["c", "C"], ["g", "G"]].map(([k, l]) => { const pk = tm[k] / mm[k]; return <span key={k} title={`${l}: ${Math.round(pk * 100)}%`}><em>{l}</em><span className="mini"><i style={{ width: `${Math.min(100, pk * 100)}%`, background: colorEstado(pk) }} /></span><em className="num-u">{Math.round(pk * 100)}%</em></span>; }); })()}</span>
+              {its.length || reg.length ? (
+                <>
+                  <ul className="mh-lista">
+                    {[...reg.map((it) => ({ ...it, reg: true })), ...its].slice(0, 5).map((it, k) => <li key={k} className={it.reg ? "reg" : ""}><IconoAlimento alimento={it.alimento} size={18} /><span>{nombreCorto(it.alimento)}</span><em className="num-u">{Math.round(it.gramos)} g</em></li>)}
+                    {reg.length + its.length > 5 && <li className="mas">+{reg.length + its.length - 5} más</li>}
+                  </ul>
+                  {reg.length > 0 && <span className="mh-tag">{its.length ? "Registrado + menú" : "Ya registrado"}</span>}
+                  <span className="est"><b className="num-u">{Math.round(tk)}</b> kcal · <b className="num-u">{Math.round(pd * 100)}%</b> de tu día</span>
+                </>
+              ) : <span className="est">Sugerido ~<span className="num-u">{Math.round(meta)}</span> kcal<br />Toca para elegir</span>}
             </button>); })}
         </div>
         {n === 4 ? (
@@ -2766,7 +2792,7 @@ function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync }) {
         <div style={{ marginTop: 18 }}><SugeridorIngrediente requerimiento={requerimiento} /></div>
       </div>
       {aviso && ReactDOM.createPortal(<div className="mh-toast" role="status">{aviso}</div>, document.body)}
-      {abierta && ReactDOM.createPortal(<VentanaComida momento={abierta} variantes={variantes[abierta]} inicial={plan[abierta]} requerimiento={requerimiento} onConfirmar={(items) => confirmar(abierta, items)} onCerrar={() => setAbierta(null)} />, document.body)}
+      {abierta && ReactDOM.createPortal(<VentanaComida momento={abierta} base={baseSin(abierta)} variantes={variantes[abierta]} inicial={plan[abierta]} requerimiento={requerimiento} onConfirmar={(items) => confirmar(abierta, items)} onCerrar={() => setAbierta(null)} />, document.body)}
     </div>
   );
 }
@@ -6126,7 +6152,7 @@ function NutriApp({ pacienteId, salir, email }) {
         {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
         {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
         {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
-        {tab === "menu" && <PantallaMenuHoy requerimiento={requerimiento} pacienteId={pacienteId} addItem={addItem} onErrorSync={setErrorSync} />}
+        {tab === "menu" && <PantallaMenuHoy requerimiento={requerimiento} pacienteId={pacienteId} addItem={addItem} onErrorSync={setErrorSync} log={log} />}
         {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       </div>
       <nav className="nutri-nav fixed flex max-w-md" aria-label="Navegación principal">

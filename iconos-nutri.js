@@ -622,7 +622,7 @@
   /* Alimentos de la base de NutriApp (id -> clave) */
   const POR_ID = {
     f01: "pollo", f03: "huevo", f37: "clara", f31: "pavo", f32: "pescado", f33: "tilapia", f34: "salmon", f05: "tofu",
-    f06: "lentejas", f07: "garbanzos", f35: "tarwi", f38: "arveja", f39: "frijol",
+    f06: "lentejas", f07: "garbanzos", f35: "tarwi", f38: "arveja", f66: "arveja", f39: "frijol",
     f08: "avena", f09: "arroz_integral", f10: "arroz", f11: "papa", f12: "camote", f13: "pan", f48: "pan_integral", f14: "quinua", f36: "arracacha",
     f15: "brocoli", f17: "zanahoria", f18: "ensalada", f19: "tomate", f49: "zapallo", f50: "pimiento", f51: "coliflor", f52: "olluco",
     f20: "manzana", f21: "platano", f22: "naranja", f23: "frutos_rojos", f40: "kiwi", f41: "mango", f42: "durazno", f43: "mandarina",
