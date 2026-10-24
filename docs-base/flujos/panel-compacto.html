@@ -1,0 +1,249 @@
+<title>Panel compacto NutriApp</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Tres teléfonos lado a lado (se apilan en celular). Colores = roles de la paleta Turquesa de la app. */
+:root {
+  --bg:#EDF9F7; --surface:#FFFFFF; --tint:#D6F4F1; --selected:#B3E7E1; --hero:#003330; --hero-2:#004A46;
+  --on-hero:#FFFFFF; --on-hero-soft:#82D2CA; --accent:#007D76; --text:#0C1917; --text-2:#546866; --border:#D6E1DF;
+  --st-bajo:#E07A12; --st-meta:#16A34A; --st-exceso:#E5484D; --page:#E3EFED;
+  --f-display:'Fraunces', Georgia, serif; --f-body:'Inter', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76;
+  --on-hero:#FFFFFF; --on-hero-soft:#B3E7E1; --accent:#43B6AD; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330;
+  --st-bajo:#FFA94D; --st-meta:#3DD68C; --st-exceso:#FF6B6F; --page:#010B0A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg:#021210; --surface:#071E1C; --tint:#032F2C; --selected:#004A46; --hero:#00635D; --hero-2:#007D76;
+  --on-hero:#FFFFFF; --on-hero-soft:#B3E7E1; --accent:#43B6AD; --text:#E9F5F3; --text-2:#94AAA7; --border:#1C3330;
+  --st-bajo:#FFA94D; --st-meta:#3DD68C; --st-exceso:#FF6B6F; --page:#010B0A; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--text); font-family: var(--f-body); padding-block: 24px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.intro { max-width: 760px; margin: 0 auto 22px; }
+.intro h1 { font-family: var(--f-display); font-size: 28px; margin: 0 0 6px; text-wrap: balance; }
+.intro p { margin: 0; color: var(--text-2); line-height: 1.5; font-size: 15px; }
+.fila { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+.opcion { width: 340px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.opcion > h2 { margin: 0; font-size: 17px; display: flex; gap: 8px; align-items: baseline; }
+.opcion > h2 span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.opcion > p { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.45; min-height: 57px; }
+.tel { position: relative; height: 680px; border-radius: 36px; overflow: hidden; background: var(--bg); border: 8px solid var(--text); box-shadow: 0 24px 50px -28px rgb(0 0 0 / .5); display: flex; flex-direction: column; }
+.cab { background: linear-gradient(90deg, var(--hero), var(--hero-2)); color: var(--on-hero); padding: 16px 16px 30px; display: flex; align-items: center; gap: 8px; flex: none; }
+.cab b { font-family: var(--f-display); font-size: 21px; display: block; }
+.cab small { color: var(--on-hero-soft); font-size: 11px; }
+.cab .r { margin-left: auto; font-size: 13px; padding: 3px 8px; border-radius: 999px; background: rgb(255 255 255 / .14); }
+.cab .av { width: 30px; height: 30px; border-radius: 50%; background: var(--on-hero-soft); }
+.panel { flex: 1; overflow-y: auto; margin-top: -20px; border-radius: 24px 24px 0 0; background: var(--bg); padding: 12px 12px 70px; display: flex; flex-direction: column; gap: 8px; scrollbar-width: none; }
+.nav { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 46px; border-radius: 999px; background: var(--surface); box-shadow: 0 8px 20px -10px rgb(0 0 0 / .4); display: flex; align-items: center; justify-content: space-around; font-size: 11px; color: var(--text-2); }
+.nav .on { background: var(--tint); color: var(--text); font-weight: 700; padding: 7px 12px; border-radius: 999px; }
+.num { font-variant-numeric: tabular-nums; }
+.c-bajo { color: var(--st-bajo); } .c-meta { color: var(--st-meta); } .c-exc { color: var(--st-exceso); }
+.barra { height: 6px; border-radius: 3px; background: var(--tint); overflow: hidden; }
+.barra i { display: block; height: 100%; border-radius: 3px; }
+.t1 { background: linear-gradient(160deg, var(--selected), var(--tint)); } .t2 { background: linear-gradient(160deg, var(--tint), var(--surface)); } .t3 { background: var(--surface); }
+.chip { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 8px; }
+.chip.bajo { background: color-mix(in srgb, var(--st-bajo) 15%, transparent); color: var(--st-bajo); }
+.chip.meta { background: color-mix(in srgb, var(--st-meta) 15%, transparent); color: var(--st-meta); }
+.fichas { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.fichas span { font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 5px 7px; color: var(--text-2); }
+.fichas b { display: block; color: var(--text); font-size: 12px; }
+.det p { font-size: 12.5px; line-height: 1.45; margin: 6px 0; }
+.det .sub { font-size: 11px; font-weight: 600; color: var(--text-2); margin-top: 8px; }
+
+/* ---------- A · Acordeón ---------- */
+.ac { border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+.ac > button { width: 100%; display: grid; grid-template-columns: 30px 1fr auto 14px; align-items: center; gap: 9px; padding: 10px 11px; text-align: left; }
+.ac .ic { width: 30px; height: 30px; border-radius: 10px; background: var(--surface); display: grid; place-items: center; font-size: 15px; }
+.ac .tx { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ac .tx b { font-size: 13px; } .ac .tx small { font-size: 11px; color: var(--text-2); }
+.ac .val { font-size: 12px; font-weight: 700; }
+.ac .fl { font-size: 12px; color: var(--text-2); transition: transform .3s; }
+.ac.abierto .fl { transform: rotate(180deg); }
+.ac .cuerpo { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.22,1,.36,1); }
+.ac.abierto .cuerpo { grid-template-rows: 1fr; }
+.ac .cuerpo > div { overflow: hidden; padding: 0 12px; }
+.ac.abierto .cuerpo > div { padding-bottom: 12px; }
+.mini5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 2px; }
+.mini5 .barra { height: 4px; }
+
+/* ---------- B · Mosaico + hoja ---------- */
+.mos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile { border-radius: 16px; border: 1px solid var(--border); padding: 10px; text-align: left; display: flex; flex-direction: column; gap: 4px; min-height: 92px; transition: transform .15s; }
+.tile:active { transform: scale(.97); }
+.tile.ancha { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 12px; min-height: 0; }
+.tile .et { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); font-weight: 700; }
+.tile .gr { font-size: 20px; font-weight: 700; }
+.tile .pe { font-size: 11px; color: var(--text-2); }
+.aro { --p: 50; width: 64px; height: 64px; border-radius: 50%; flex: none; background: conic-gradient(var(--c, var(--st-bajo)) calc(var(--p) * 1%), var(--tint) 0); display: grid; place-items: center; }
+.aro::after { content: attr(data-t); width: 50px; height: 50px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.puntos { display: flex; gap: 4px; margin-top: 2px; }
+.puntos i { width: 14px; height: 14px; border-radius: 50%; }
+.velo { position: absolute; inset: 0; background: rgb(0 0 0 / .35); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 4; }
+.hoja { position: absolute; left: 0; right: 0; bottom: 0; max-height: 78%; overflow-y: auto; background: var(--surface); border-radius: 24px 24px 0 0; padding: 8px 16px 20px; transform: translateY(105%); transition: transform .38s cubic-bezier(.22,1,.36,1); z-index: 5; }
+.tel.hoja-on .velo { opacity: 1; pointer-events: auto; } .tel.hoja-on .hoja { transform: none; }
+.hoja .asa { width: 40px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 10px; }
+.hoja h3 { margin: 0 0 4px; font-size: 17px; }
+
+/* ---------- C · Pestañas + carrusel ---------- */
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 3px; flex: none; }
+.seg button { font-size: 12px; font-weight: 600; padding: 7px 0; border-radius: 999px; color: var(--text-2); transition: background .25s, color .25s; }
+.seg button.on { background: var(--hero); color: var(--on-hero); }
+.vista[hidden] { display: none !important; }
+.vista { display: flex; flex-direction: column; gap: 8px; animation: entra .35s cubic-bezier(.22,1,.36,1); }
+@keyframes entra { from { opacity: 0; transform: translateX(14px); } }
+.car { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; scrollbar-width: none; }
+.car > .cc { scroll-snap-align: start; flex: 0 0 86%; border-radius: 16px; border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.cc h4 { margin: 0; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+.dots { display: flex; justify-content: center; gap: 5px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.dots i.on { background: var(--accent); width: 16px; border-radius: 3px; }
+.caja { border-radius: 16px; border: 1px solid var(--border); padding: 12px; }
+.caja h4 { margin: 0 0 6px; font-size: 14px; }
+.mini-sem { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 10px; color: var(--text-2); }
+.mini-sem i { display: block; width: 26px; height: 26px; margin: 3px auto 0; border-radius: 50%; color: #fff; font-style: normal; font-size: 11px; line-height: 26px; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="intro">
+  <h1>Panel más corto, con toda la información</h1>
+  <p>Tres formas de presentar el Panel sin quitar nada: lo que hoy está en una pantalla larga se contrae y se abre solo cuando lo tocas. Cada teléfono funciona: toca las filas, fichas y pestañas.</p>
+</div>
+
+<div class="fila">
+  <!-- ================= A ================= -->
+  <section class="opcion">
+    <h2><span>Opción 1</span>Acordeón</h2>
+    <p>Cada bloque es una sola fila con su resumen (número, % y mini barras). Al tocarla se despliega todo su detalle en el mismo lugar; las demás se cierran.</p>
+    <div class="tel" id="telA">
+      <div class="cab"><div><b>Panel</b><small>Viernes, 23 de octubre</small></div><span class="r">🔥 14</span><span class="av"></span></div>
+      <div class="panel">
+        <div class="ac t1"><button><span class="ic">📋</span><span class="tx"><b>Así te fue ayer</b><small>3 de 6 metas · faltó calorías, grasas y fibra</small></span><span class="val c-bajo num">3/6</span><span class="fl">▾</span></button>
+          <div class="cuerpo"><div class="det">
+            <p><b>Calorías</b> · comiste <b class="num">1,167</b> de 1,300 kcal: casi todo. Faltaron 133 kcal.</p>
+            <div class="barra"><i style="width:90%;background:var(--st-bajo)"></i></div>
+            <p><b>Grasas</b> · 30 de 43 g: como dos tercios. Faltaron 13 g.</p>
+            <div class="barra"><i style="width:70%;background:var(--st-bajo)"></i></div>
+            <p><b>Fibra</b> · 23 de 28 g. Faltaron 5 g.</p>
+            <div class="barra"><i style="width:83%;background:var(--st-bajo)"></i></div>
+            <p class="sub">Hoy puedes compensarlo con:</p>
+            <div class="fichas"><span><b>54 g</b>Pan integral</span><span><b>86 g</b>Huevo entero</span><span><b>26 g</b>Almendras</span><span><b>142 g</b>Tarwi</span></div>
+          </div></div></div>
+        <div class="ac t2"><button><span class="ic">⚡</span><span class="tx"><b>Calorías de hoy</b><small><span class="num">708</span> de 1,300 kcal · te faltan 592</small></span><span class="val c-bajo num">54%</span><span class="fl">▾</span></button>
+          <div class="cuerpo"><div class="det"><div class="barra"><i style="width:54%;background:var(--st-bajo)"></i></div><p>Llevas 708 kcal de las 1,300 que necesitas: como la mitad.</p><p class="sub">Para completarlo, elige una:</p><div class="fichas"><span><b>250 g</b>Garbanzos</span><span><b>65 g</b>Almendras</span><span><b>80 g</b>Miel</span><span><b>395 g</b>Ensure</span></div></div></div></div>
+        <div class="ac t3"><button><span class="ic">🥩</span><span class="tx"><b>Nutrientes de hoy</b><span class="mini5"><span class="barra"><i style="width:88%;background:var(--st-bajo)"></i></span><span class="barra"><i style="width:60%;background:var(--st-bajo)"></i></span><span class="barra"><i style="width:25%;background:var(--st-bajo)"></i></span><span class="barra"><i style="width:44%;background:var(--st-bajo)"></i></span><span class="barra"><i style="width:5%;background:var(--st-meta)"></i></span></span><small>Prot · Carb · Grasa · Fibra · Sodio</small></span><span class="val c-bajo">4 faltan</span><span class="fl">▾</span></button>
+          <div class="cuerpo"><div class="det"><p><b>Proteína</b> 53 / 60 g · 88 %</p><p><b>Carbohidratos</b> 100 / 168 g · 60 %</p><p><b>Grasas</b> 11 / 43 g · 25 %</p><p><b>Fibra</b> 12 / 28 g · 44 %</p><p><b>Sodio</b> 123 / 2,300 mg · en tu límite ✓</p><p class="sub">Cada nutriente abre sus sugerencias y "de dónde vino".</p></div></div></div>
+        <div class="ac t3"><button><span class="ic">📅</span><span class="tx"><b>Cumplimiento</b><small>Semana: 2 de 7 días en calorías · 6 de 7 en proteína</small></span><span class="val num">2/7</span><span class="fl">▾</span></button>
+          <div class="cuerpo"><div class="det"><div class="mini-sem"><span>S<i style="background:var(--st-bajo)">▼</i></span><span>D<i style="background:var(--st-meta)">✓</i></span><span>L<i style="background:var(--st-bajo)">▼</i></span><span>M<i style="background:var(--st-meta)">✓</i></span><span>M<i style="background:var(--st-bajo)">▼</i></span><span>J<i style="background:var(--st-bajo)">▼</i></span><span>Hoy<i style="background:var(--st-bajo)">▼</i></span></div><p>Promedio: 1,070 kcal · 78 g proteína por día.</p></div></div></div>
+        <div class="ac t3"><button><span class="ic">💊</span><span class="tx"><b>Suplementos</b><small>Ensure Advance · 2 tomas · +470 kcal</small></span><span class="val"></span><span class="fl">▾</span></button><div class="cuerpo"><div class="det"><p>Mañana 10:00 y tarde 5:00 pm · 235 kcal y 8.8 g proteína por toma.</p></div></div></div>
+        <div class="ac t3"><button><span class="ic">⚖️</span><span class="tx"><b>Control de peso</b><small>Último: 47 kg · hoy</small></span><span class="val num">47 kg</span><span class="fl">▾</span></button><div class="cuerpo"><div class="det"><p>Registrar peso, historial de pesos y riesgo nutricional.</p></div></div></div>
+        <div class="ac t3"><button><span class="ic">💧</span><span class="tx"><b>Hidratación</b><small>0 de 1,500 ml</small></span><span class="val num">0%</span><span class="fl">▾</span></button><div class="cuerpo"><div class="det"><p>Botones +250 ml / +500 ml y consejo de hidratación.</p></div></div></div>
+      </div>
+      <nav class="nav"><span>Menú</span><span>Registro</span><span class="on">Panel</span><span>Reportes</span><span>⚙</span></nav>
+    </div>
+  </section>
+
+  <!-- ================= B ================= -->
+  <section class="opcion">
+    <h2><span>Opción 2</span>Mosaico de fichas</h2>
+    <p>Todo el Panel cabe en una pantalla como fichas con su número y su aro. Al tocar una ficha sube una hoja desde abajo con toda la información de ese tema.</p>
+    <div class="tel" id="telB">
+      <div class="cab"><div><b>Panel</b><small>Viernes, 23 de octubre</small></div><span class="r">🔥 14</span><span class="av"></span></div>
+      <div class="panel">
+        <button class="tile ancha t1" data-h="ayer"><span class="aro" style="--p:50" data-t="3/6"></span><span><span class="et">Así te fue ayer</span><br><b style="font-size:15px">3 de 6 metas cumplidas</b><br><span class="pe">Toca para ver qué faltó y cómo compensarlo</span></span></button>
+        <button class="tile ancha t2" data-h="kcal"><span class="aro" style="--p:54" data-t="54%"></span><span><span class="et">Calorías de hoy</span><br><span class="gr num">708</span> <span class="pe">de 1,300 kcal</span><br><span class="chip bajo">Te faltan 592</span></span></button>
+        <div class="mos">
+          <button class="tile t3" data-h="nut"><span class="et">Proteína</span><span class="gr num c-bajo">53 g</span><span class="pe">de 60 g · 88 %</span><div class="barra"><i style="width:88%;background:var(--st-bajo)"></i></div></button>
+          <button class="tile t3" data-h="nut"><span class="et">Carbohid.</span><span class="gr num c-bajo">100 g</span><span class="pe">de 168 g · 60 %</span><div class="barra"><i style="width:60%;background:var(--st-bajo)"></i></div></button>
+          <button class="tile t3" data-h="nut"><span class="et">Grasas</span><span class="gr num c-bajo">11 g</span><span class="pe">de 43 g · 25 %</span><div class="barra"><i style="width:25%;background:var(--st-bajo)"></i></div></button>
+          <button class="tile t3" data-h="nut"><span class="et">Fibra · Sodio</span><span class="gr num">12 g</span><span class="pe">de 28 g · sodio ✓</span><div class="barra"><i style="width:44%;background:var(--st-bajo)"></i></div></button>
+          <button class="tile t3" data-h="sem"><span class="et">Semana</span><span class="gr num">2/7</span><div class="puntos"><i style="background:var(--st-bajo)"></i><i style="background:var(--st-meta)"></i><i style="background:var(--st-bajo)"></i><i style="background:var(--st-meta)"></i><i style="background:var(--st-bajo)"></i><i style="background:var(--st-bajo)"></i><i style="background:var(--st-bajo)"></i></div></button>
+          <button class="tile t3" data-h="salud"><span class="et">Peso · Agua · Supl.</span><span class="gr num">47 kg</span><span class="pe">0 / 1,500 ml · Ensure 2×</span></button>
+        </div>
+      </div>
+      <div class="velo"></div>
+      <div class="hoja" role="dialog" aria-label="Detalle"><div class="asa"></div><div id="hojaB"></div></div>
+      <nav class="nav"><span>Menú</span><span>Registro</span><span class="on">Panel</span><span>Reportes</span><span>⚙</span></nav>
+    </div>
+  </section>
+
+  <!-- ================= C ================= -->
+  <section class="opcion">
+    <h2><span>Opción 3</span>Pestañas y carrusel</h2>
+    <p>El Panel se divide en 4 pestañas que caben en una pantalla. En "Hoy" los nutrientes van en tarjetas que se deslizan de lado, una por nutriente con sus sugerencias.</p>
+    <div class="tel" id="telC">
+      <div class="cab"><div><b>Panel</b><small>Viernes, 23 de octubre</small></div><span class="r">🔥 14</span><span class="av"></span></div>
+      <div class="panel">
+        <div class="seg" role="tablist"><button class="on" data-v="hoy">Hoy</button><button data-v="ayer">Ayer</button><button data-v="sem">Semana</button><button data-v="salud">Salud</button></div>
+        <div class="vista" data-v="hoy">
+          <div class="caja t1" style="display:flex;gap:12px;align-items:center"><span class="aro" style="--p:54" data-t="54%"></span><span><b class="num" style="font-size:20px">708</b> <span style="color:var(--text-2);font-size:12px">de 1,300 kcal</span><br><span class="chip bajo">Te faltan 592 kcal</span></span></div>
+          <div class="car" id="carC">
+            <div class="cc t2"><h4>Proteína <span class="chip bajo">Te falta</span></h4><div class="barra"><i style="width:88%;background:var(--st-bajo)"></i></div><span style="font-size:12px">53 de 60 g · 88 %</span><div class="fichas"><span><b>222 g</b>Pan integral</span><span><b>147 g</b>Avena</span></div></div>
+            <div class="cc t3"><h4>Carbohidratos <span class="chip bajo">Te falta</span></h4><div class="barra"><i style="width:60%;background:var(--st-bajo)"></i></div><span style="font-size:12px">100 de 168 g · 60 %</span><div class="fichas"><span><b>124 g</b>Almendras</span><span><b>502 g</b>Pera</span></div></div>
+            <div class="cc t3"><h4>Grasas <span class="chip bajo">Te falta</span></h4><div class="barra"><i style="width:25%;background:var(--st-bajo)"></i></div><span style="font-size:12px">11 de 43 g · 25 %</span><div class="fichas"><span><b>30 g</b>Almendras</span><span><b>90 g</b>Palta</span></div></div>
+            <div class="cc t3"><h4>Fibra <span class="chip bajo">Te falta</span></h4><div class="barra"><i style="width:44%;background:var(--st-bajo)"></i></div><span style="font-size:12px">12 de 28 g · 44 %</span><div class="fichas"><span><b>40 g</b>Avena</span><span><b>150 g</b>Pera</span></div></div>
+            <div class="cc t3"><h4>Sodio <span class="chip meta">✓ En tu meta</span></h4><div class="barra"><i style="width:5%;background:var(--st-meta)"></i></div><span style="font-size:12px">123 de 2,300 mg (límite)</span></div>
+          </div>
+          <div class="dots" id="dotsC"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <p style="font-size:11px;color:var(--text-2);text-align:center;margin:0">Desliza de lado para ver cada nutriente</p>
+        </div>
+        <div class="vista" data-v="ayer" hidden>
+          <div class="caja t1"><h4>Así te fue ayer · 3 de 6 metas</h4><p style="font-size:12px;margin:0;color:var(--text-2)">Cumplidas: proteína, carbohidratos y sodio</p></div>
+          <div class="caja t2"><h4>Calorías <span class="chip bajo">Faltó</span></h4><div class="barra"><i style="width:90%;background:var(--st-bajo)"></i></div><p style="font-size:12px">1,167 de 1,300 kcal · faltó en la colación</p></div>
+          <div class="caja t3"><h4>Grasas y fibra <span class="chip bajo">Faltó</span></h4><p style="font-size:12px;margin:0">Grasas 30/43 g · Fibra 23/28 g</p><div class="fichas" style="margin-top:6px"><span><b>54 g</b>Pan integral</span><span><b>86 g</b>Huevo</span></div></div>
+        </div>
+        <div class="vista" data-v="sem" hidden>
+          <div class="caja t1"><h4>Esta semana</h4><div class="mini-sem"><span>S<i style="background:var(--st-bajo)">▼</i></span><span>D<i style="background:var(--st-meta)">✓</i></span><span>L<i style="background:var(--st-bajo)">▼</i></span><span>M<i style="background:var(--st-meta)">✓</i></span><span>M<i style="background:var(--st-bajo)">▼</i></span><span>J<i style="background:var(--st-bajo)">▼</i></span><span>Hoy<i style="background:var(--st-bajo)">▼</i></span></div></div>
+          <div class="caja t2"><h4>2 de 7 días en calorías · 6 de 7 en proteína</h4><p style="font-size:12px;margin:0">Promedio: 1,070 kcal · 78 g proteína</p></div>
+          <div class="caja t3"><h4>Mes</h4><p style="font-size:12px;margin:0">Calendario de cuadritos con el color de cada día.</p></div>
+        </div>
+        <div class="vista" data-v="salud" hidden>
+          <div class="caja t1"><h4>Peso · 47 kg</h4><p style="font-size:12px;margin:0">Registrar peso e historial</p></div>
+          <div class="caja t2"><h4>Hidratación · 0 / 1,500 ml</h4><div class="barra"><i style="width:2%;background:var(--accent)"></i></div></div>
+          <div class="caja t3"><h4>Suplementos</h4><p style="font-size:12px;margin:0">Ensure Advance · 2 tomas · +470 kcal</p></div>
+          <div class="caja t3"><h4>Interacciones</h4><p style="font-size:12px;margin:0">Medicamentos y nutrientes a vigilar</p></div>
+        </div>
+      </div>
+      <nav class="nav"><span>Menú</span><span>Registro</span><span class="on">Panel</span><span>Reportes</span><span>⚙</span></nav>
+    </div>
+  </section>
+</div>
+
+<script>
+// A · acordeón: una fila abierta a la vez
+document.querySelectorAll('#telA .ac > button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var ac = b.parentElement, abrir = !ac.classList.contains('abierto');
+    document.querySelectorAll('#telA .ac').forEach(function (x) { x.classList.remove('abierto'); });
+    if (abrir) ac.classList.add('abierto');
+  });
+});
+document.querySelector('#telA .ac').classList.add('abierto');
+// B · hoja que sube
+var HOJAS = {
+  ayer: '<h3>Así te fue ayer · 3 de 6</h3><div class="det"><p><b>Calorías</b> 1,167 / 1,300 kcal · faltó en la colación</p><div class="barra"><i style="width:90%;background:var(--st-bajo)"></i></div><p><b>Grasas</b> 30 / 43 g · faltó en el desayuno</p><div class="barra"><i style="width:70%;background:var(--st-bajo)"></i></div><p><b>Fibra</b> 23 / 28 g</p><div class="barra"><i style="width:83%;background:var(--st-bajo)"></i></div><p class="sub">Hoy puedes compensarlo con:</p><div class="fichas"><span><b>54 g</b>Pan integral</span><span><b>86 g</b>Huevo entero</span><span><b>26 g</b>Almendras</span><span><b>142 g</b>Tarwi</span></div></div>',
+  kcal: '<h3>Calorías de hoy · 54 %</h3><div class="det"><p>Llevas 708 de 1,300 kcal. Te faltan 592 kcal.</p><p class="sub">Para completarlo, elige una:</p><div class="fichas"><span><b>250 g</b>Garbanzos</span><span><b>65 g</b>Almendras</span><span><b>80 g</b>Miel</span><span><b>395 g</b>Ensure</span></div><p class="sub">De dónde vino</p><p>Desayuno 279 · Almuerzo 428 kcal</p></div>',
+  nut: '<h3>Nutrientes de hoy</h3><div class="det"><p><b>Proteína</b> 53/60 g · 88 %</p><div class="barra"><i style="width:88%;background:var(--st-bajo)"></i></div><p><b>Carbohidratos</b> 100/168 g · 60 %</p><div class="barra"><i style="width:60%;background:var(--st-bajo)"></i></div><p><b>Grasas</b> 11/43 g · 25 %</p><div class="barra"><i style="width:25%;background:var(--st-bajo)"></i></div><p><b>Fibra</b> 12/28 g · 44 %</p><div class="barra"><i style="width:44%;background:var(--st-bajo)"></i></div><p><b>Sodio</b> 123/2,300 mg ✓</p><p class="sub">Cada uno con sus sugerencias y "de dónde vino".</p></div>',
+  sem: '<h3>Cumplimiento</h3><div class="det"><div class="mini-sem"><span>S<i style="background:var(--st-bajo)">▼</i></span><span>D<i style="background:var(--st-meta)">✓</i></span><span>L<i style="background:var(--st-bajo)">▼</i></span><span>M<i style="background:var(--st-meta)">✓</i></span><span>M<i style="background:var(--st-bajo)">▼</i></span><span>J<i style="background:var(--st-bajo)">▼</i></span><span>Hoy<i style="background:var(--st-bajo)">▼</i></span></div><p>2 de 7 días en calorías · 6 de 7 en proteína. Promedio 1,070 kcal.</p><p class="sub">Semana | Mes · racha en meta</p></div>',
+  salud: '<h3>Peso, agua y suplementos</h3><div class="det"><p><b>Peso</b> 47 kg · registrar y ver historial</p><p><b>Hidratación</b> 0 / 1,500 ml · +250 / +500 ml</p><p><b>Suplementos</b> Ensure Advance 2× · +470 kcal</p><p><b>Interacciones</b> medicamentos a vigilar</p></div>'
+};
+var telB = document.getElementById('telB');
+telB.querySelectorAll('[data-h]').forEach(function (t) {
+  t.addEventListener('click', function () { document.getElementById('hojaB').innerHTML = HOJAS[t.dataset.h]; telB.classList.add('hoja-on'); });
+});
+telB.querySelector('.velo').addEventListener('click', function () { telB.classList.remove('hoja-on'); });
+// C · pestañas y puntos del carrusel
+var telC = document.getElementById('telC');
+telC.querySelectorAll('.seg button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    telC.querySelectorAll('.seg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    telC.querySelectorAll('.vista').forEach(function (v) { v.hidden = v.dataset.v !== b.dataset.v; });
+  });
+});
+var car = document.getElementById('carC'), dots = document.querySelectorAll('#dotsC i');
+car.addEventListener('scroll', function () {
+  var i = Math.round(car.scrollLeft / (car.firstElementChild.offsetWidth + 8));
+  dots.forEach(function (d, k) { d.classList.toggle('on', k === i); });
+}, { passive: true });
+</script>
