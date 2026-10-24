@@ -898,6 +898,23 @@
   .pn-det-x { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 50%; background: var(--tint); color: var(--text); font-size: 13px; display: grid; place-items: center; z-index: 2; }
   .pn-det .pn-cuadro .cab { padding-right: 34px; }
   @media (prefers-reduced-motion: reduce) { .pn-ico-btn { animation: none; } .pn-det, .pn-det-cont, .pn-det-capa { transition: none; } }
+
+  /* ===== Manzana de calorías (mz-*) ===== */
+  .mz-cal { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .mz-cal svg { overflow: visible; }
+  .mz-relleno { transition: y 1.1s cubic-bezier(.22,1,.36,1), y1 1.1s, y2 1.1s; }
+  .mz-mordida { transition: r .6s cubic-bezier(.34,1.56,.64,1); }
+  .mz-hoja { transform-box: fill-box; transform-origin: 0% 60%; transition: transform 1.1s cubic-bezier(.55,0,.6,1), opacity .5s .7s; }
+  .mz-hoja.brilla { animation: mzBrilla 1.6s ease-in-out infinite; }
+  @keyframes mzBrilla { 50% { filter: brightness(1.35) drop-shadow(0 0 6px #7CF29A); } }
+  .mz-hoja.cae { transform: translate(34px, 210px) rotate(118deg); opacity: 0; animation: mzCae 1.4s cubic-bezier(.55,0,.6,1) both; }
+  @keyframes mzCae { 0% { transform: none; opacity: 1; } 18% { transform: translate(6px, -6px) rotate(-14deg); opacity: 1; } 55% { transform: translate(24px, 110px) rotate(70deg); opacity: 1; } 100% { transform: translate(34px, 210px) rotate(118deg); opacity: 0; } }
+  .mz-sacude { animation: mzSacude .5s ease-in-out 2; transform-origin: 50% 90%; }
+  @keyframes mzSacude { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+  .mz-num { text-align: center; line-height: 1.15; }
+  .mz-num b { font-size: 30px; color: var(--text); font-family: 'Fraunces', serif; }
+  .mz-num small { display: block; font-size: 12px; color: var(--text-2); }
+  @media (prefers-reduced-motion: reduce) { .mz-relleno, .mz-mordida, .mz-hoja { transition: none; } .mz-hoja.brilla, .mz-sacude, .mz-hoja.cae { animation: none; } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -961,7 +978,7 @@ function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
 
 /* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
 /* Debe coincidir con VERSION de sw.js: sirve para confirmar en el teléfono que ya se cargó la última versión */
-const VERSION_APP = "v14 · 24 oct 2026";
+const VERSION_APP = "v15 · 24 oct 2026";
 const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
 const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
 function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
@@ -5331,6 +5348,61 @@ function AlertaInicioDia({ requerimiento }) {
   );
 }
 
+/* ===================================================================================
+   Calorías del día como manzana 3D que se colorea (elegida por el usuario 2026-10-24,
+   maqueta docs-base/flujos/manzana-calorias.html). Empieza clara y se pinta de rojo desde
+   abajo hasta la raya de la meta. Al pasar el 100 % se le cae la hojita; pasado el 110 %
+   aparece un mordisco y la manzana tiembla. Los colores de la manzana son del alimento.
+   =================================================================================== */
+const MZ_FORMA = "M120 78 C150 52 208 58 214 120 C220 182 178 236 146 238 C134 239 128 232 120 232 C112 232 106 239 94 238 C62 236 20 182 26 120 C32 58 90 52 120 78Z";
+function ManzanaCalorias({ valor, meta }) {
+  const id = useMemo(() => "mz" + Math.random().toString(36).slice(2, 7), []);
+  const [mostrado, setMostrado] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setMostrado(valor), 80); return () => clearTimeout(t); }, [valor]);
+  const p = meta > 0 ? mostrado / meta : 0;
+  const lleno = Math.min(p, 1), TOPE = 68, BASE = 240, y = BASE - lleno * (BASE - TOPE);
+  const pasada = p > 1, exceso = p > 1.1, enMeta = p >= 0.9 && p <= 1.1;
+  const mordida = exceso ? Math.min(30, 10 + ((p - 1.1) * meta) / 15) : 0;
+  const [sacude, setSacude] = useState(false);
+  const antes = useRef(false);
+  useEffect(() => { let t; if (exceso && !antes.current) { setSacude(true); t = setTimeout(() => setSacude(false), 1100); } antes.current = exceso; return () => clearTimeout(t); }, [exceso]);
+  const pct = meta > 0 ? Math.round((valor / meta) * 100) : 0;
+  return (
+    <div className="mz-cal">
+      <svg viewBox="0 0 240 262" width="190" height="208" role="img" aria-label={`Calorías: ${fmtN(valor)} de ${fmtN(meta)} kcal, ${pct} %`} className={sacude ? "mz-sacude" : ""}>
+        <defs>
+          <clipPath id={id + "c"}><path d={MZ_FORMA} /></clipPath>
+          <mask id={id + "m"} maskUnits="userSpaceOnUse" x="0" y="0" width="240" height="262"><rect width="240" height="262" fill="#fff" /><circle className="mz-mordida" cx="222" cy="132" r={mordida} fill="#000" /></mask>
+          <radialGradient id={id + "r"} cx=".35" cy=".35" r=".8"><stop offset="0" stopColor={exceso ? "#FF9A8E" : "#FF7A6B"} /><stop offset=".5" stopColor={exceso ? "#E0383A" : "#E5322B"} /><stop offset="1" stopColor={exceso ? "#B3121A" : "#8E1015"} /></radialGradient>
+          <radialGradient id={id + "v"} cx=".4" cy=".35" r=".8"><stop offset="0" stopColor="#FFF7E6" /><stop offset="1" stopColor="#F1E3C4" /></radialGradient>
+          <radialGradient id={id + "s"} cx=".42" cy=".4" r=".62"><stop offset="0" stopColor="#000" stopOpacity="0" /><stop offset=".7" stopColor="#000" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".28" /></radialGradient>
+          <radialGradient id={id + "l"}><stop offset="0" stopColor="#fff" stopOpacity=".75" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></radialGradient>
+        </defs>
+        <ellipse cx="122" cy="248" rx="82" ry="9" fill="#000" opacity=".16" />
+        <g mask={`url(#${id}m)`}>
+          <path d={MZ_FORMA} fill={`url(#${id}v)`} />
+          <g clipPath={`url(#${id}c)`}>
+            <rect className="mz-relleno" x="0" y={y} width="240" height="260" fill={`url(#${id}r)`} />
+            <g opacity={lleno > 0.05 ? 0.5 : 0}>{[[70, 200], [160, 190], [190, 140], [60, 130], [110, 214], [150, 110], [90, 100], [176, 210]].map(([cx, cy], k) => <circle key={k} cx={cx} cy={cy} r="1.6" fill="#FFE1A8" style={{ opacity: cy > y ? 1 : 0, transition: "opacity .6s" }} />)}</g>
+            {lleno > 0.02 && lleno < 0.99 && <line className="mz-relleno" x1="0" x2="240" y1={y} y2={y} stroke="#fff" strokeWidth="2" opacity=".7" strokeDasharray="2 5" />}
+          </g>
+          <path d={MZ_FORMA} fill={`url(#${id}s)`} />
+          <ellipse cx="82" cy="112" rx="22" ry="34" fill={`url(#${id}l)`} transform="rotate(-22 82 112)" />
+          <path d={MZ_FORMA} fill="none" stroke="#C7A97A" strokeWidth="2" opacity=".55" />
+        </g>
+        <path d="M120 80 C118 62 124 46 132 36" stroke="#6B3E1E" strokeWidth="6" fill="none" strokeLinecap="round" />
+        <g className={`mz-hoja ${pasada ? "cae" : ""} ${enMeta && !pasada ? "brilla" : ""}`}>
+          <path d="M130 50 C150 26 186 28 196 40 C176 60 146 62 130 50Z" fill="#4CAF50" />
+          <path d="M132 50 C152 44 172 40 194 40" stroke="#2E7D32" strokeWidth="1.5" fill="none" />
+        </g>
+        <line x1="14" x2="226" y1="76" y2="76" stroke="var(--text)" strokeWidth="1.5" strokeDasharray="4 4" opacity=".55" />
+        <text x="226" y="70" textAnchor="end" fontSize="11" fill="var(--text-2)">meta</text>
+      </svg>
+      <div className="mz-num"><b className="num-u"><NumeroAnimado valor={valor} duracion={900} /></b><small>de {fmtN(meta)} kcal · <span className="num-u">{pct}</span> %</small></div>
+    </div>
+  );
+}
+
 /* Hoy: calorías arriba (anillo grande) y debajo un cuadro por cada otro nutriente.
    Las sugerencias van dentro del cuadro del nutriente al que corresponden. */
 function NutrientesDeHoy({ totales, requerimiento, log, sugerencias }) {
@@ -5343,7 +5415,7 @@ function NutrientesDeHoy({ totales, requerimiento, log, sugerencias }) {
   return (
     <>
       <div className={`pn-heroe est-${estK}`}>
-        <GaugeRadial label="Calorías" valor={totales.kcal} meta={metaK} unidad="kcal" color="var(--accent-energy)" tamano="lg" modo="numero" />
+        <ManzanaCalorias valor={totales.kcal} meta={metaK} />
         <span className="chip">{CHIP_ESTADO_HOY[estK]}</span>
         <p className="frase">{fraseNutriente(kcal, totales.kcal, metaK, estK, "hoy")}</p>
         <div className="flex gap-2 flex-wrap justify-center text-xs nutri-muted">

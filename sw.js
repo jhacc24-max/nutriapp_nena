@@ -1,6 +1,6 @@
 /* Service worker de NutriApp: permite instalar la app y abrirla sin conexión.
    No guarda en caché las llamadas de Firebase (datos y sesión siempre van a la red). */
-const VERSION = "nutriapp-v14";
+const VERSION = "nutriapp-v15";
 const CASCARON = ["./", "./index.html", "./manifest.webmanifest", "./iconos-nutri.js", "./corazon-nutri.js", "./icons/icon-192.png", "./icons/icon-512.png"];
 const HOSTS_ESTATICOS = ["cdn.tailwindcss.com", "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com", "www.gstatic.com"];
 
