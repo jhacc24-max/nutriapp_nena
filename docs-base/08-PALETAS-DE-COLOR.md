@@ -467,3 +467,10 @@ Cada categoría tiene 3 valores:
 | ¿Modo oscuro habilitado? | sí (base) / no |
 | Color secundario (opcional, solo para gráficos o etiquetas) | {{otra paleta, tono 500}} |
 | Excepciones | La app usa `body[data-paleta]` y `body[data-tema="oscuro"]` (guardados en localStorage) en lugar de `data-palette` / `data-theme`; los roles se asignan a las variables que la app ya usaba (`--panel-bg`, `--ink`, `--brand`…). Estructura aplicada: encabezado y título en degradado `--hero`→`--hero-2`, hoja redondeada sobre el encabezado, tarjeta héroe oscura en el Panel y barra flotante. |
+
+**Revisión 2026-10-23 (toda la app con roles):**
+- Rellenos, botones, chips marcados, campos de datos, cabeceras y los íconos de la barra inferior usan solo roles de la paleta; al cambiar la paleta en Apariencia cambia todo.
+- Colores fijos permitidos (documentados): estados de avance `--st-bajo` / `--st-meta` / `--st-exceso` (naranja, verde, rojo, con versión oscura), colores de nutrientes `--accent-energy/protein/carb/fat/fiber` (solo en gráficos), los íconos multicolor de alimentos y recipientes, y el logo (corazón + nombre).
+- Categorías usadas (§5), solo como **línea delgada** y cuadro del ícono, nunca como relleno: `azul` = Perfil nutricional, `violeta` = Condiciones y medicamentos, `ambar` = Prescripción y pesaje.
+- Se desactivó la selección de texto en la app (evita el menú "Buscar en Google" del celular); los campos de texto sí se pueden seleccionar.
+

@@ -154,8 +154,8 @@
   .nutri-metrica:hover { box-shadow: 0 10px 24px -14px var(--m); }
   .nutri-metrica-chip { font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 999px; color: var(--muted);
     background: color-mix(in srgb, var(--m) 12%, transparent); }
-  .nutri-metrica-chip.ok { color: #2F7A4B; background: color-mix(in srgb, #3E8E5A 16%, transparent); }
-  body[data-tema="oscuro"] .nutri-metrica-chip.ok { color: #8FD3A6; }
+  .nutri-metrica-chip.ok { color: var(--st-meta); background: color-mix(in srgb, var(--st-meta) 16%, transparent); }
+  
   /* Barras: crecen con resorte y tienen un brillo que las recorre. */
   .nutri-bar-fill { position: relative; overflow: hidden; transition: width .9s cubic-bezier(.22,1.2,.36,1); }
   .nutri-bar-fill::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(255 255 255 / .28), rgb(255 255 255 / 0) 60%); }
@@ -226,7 +226,7 @@
   .nutri-chip { border: 1px solid var(--chip-border); }
   .nutri-chip-active { background: var(--chip-active-bg); color: var(--chip-active-text); border-color: var(--chip-active-bg); }
   body[data-tema="oscuro"] .bg-white { background: var(--input-bg) !important; }
-  body[data-tema="oscuro"] ::placeholder { color: #5F807A; opacity: 1; }
+  body[data-tema="oscuro"] ::placeholder { color: color-mix(in srgb, var(--text-2) 75%, transparent); opacity: 1; }
   .anillos-3d { perspective: 800px; }
   .anillos-3d-svg { transform: rotateX(26deg); transition: transform 0.35s cubic-bezier(.22,1,.36,1); transform-style: preserve-3d; touch-action: manipulation; }
   .anillos-3d:hover .anillos-3d-svg, .anillos-3d:active .anillos-3d-svg { transform: rotateX(8deg) scale(1.04); }
@@ -733,35 +733,46 @@
   .nutri-nav-item.activo .ico-barra.b2 { animation-delay: .08s; } .nutri-nav-item.activo .ico-barra.b3 { animation-delay: .16s; }
   @keyframes navBarra { from { transform: scaleY(.2); } }
 
-  /* ===== Secciones de la cuenta con color (pf-*) ===== */
-  .pf-sec { --brand: var(--sc); --brand-text: color-mix(in srgb, var(--sc) 80%, var(--text)); --chip-active-bg: var(--sc); --chip-active-text: #fff;
-    --brand-glow: color-mix(in srgb, var(--sc) 40%, transparent); --panel-border: color-mix(in srgb, var(--sc) 28%, var(--border));
-    --panel-bg: color-mix(in srgb, var(--sc) 4%, var(--surface)); --tint: color-mix(in srgb, var(--sc) 12%, var(--bg)); --track: color-mix(in srgb, var(--sc) 22%, var(--bg));
-    background: var(--bg); }
-  .pf-cab { position: sticky; top: 0; z-index: 10; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 22px 10px; color: #fff;
-    background: linear-gradient(120deg, var(--sc), var(--sc2)); border-radius: 0 0 26px 26px; box-shadow: 0 14px 30px -18px var(--sc); }
-  .pf-cab .burbuja { position: absolute; border-radius: 50%; background: rgb(255 255 255 / .16); pointer-events: none; animation: pfFlota 7s ease-in-out infinite; }
-  .pf-cab .b1 { width: 120px; height: 120px; right: -30px; top: -40px; } .pf-cab .b2 { width: 60px; height: 60px; right: 80px; bottom: -30px; animation-delay: -2s; } .pf-cab .b3 { width: 26px; height: 26px; right: 40px; top: 50px; animation-delay: -4s; }
-  @keyframes pfFlota { 50% { transform: translateY(-8px) scale(1.06); } }
-  .pf-volver { position: relative; width: 36px; height: 36px; border-radius: 50%; background: rgb(255 255 255 / .2); color: #fff; font-size: 26px; line-height: 1; display: grid; place-items: center; padding-bottom: 3px; }
-  .pf-ico { position: relative; width: 48px; height: 48px; border-radius: 16px; background: rgb(255 255 255 / .22); display: grid; place-items: center; font-size: 26px; animation: icPop .5s .1s cubic-bezier(.34,1.56,.64,1) both; }
+  /* ===== Secciones de la cuenta (pf-*): colores de la paleta (roles); cada sección solo se
+     distingue por una línea delgada con su color de categoría (08-PALETAS §5) ===== */
+  body { --cat-azul: #0782F8; --cat-azul-bg: #E1EEFF; --cat-azul-fg: #0053A5; --cat-violeta: #975EEF; --cat-violeta-bg: #EFE9FF; --cat-violeta-fg: #6530AC; --cat-ambar: #D3940A; --cat-ambar-bg: #FEEACC; --cat-ambar-fg: #714D00; }
+  body[data-tema="oscuro"] { --cat-azul: #5AA3FF; --cat-azul-bg: #122E51; --cat-azul-fg: #96C4FF; --cat-violeta: #B085FF; --cat-violeta-bg: #33244E; --cat-violeta-fg: #C9B2FF; --cat-ambar: #D3940A; --cat-ambar-bg: #3E2901; --cat-ambar-fg: #E9B869; }
+  .cat-azul { --cat: var(--cat-azul); --cat-bg: var(--cat-azul-bg); --cat-fg: var(--cat-azul-fg); }
+  .cat-violeta { --cat: var(--cat-violeta); --cat-bg: var(--cat-violeta-bg); --cat-fg: var(--cat-violeta-fg); }
+  .cat-ambar { --cat: var(--cat-ambar); --cat-bg: var(--cat-ambar-bg); --cat-fg: var(--cat-ambar-fg); }
+  .pf-sec { background: var(--bg); }
+  .pf-cab { position: sticky; top: 0; z-index: 10; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 14px 10px; color: var(--on-hero);
+    background: linear-gradient(90deg, var(--hero), var(--hero-2)); border-bottom: 3px solid var(--cat); }
+  .pf-volver { position: relative; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--on-hero) 16%, transparent); color: var(--on-hero); font-size: 26px; line-height: 1; display: grid; place-items: center; padding-bottom: 3px; }
+  .pf-ico { position: relative; width: 42px; height: 42px; border-radius: 14px; background: var(--cat-bg); color: var(--cat-fg); display: grid; place-items: center; animation: icPop .5s .1s cubic-bezier(.34,1.56,.64,1) both; }
   .pf-tx { position: relative; display: flex; flex-direction: column; min-width: 0; }
   .pf-tx b { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; line-height: 1.15; animation: nutriSube .45s .08s cubic-bezier(.22,1,.36,1) both; }
-  .pf-tx small { font-size: 12px; opacity: .9; animation: nutriSube .45s .14s cubic-bezier(.22,1,.36,1) both; }
+  .pf-tx small { font-size: 12px; color: var(--on-hero-soft); animation: nutriSube .45s .14s cubic-bezier(.22,1,.36,1) both; }
   .pf-cuerpo { padding-bottom: 40px; }
-  .pf-cuerpo .nutri-panel { position: relative; overflow: hidden; animation: nutriSube .5s cubic-bezier(.22,1,.36,1) both; }
-  .pf-cuerpo .nutri-panel::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--sc), var(--sc2)); }
+  .pf-cuerpo .nutri-panel { animation: nutriSube .5s cubic-bezier(.22,1,.36,1) both; }
   .pf-cuerpo .nutri-panel:nth-of-type(2) { animation-delay: .07s; } .pf-cuerpo .nutri-panel:nth-of-type(3) { animation-delay: .14s; }
-  .pf-cuerpo .nutri-brand { background: linear-gradient(120deg, var(--sc), var(--sc2)); }
   .pf-fila { animation: pfEntra .55s cubic-bezier(.34,1.4,.64,1) both; }
-  @keyframes pfEntra { 0% { opacity: 0; transform: translateY(-10px) scale(.94); box-shadow: 0 0 0 0 color-mix(in srgb, var(--sc, var(--accent)) 55%, transparent); } 60% { opacity: 1; transform: none; box-shadow: 0 0 0 6px color-mix(in srgb, var(--sc, var(--accent)) 18%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+  @keyframes pfEntra { 0% { opacity: 0; transform: translateY(-10px) scale(.94); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); } 60% { opacity: 1; transform: none; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 16%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
   .pf-recipiente { display: flex; align-items: center; gap: 8px; border-radius: 12px; }
   .pf-rec-ico { flex: none; width: 36px; height: 28px; display: grid; place-items: center; color: var(--text-2); }
   .pf-rec-ico svg { width: 36px; height: 26px; }
   .pf-aviso { font-size: 12px; color: var(--text-2); background: var(--tint); border-radius: 14px; padding: 8px 12px; margin: 0 0 -6px; }
-  .nb-color .nb-ico { flex: none; width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; font-size: 19px; background: linear-gradient(135deg, var(--sc), var(--sc2)); box-shadow: 0 6px 14px -8px var(--sc); }
-  .nb-color:hover { background: color-mix(in srgb, var(--sc) 10%, transparent); }
-  @media (prefers-reduced-motion: reduce) { .pf-cab .burbuja, .pf-fila, .pf-cuerpo .nutri-panel, .pf-ico, .pf-tx b, .pf-tx small { animation: none !important; } }
+  .nb-color { position: relative; }
+  .nb-color::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 2px; background: var(--cat); }
+  .nb-color .nb-ico { flex: none; width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; background: var(--cat-bg); color: var(--cat-fg); }
+  @media (prefers-reduced-motion: reduce) { .pf-fila, .pf-cuerpo .nutri-panel, .pf-ico, .pf-tx b, .pf-tx small { animation: none !important; } }
+
+  /* Sin selección de texto (evita el menú "Buscar en Google" del celular); sí en campos de texto */
+  body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+  img, svg { -webkit-user-drag: none; }
+  /* Campos de datos con los roles de la paleta (no gris): fondo surface/tint y borde de la paleta */
+  body[data-tema="oscuro"] { --input-bg: color-mix(in srgb, var(--tint) 55%, var(--surface)); }
+  .nutri-chip:is(input, select, textarea) { border-color: color-mix(in srgb, var(--accent) 22%, var(--border)); }
+  .nutri-chip:is(input, select, textarea):focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+
+  body { --nav-g1: var(--tone-400); --nav-g2: var(--tone-700); }
+  body[data-tema="oscuro"] { --nav-g1: var(--tone-200); --nav-g2: var(--tone-400); }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -888,15 +899,16 @@ const IconAlert = (p) => <Icon {...p}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.7
    Heroicons (estilo "solid", relleno) v2.2.0, con relleno degradado multicolor por ítem. Los degradados
    se declaran una sola vez (NavDefs) y cada icono los referencia por id. Inactivos se ven en gris;
    al activarse recuperan el color y laten (ver CSS: nutriLatido). */
+/* Íconos de la barra: todos con el degradado de la paleta elegida (08-PALETAS: solo roles) */
 const NAV_GRADIENTES = {
-  perfil: ["#2DD4BF", "#0EA5E9"],
-  registro: ["#FB923C", "#F43F5E"],
-  registroB: ["#FDBA74", "#FB923C"],
-  panelA: ["#A78BFA", "#EC4899"],
-  panelB: ["#FBBF24", "#F97316"],
-  menu: ["#34D399", "#A3E635"],
-  opciones: ["#60A5FA", "#6366F1"],
-  reportes: ["#38BDF8", "#22C55E"],
+  perfil: ["var(--nav-g1)", "var(--nav-g2)"],
+  registro: ["var(--nav-g1)", "var(--nav-g2)"],
+  registroB: ["var(--nav-g1)", "var(--nav-g2)"],
+  panelA: ["var(--nav-g1)", "var(--nav-g2)"],
+  panelB: ["var(--nav-g1)", "var(--nav-g2)"],
+  menu: ["var(--nav-g1)", "var(--nav-g2)"],
+  opciones: ["var(--nav-g1)", "var(--nav-g2)"],
+  reportes: ["var(--nav-g1)", "var(--nav-g2)"],
 };
 function NavDefs() {
   return (
@@ -904,7 +916,7 @@ function NavDefs() {
       <defs>
         {Object.entries(NAV_GRADIENTES).map(([id, [a, b]]) => (
           <linearGradient key={id} id={`ng-${id}`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor={a} /><stop offset="1" stopColor={b} />
+            <stop offset="0" style={{ stopColor: a }} /><stop offset="1" style={{ stopColor: b }} />
           </linearGradient>
         ))}
       </defs>
@@ -1986,7 +1998,7 @@ function Bar({ value, max, colorClass, marcarExceso = true }) {
   useEffect(() => { setM(false); const t = setTimeout(() => setM(true), 80); return () => clearTimeout(t); }, [value, max]);
   return (
     <div className="h-2.5 w-full rounded-full nutri-track overflow-hidden">
-      <div className={`h-full rounded-full nutri-bar-fill ${over ? "" : colorClass}`} style={{ width: m ? `${pct}%` : "0%", background: over ? "#B23B3B" : undefined }} />
+      <div className={`h-full rounded-full nutri-bar-fill ${over ? "" : colorClass}`} style={{ width: m ? `${pct}%` : "0%", background: over ? "var(--warn)" : undefined }} />
     </div>
   );
 }
@@ -2000,13 +2012,13 @@ function BarraNutriente({ valor, meta }) {
   const anchoDentro = Math.min(pctClamp, 100);
   const excedido = pctClamp > 100;
   const anchoExceso = excedido ? Math.min(pctClamp - 100, ESCALA_BARRA_PCT - 100) : 0;
-  const color = pctClamp >= 100 ? "#6C8F63" : pctClamp >= 50 ? "#C79A3D" : "#B23B3B";
+  const color = pctClamp >= 100 ? "var(--st-meta)" : pctClamp >= 50 ? "var(--st-bajo)" : "var(--warn)";
   const posMarca = (100 / ESCALA_BARRA_PCT) * 100;
   return (
     <div className="relative w-full h-1.5 rounded-full nutri-track overflow-hidden mt-1.5">
       <div className="h-full" style={{ width: `${(anchoDentro / ESCALA_BARRA_PCT) * 100}%`, background: color, transition: "width .3s" }} />
       {excedido && (
-        <div className="h-full absolute top-0" style={{ left: `${posMarca}%`, width: `${(anchoExceso / ESCALA_BARRA_PCT) * 100}%`, background: "#FFFFFF" }} />
+        <div className="h-full absolute top-0" style={{ left: `${posMarca}%`, width: `${(anchoExceso / ESCALA_BARRA_PCT) * 100}%`, background: "var(--surface)" }} />
       )}
       <div className="absolute top-0 h-full" style={{ left: `${posMarca}%`, width: 1, background: "var(--panel-border)" }} />
     </div>
@@ -2113,7 +2125,7 @@ function GaugeRadial({ label, valor, meta, unidad, color, tamano = "md", modo = 
         )}
         {/* perla en la punta del arco */}
         <g style={{ transformOrigin: `${centro}px ${centro}px`, transform: `rotate(${pct * 360}deg)`, transition: `transform ${transicion}`, opacity: pct > 0 ? 1 : 0 }}>
-          <circle cx={centro} cy={centro - r} r={grosor / 2 - 1.5} fill="#FFFFFF" stroke={color} strokeWidth="2.5" />
+          <circle cx={centro} cy={centro - r} r={grosor / 2 - 1.5} fill="var(--surface)" stroke={color} strokeWidth="2.5" />
         </g>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2 tabular-nums">
@@ -2748,7 +2760,7 @@ function AnilloAvance({ pct, size = 88, grosor = 10 }) {
         <circle cx={h} cy={h} r={r} fill="none" stroke={COLOR_ESTADO[est]} strokeWidth={grosor} strokeLinecap="round" transform={`rotate(-90 ${h} ${h})`} strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct))} className="arco" />
         <circle cx={h} cy={h} r={r} fill="none" stroke="var(--st-exceso)" strokeWidth={grosor - 3} strokeLinecap="round" transform={`rotate(-90 ${h} ${h})`} strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, pct - 1)))} className="arco" style={{ filter: "brightness(.8)" }} />
       </svg>
-      {estallido > 0 && <span key={estallido} className="mh-estallido" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => { const a = i / 14 * Math.PI * 2, d = 46 + (i % 3) * 7; return <i key={i} style={{ "--x": `${Math.cos(a) * d}px`, "--y": `${Math.sin(a) * d}px`, background: i % 3 ? "var(--st-meta)" : "#FFD447" }} />; })}</span>}
+      {estallido > 0 && <span key={estallido} className="mh-estallido" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => { const a = i / 14 * Math.PI * 2, d = 46 + (i % 3) * 7; return <i key={i} style={{ "--x": `${Math.cos(a) * d}px`, "--y": `${Math.sin(a) * d}px`, background: i % 3 ? "var(--st-meta)" : "var(--tone-300)" }} />; })}</span>}
     </span>
   );
 }
@@ -2972,7 +2984,7 @@ function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync, log 
             <h3>¡Menú completado!</h3>
             <p>Tus 4 comidas cubren el <b className="num-u">{Math.round(total.kcal / (requerimiento.get || 1) * 100)}%</b> de tus calorías y el <b className="num-u">{Math.round(total.p / (requerimiento.proteinasG || 1) * 100)}%</b> de tu proteína.</p>
             <button type="button" onClick={pasarAlRegistro}>→ Pasar al registro</button>
-            {Array.from({ length: 22 }, (_, i) => <i key={i} className="confeti" style={{ left: `${(i * 37) % 100}%`, background: ["#FFD447", "#FF7B8E", "#6CB2FF", "#7CF2C5", "#FFFFFF"][i % 5], animationDelay: `${(i % 7) * 70}ms` }} />)}
+            {Array.from({ length: 22 }, (_, i) => <i key={i} className="confeti" style={{ left: `${(i * 37) % 100}%`, background: ["var(--tone-200)", "var(--tone-400)", "var(--on-hero)", "var(--st-meta)", "var(--tone-300)"][i % 5], animationDelay: `${(i % 7) * 70}ms` }} />)}
           </div>
         ) : (
           <div className="mh-pendiente">{n ? `Te faltan ${4 - n} comida${4 - n === 1 ? "" : "s"} para completar el menú.` : "Toca una comida para empezar tu menú de hoy."}</div>
@@ -3184,7 +3196,7 @@ function FilaCumplimiento({ n }) {
     <div className="py-1.5 flex items-center justify-between text-xs">
       <span className="nutri-ink w-24">{n.label}</span>
       <span className="nutri-muted flex-1 text-center">{Math.round(n.actual)} / {Math.round(n.meta)} {n.unidad}</span>
-      {cumplido ? <span style={{ color: "#3E8E5A" }}>✅</span> : <span className="nutri-warn">⚠️</span>}
+      {cumplido ? <span style={{ color: "var(--st-meta)" }}>✅</span> : <span className="nutri-warn">⚠️</span>}
     </div>
   );
 }
@@ -3293,7 +3305,7 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
                         <div className="text-xs nutri-muted">{d.items.length === 0 ? "Sin registro" : `${Math.round(t.kcal)} kcal · ${Math.round(t.proteinasG)} g proteína`}</div>
                       </div>
                       <div className="flex items-center gap-3">
-                        {d.items.length > 0 && (cumpleKcal ? <span style={{ color: "#3E8E5A" }}>✅</span> : <span className="nutri-warn">⚠️</span>)}
+                        {d.items.length > 0 && (cumpleKcal ? <span style={{ color: "var(--st-meta)" }}>✅</span> : <span className="nutri-warn">⚠️</span>)}
                         <button onClick={(e) => { e.stopPropagation(); onEditarDia(d.fecha); }} className="nutri-brand-text flex items-center gap-1 text-xs shrink-0">
                           <IconEdit size={14} /> {d.items.length === 0 ? "Agregar" : "Editar"}
                         </button>
@@ -3889,9 +3901,9 @@ function BarraMacros({ etiqueta, d }) {
 function EtiquetaSeveridad({ sev }) {
   const estilos = {
     alta: { background: "var(--warn)", color: "#fff" },
-    media: { background: "#C79A3D", color: "#fff" },
+    media: { background: "var(--st-bajo)", color: "#fff" },
     info: { background: "var(--accent-fat)", color: "#fff" },
-    ok: { background: "#3E8E5A", color: "#fff" },
+    ok: { background: "var(--st-meta)", color: "#fff" },
   };
   return <span className="text-[10px] font-semibold rounded px-1.5 py-0.5 shrink-0 mt-0.5" style={estilos[sev]}>{SEVERIDAD_TXT[sev]}</span>;
 }
@@ -4617,7 +4629,7 @@ function RegistroPeso({ perfil, agregarPeso, importarPesos }) {
           </div>
         </div>
       )}
-      {msg && <p className={`text-xs my-1 ${msg.tipo === "error" ? "nutri-warn" : ""}`} style={msg.tipo === "ok" ? { color: "#3E8E5A" } : undefined}>{msg.txt}</p>}
+      {msg && <p className={`text-xs my-1 ${msg.tipo === "error" ? "nutri-warn" : ""}`} style={msg.tipo === "ok" ? { color: "var(--st-meta)" } : undefined}>{msg.txt}</p>}
 
       <button onClick={() => setMasivo((v) => !v)} className="text-xs nutri-brand-text underline mt-1">{masivo ? "Ocultar carga de varios pesos" : "Cargar varios pesos de una vez"}</button>
       {masivo && (
@@ -4911,7 +4923,7 @@ const NUTRI_PANEL = [
   { key: "carbohidratosG", clave: "carbohidratos", label: "Carbohidratos", art: "tus carbohidratos", unidad: "g", meta: (r) => r.carbohidratosG, tipo: "rango", tol: 0.15, color: "var(--accent-carb)", para: "tener energía durante el día" },
   { key: "grasasG", clave: "grasas", label: "Grasas", art: "tus grasas", unidad: "g", meta: (r) => r.grasasG, tipo: "rango", tol: 0.15, color: "var(--accent-fat)", para: "tus hormonas y absorber vitaminas" },
   { key: "fibraG", clave: "fibra", label: "Fibra", art: "tu fibra", unidad: "g", meta: (r) => r.fibraG, tipo: "minimo", min: 0.85, color: "var(--accent-fiber)", para: "una buena digestión" },
-  { key: "sodioMg", clave: "sodio", label: "Sodio", art: "tu sodio", unidad: "mg", meta: (r) => r.sodioMg, tipo: "maximo", color: "#4F8FC7", para: "cuidar tu presión (es un límite, no una meta)" },
+  { key: "sodioMg", clave: "sodio", label: "Sodio", art: "tu sodio", unidad: "mg", meta: (r) => r.sodioMg, tipo: "maximo", color: "var(--accent)", para: "cuidar tu presión (es un límite, no una meta)" },
 ];
 function estadoNutriente(n, valor, meta) {
   if (!(meta > 0)) return "cero";
@@ -5246,7 +5258,7 @@ function PantallaDashboard({ requerimiento, log, perfil, pesos, agregarPeso, imp
       </div>
 
       {requerimiento.interacciones.length > 0 && (
-        <div className="nutri-panel rounded-2xl p-5 mb-5 nutri-warn-bg" style={{ borderColor: "#E3B7AF" }}>
+        <div className="nutri-panel rounded-2xl p-5 mb-5 nutri-warn-bg" style={{ borderColor: "color-mix(in srgb, var(--warn) 40%, var(--border))" }}>
           <div className="flex items-center gap-2 mb-3"><span className="nutri-warn"><IconAlert size={16} /></span><span className="text-sm font-medium nutri-ink">Interacciones fármaco-nutriente a vigilar</span></div>
           <ul className="space-y-2 mb-2">
             {requerimiento.interacciones.map((it, i) => (
@@ -5546,7 +5558,7 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
           </button>
         )}
       </div>
-      {copiadoOk && <p className="text-xs mb-2" style={{ color: "#3E8E5A" }}>✓ Menú copiado a tu registro de {NOMBRE_DIA_LARGO(activo.fecha)}. Ahora solo ajusta cantidades ahí si algo cambió.</p>}
+      {copiadoOk && <p className="text-xs mb-2" style={{ color: "var(--st-meta)" }}>✓ Menú copiado a tu registro de {NOMBRE_DIA_LARGO(activo.fecha)}. Ahora solo ajusta cantidades ahí si algo cambió.</p>}
       <div className="nutri-panel rounded-xl p-4 mb-5">
         {[
           { label: "Calorías", unidad: "kcal", meta: requerimiento.get, actual: totalEfectivo.kcal, cls: "nutri-accent-energy" },
@@ -5560,7 +5572,7 @@ function PantallaMenu({ requerimiento, pacienteId, onErrorSync, pasarARegistro }
             <div key={i} className="py-2" style={{ borderTop: i > 0 ? "1px solid var(--panel-border)" : "none" }}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium nutri-ink flex items-center gap-1.5"><span className={`inline-block w-2.5 h-2.5 rounded-full ${n.cls}`} />{n.label}</span>
-                {cumplido ? <span className="text-xs" style={{ color: "#3E8E5A" }}>✅ Cumplido</span> : <span className="text-xs nutri-warn">⚠️ Ajustar</span>}
+                {cumplido ? <span className="text-xs" style={{ color: "var(--st-meta)" }}>✅ Cumplido</span> : <span className="text-xs nutri-warn">⚠️ Ajustar</span>}
               </div>
               <Bar value={n.actual} max={n.meta} colorClass={n.cls} marcarExceso={false} />
               <div className="flex items-center justify-between text-xs nutri-muted mt-1">
@@ -5728,7 +5740,7 @@ function TarjetaCuenta({ salir, email, instalar }) {
       <div className="rounded-xl p-3 mb-3" style={{ background: "color-mix(in srgb, var(--tone-500) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--tone-500) 22%, transparent)" }}>
         <p className="text-sm font-medium nutri-ink mb-0.5">Instalar en tu celular</p>
         {instalar.instalada ? (
-          <p className="text-xs" style={{ color: "#3E8E5A" }}>✓ La app ya está instalada en este dispositivo.</p>
+          <p className="text-xs" style={{ color: "var(--st-meta)" }}>✓ La app ya está instalada en este dispositivo.</p>
         ) : (
           <>
             <p className="text-xs nutri-muted mb-2">Se abre desde un ícono en tu pantalla de inicio, a pantalla completa y también sin conexión.</p>
@@ -5864,7 +5876,7 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
           <button onClick={() => backupFileInputRef.current && backupFileInputRef.current.click()} disabled={restaurando} className="flex-1 nutri-chip nutri-ink rounded-lg py-2 text-sm disabled:opacity-40">{restaurando ? "Restaurando..." : "Restaurar respaldo"}</button>
         </div>
         <input ref={backupFileInputRef} type="file" accept="application/json" className="hidden" onChange={handleRestaurarBackup} />
-        {backupMsg && <p className={`text-xs mt-2 ${backupMsg.startsWith("✓") ? "" : "nutri-warn"}`} style={backupMsg.startsWith("✓") ? { color: "#3E8E5A" } : undefined}>{backupMsg}</p>}
+        {backupMsg && <p className={`text-xs mt-2 ${backupMsg.startsWith("✓") ? "" : "nutri-warn"}`} style={backupMsg.startsWith("✓") ? { color: "var(--st-meta)" } : undefined}>{backupMsg}</p>}
       </div>
 
       {pacienteId && (
@@ -6106,7 +6118,7 @@ function PantallaLogin({ auth }) {
         {entrando && <button type="button" onClick={olvide} className="nl-olvide">¿Olvidaste tu contraseña?</button>}
         <div className="nl-msg" aria-live="polite">
           {error && <p className="nutri-warn">{error}</p>}
-          {aviso && <p style={{ color: "#3E8E5A" }}>{aviso}</p>}
+          {aviso && <p style={{ color: "var(--st-meta)" }}>{aviso}</p>}
         </div>
         <button type="submit" disabled={cargando || ok} className={`nl-btn ${cargando ? "cargando" : ""} ${ok ? "ok" : ""}`}>
           <span className="nl-nivel">{ONDA_SVG("rgba(255,255,255,.28)")}</span>
@@ -6234,16 +6246,15 @@ function Avatar({ nombre, email, foto, size = 38 }) {
 }
 /* Tres secciones de la cuenta (menú del avatar), cada una con su color */
 const SECCIONES_CUENTA = [
-  { key: "perfil", titulo: "Perfil nutricional", desc: "Edad, sexo, peso, talla, actividad y cribado", c1: "#0EA5E9", c2: "#14B8A6", icono: "🧍" },
-  { key: "salud", titulo: "Condiciones y medicamentos", desc: "Condiciones médicas y lo que tomas", c1: "#F43F5E", c2: "#EC4899", icono: "💊" },
-  { key: "plan", titulo: "Prescripción y pesaje", desc: "Prescripción médica, suplementos y recipientes", c1: "#8B5CF6", c2: "#F59E0B", icono: "📋" },
+  { key: "perfil", titulo: "Perfil nutricional", desc: "Edad, sexo, peso, talla, actividad y cribado", cat: "azul", icono: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2" /><path d="M3.8 20.4a8.2 8.2 0 0 1 16.4 0c0 .4-.2.7-.5.8A18 18 0 0 1 12 22.5c-2.7 0-5.3-.5-7.7-1.3-.3-.1-.5-.4-.5-.8Z" /></svg> },
+  { key: "salud", titulo: "Condiciones y medicamentos", desc: "Condiciones médicas y lo que tomas", cat: "violeta", icono: <IconPill size={20} /> },
+  { key: "plan", titulo: "Prescripción y pesaje", desc: "Prescripción médica, suplementos y recipientes", cat: "ambar", icono: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5" /><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6M9 18h3" /></svg> },
 ];
 function SeccionCuenta({ sec, onCerrar, children }) {
   const c = SECCIONES_CUENTA.find((x) => x.key === sec) || SECCIONES_CUENTA[0];
   return (
-    <div className="min-h-screen max-w-md mx-auto relative pf-sec nutri-pantalla-der" style={{ "--sc": c.c1, "--sc2": c.c2 }}>
+    <div className={`min-h-screen max-w-md mx-auto relative pf-sec cat-${c.cat} nutri-pantalla-der`}>
       <header className="pf-cab">
-        <i className="burbuja b1" /><i className="burbuja b2" /><i className="burbuja b3" />
         <button type="button" className="pf-volver" onClick={onCerrar} aria-label="Volver">‹</button>
         <span className="pf-ico">{c.icono}</span>
         <span className="pf-tx"><b>{c.titulo}</b><small>{c.desc}</small></span>
@@ -6276,7 +6287,7 @@ function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
             <div className="nb-quien"><Avatar nombre={nombre} email={email} foto={foto} size={46} /><span><b>{quien}</b>{email && <small>{email}</small>}</span></div>
             {SECCIONES_CUENTA.map((c, k) => (
-              <button key={c.key} type="button" role="menuitem" className="nb-item nb-color" onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms`, "--sc": c.c1, "--sc2": c.c2 }}>
+              <button key={c.key} type="button" role="menuitem" className={`nb-item nb-color cat-${c.cat}`} onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms` }}>
                 <span className="nb-ico">{c.icono}</span><span>{c.titulo}<small>{c.desc}</small></span><i className="flecha">›</i>
               </button>
             ))}
@@ -6575,7 +6586,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
     <div className="min-h-screen max-w-md mx-auto relative">
       <BarraSuperior tab={tab} log={log} nombre={nombre} email={email} foto={foto}
         onAbrir={(k) => setMostrarPerfil(k)} />
-      {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "#F6E7C7", color: "#5A4A1E" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
+      {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "var(--warn-f)", color: "var(--warn-c)" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
       {errorSync && (
         <div className="px-4 py-2 text-xs flex items-center justify-between gap-2 nutri-warn-bg">
           <span className="nutri-warn">{errorSync}</span>

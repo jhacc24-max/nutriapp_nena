@@ -190,3 +190,5 @@ Repetir este bloque por cada pantalla.
   - Cada sección abre con cabecera de color (burbujas que flotan), tarjetas con franja de color que suben al entrar, y cada fila nueva entra con rebote y un halo del color de la sección.
   - Corregido: en Recipientes el nombre quedaba aplastado y solo se veía el peso; ahora se ve el ícono, el nombre y el peso.
   - Captura `pantallas/APP-2026-10-23-secciones-cuenta.png`.
+- **Paleta en toda la app (2026-10-23):** las 3 secciones de la cuenta pasaron a la paleta (cabecera hero, botones y chips con `--accent`/`--chip-active`) y solo se distinguen por una línea de color de categoría. Íconos de la barra inferior, avisos, chips de cumplimiento, Reportes y Opciones revisados. Sin selección de texto. Capturas `pantallas/APP-2026-10-23-paleta-*.png`.
+- **§2b · Tipos con color de categoría:** Perfil nutricional = `azul`, Condiciones y medicamentos = `violeta`, Prescripción y pesaje = `ambar`.
