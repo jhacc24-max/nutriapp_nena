@@ -178,3 +178,8 @@ Repetir este bloque por cada pantalla.
   - Al tocar el avatar se abre un menú: nombre y correo, **Perfil nutricional** (ya no es pestaña) y **Reportes**, que se despliega en Reportes e Historial.
   - Barra inferior: Menú · Registro · Panel · Opciones. La app abre en Menú.
   - Captura `pantallas/APP-2026-10-23-barra-avatar.png`.
+- **Pestaña Reportes y reparto de Opciones (2026-10-23, pedido por el usuario):**
+  - Barra inferior: Menú · Registro · Panel · **Reportes** · Opciones. Reportes muestra Historial y todos los reportes (totales, detalle, peso, comparar, resumen clínico).
+  - Menú del avatar: solo **Perfil nutricional**, que ahora incluye también prescripción médica, suplementos, recipientes y medicamentos.
+  - Opciones: solo cuenta, respaldo de datos, espacio compartido y apariencia.
+  - Captura `pantallas/APP-2026-10-23-reportes-opciones-perfil.png`.

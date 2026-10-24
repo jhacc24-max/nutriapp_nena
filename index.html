@@ -728,6 +728,13 @@
   .nutri-pagina { background: linear-gradient(180deg, var(--hero-2) 0 34px, transparent 34px); }
   .nutri-pagina > .nutri-sheet { margin-top: 0; padding-top: 18px; }
   @media (prefers-reduced-motion: reduce) { .nb-menu, .nb-item, .nb-sub, .nb-izq b, .nb-racha .fuego { animation: none !important; } }
+
+  .nb-sep-clinico { display: flex; flex-direction: column; margin: 4px 0 14px; padding-top: 8px; }
+  .nb-sep-clinico b { font-size: 16px; color: var(--text); }
+  .nb-sep-clinico span { font-size: 12px; color: var(--text-2); }
+  .nutri-nav-item.activo .ico-barra { animation: navBarra .6s cubic-bezier(.34,1.56,.64,1) both; transform-box: fill-box; transform-origin: bottom; }
+  .nutri-nav-item.activo .ico-barra.b2 { animation-delay: .08s; } .nutri-nav-item.activo .ico-barra.b3 { animation-delay: .16s; }
+  @keyframes navBarra { from { transform: scaleY(.2); } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -862,6 +869,7 @@ const NAV_GRADIENTES = {
   panelB: ["#FBBF24", "#F97316"],
   menu: ["#34D399", "#A3E635"],
   opciones: ["#60A5FA", "#6366F1"],
+  reportes: ["#38BDF8", "#22C55E"],
 };
 function NavDefs() {
   return (
@@ -884,6 +892,8 @@ const NavPerfil = (p) => <IconoNav {...p}><path fillRule="evenodd" clipRule="eve
 /* Registro (clipboard-document-list) */
 const NavRegistro = (p) => <IconoNav {...p}><path fillRule="evenodd" clipRule="evenodd" fill="url(#ng-registro)" d="M7.502 6h7.128A3.375 3.375 0 0 1 18 9.375v9.375a3 3 0 0 0 3-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 0 0-.673-.05A3 3 0 0 0 15 1.5h-1.5a3 3 0 0 0-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6ZM13.5 3A1.5 1.5 0 0 0 12 4.5h4.5A1.5 1.5 0 0 0 15 3h-1.5Z"/><path fillRule="evenodd" clipRule="evenodd" fill="url(#ng-registroB)" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V9.375ZM6 12a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V12Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 15a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V15Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM6 18a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H6.75a.75.75 0 0 1-.75-.75V18Zm2.25 0a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75Z"/></IconoNav>;
 /* Panel (chart-pie): la rebanada pequeña salta al activarse. */
+/* Reportes (barras de un gráfico, con cada barra que sube al activarse) */
+const NavReportes = (p) => <IconoNav {...p}><rect x="3" y="12" width="4.6" height="9" rx="1.6" fill="url(#ng-reportes)" className="ico-barra b1" /><rect x="9.7" y="6.5" width="4.6" height="14.5" rx="1.6" fill="url(#ng-reportes)" className="ico-barra b2" /><rect x="16.4" y="2.5" width="4.6" height="18.5" rx="1.6" fill="url(#ng-reportes)" className="ico-barra b3" /></IconoNav>;
 const NavPanel = (p) => <IconoNav {...p}><path fillRule="evenodd" clipRule="evenodd" fill="url(#ng-panelA)" d="M2.25 13.5a8.25 8.25 0 0 1 8.25-8.25.75.75 0 0 1 .75.75v6.75H18a.75.75 0 0 1 .75.75 8.25 8.25 0 0 1-16.5 0Z"/><path className="ico-rebanada" fillRule="evenodd" clipRule="evenodd" fill="url(#ng-panelB)" d="M12.75 3a.75.75 0 0 1 .75-.75 8.25 8.25 0 0 1 8.25 8.25.75.75 0 0 1-.75.75h-7.5a.75.75 0 0 1-.75-.75V3Z"/></IconoNav>;
 /* Menú (calendar-days): el plan de comidas por día. */
 const NavMenu = (p) => <IconoNav {...p}><path fill="url(#ng-menu)" d="M12.75 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM7.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM8.25 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM9.75 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM10.5 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM12.75 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM14.25 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 17.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 15.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM15 12.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM16.5 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"/><path fillRule="evenodd" clipRule="evenodd" fill="url(#ng-menu)" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5h9V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6V3a.75.75 0 0 1 .75-.75Zm13.5 9a1.5 1.5 0 0 0-1.5-1.5H5.25a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-7.5Z"/></IconoNav>;
@@ -4814,7 +4824,7 @@ function ReporteComparar({ requerimiento, pacienteId, pesos, onVolver }) {
 }
 
 /* ---------- Menú de reportes ---------- */
-function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, agregarPeso, importarPesos, corregirPeso, eliminarPeso, medicamentos, onCerrar }) {
+function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, agregarPeso, importarPesos, corregirPeso, eliminarPeso, medicamentos, onCerrar, enPestana, onHistorial }) {
   const [vista, setVista] = useState(null);
   const volver = () => setVista(null);
   if (vista === "peso") return <ReportePeso perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} onVolver={volver} />;
@@ -4830,11 +4840,20 @@ function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, agregarPes
     { key: "clinico", titulo: "Resumen clínico para el médico", desc: "Cumplimiento de metas, tendencias, evolución del peso y hallazgos para apoyar la decisión en la consulta.", icono: IconPill },
   ];
   return (
-    <div className="min-h-screen max-w-md mx-auto relative">
-      <EncabezadoReporte titulo="Reportes" onVolver={onCerrar} etiqueta="Cerrar" />
-      <div className="px-5 pt-6 pb-24">
+    <div className={enPestana ? "nutri-pagina" : "min-h-screen max-w-md mx-auto relative"}>
+      {!enPestana && <EncabezadoReporte titulo="Reportes" onVolver={onCerrar} etiqueta="Cerrar" />}
+      <div className={enPestana ? "nutri-sheet px-5 pt-6 pb-24" : "px-5 pt-6 pb-24"}>
         <p className="text-sm nutri-muted mb-4">Elige qué reporte quieres ver o exportar a PDF.</p>
         <div className="space-y-3">
+          {onHistorial && (
+            <button onClick={onHistorial} className="w-full text-left nutri-panel rounded-2xl p-4 flex items-start gap-3">
+              <span className="nutri-brand-text mt-0.5"><IconHistorial size={20} /></span>
+              <span className="flex-1">
+                <span className="block text-sm font-medium nutri-ink mb-0.5">Historial</span>
+                <span className="block text-xs nutri-muted leading-relaxed">Tus días por semana o por mes: lo que comiste cada día y si llegaste a tu meta. Desde aquí puedes editar un día.</span>
+              </span>
+            </button>
+          )}
           {opciones.map(({ key, titulo, desc, icono: Ico }) => (
             <button key={key} onClick={() => setVista(key)} className="w-full text-left nutri-panel rounded-2xl p-4 flex items-start gap-3">
               <span className="nutri-brand-text mt-0.5"><Ico size={22} /></span>
@@ -5720,7 +5739,7 @@ function TarjetaCuenta({ salir, email, instalar }) {
   );
 }
 
-function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, paleta, setPaleta, pacienteId, salir, email, instalar, exportarBackup, restaurarBackup }) {
+function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, paleta, setPaleta, pacienteId, salir, email, instalar, exportarBackup, restaurarBackup }) {
   const [nuevoMed, setNuevoMed] = useState({ nombre: "", dosis: "", frecuencia: "" });
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState("");
@@ -5801,8 +5820,9 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
   const inputCls = "w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink";
 
   return (
-    <div className="nutri-pagina">
-      <div className="nutri-sheet px-5 pt-6 pb-24">
+    <div className={seccion === "clinico" ? "" : "nutri-pagina"}>
+      <div className={seccion === "clinico" ? "px-5 pb-24" : "nutri-sheet px-5 pt-6 pb-24"}>
+      {seccion !== "clinico" && <>
       <TarjetaCuenta salir={salir} email={email} instalar={instalar} />
 
       <div className="nutri-panel rounded-2xl p-5 mb-5">
@@ -5848,7 +5868,9 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
           </div>
         </div>
       </div>
+      </>}
 
+      {seccion !== "cuenta" && <>
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-2 mb-3"><IconSparkles size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Prescripción médica (manual)</span></div>
         <p className="text-xs nutri-muted mb-3">Si tu médico o nutricionista te dio metas específicas (kcal, proteína, % de macros), actívalo aquí para que la app las use en vez del cálculo automático. Deja un campo vacío para que ese valor se siga calculando solo.</p>
@@ -5974,6 +5996,7 @@ function PantallaOpciones({ recipientes, setRecipientes, medicamentos, setMedica
 
         <p className="text-[11px] nutri-muted leading-relaxed">Esta información es orientativa y no reemplaza la indicación de tu médico o farmacéutico. Ante cualquier duda sobre interacciones fármaco-nutriente, consúltalo con un profesional de salud.</p>
       </div>
+      </>}
       </div>
     </div>
   );
@@ -6156,7 +6179,7 @@ function Raiz() {
    un menú con su nombre, Perfil nutricional y Reportes (que se despliega en Reportes e Historial).
    Reemplaza el logo y los botones Reportes / Historial de la cabecera anterior.
    =================================================================================== */
-const TITULO_TAB = { menu: "Menú de hoy", registro: "Registro", dashboard: "Panel", opciones: "Opciones" };
+const TITULO_TAB = { menu: "Menú de hoy", registro: "Registro", dashboard: "Panel", reportes: "Reportes", opciones: "Opciones" };
 function rachaDeRegistro(logHoy) {
   let n = logHoy && logHoy.length ? 1 : 0;
   for (let i = 1; i < 400; i++) {
@@ -6175,13 +6198,12 @@ function Avatar({ nombre, email, foto, size = 38 }) {
     </span>
   );
 }
-function BarraSuperior({ tab, log, nombre, email, foto, onPerfil, onReportes, onHistorial, onOpciones }) {
+function BarraSuperior({ tab, log, nombre, email, foto, onPerfil }) {
   const [abierto, setAbierto] = useState(false);
-  const [repAbierto, setRepAbierto] = useState(false);
   const racha = useMemo(() => rachaDeRegistro(log), [log]);
   const fecha0 = new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Lima" });
   const fecha = fecha0.charAt(0).toUpperCase() + fecha0.slice(1);
-  const ir = (fn) => { setAbierto(false); setRepAbierto(false); setTimeout(fn, 160); };
+  const ir = (fn) => { setAbierto(false); setTimeout(fn, 160); };
   useEffect(() => { if (!abierto) return; const k = (e) => e.key === "Escape" && setAbierto(false); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [abierto]);
   const quien = nombre || (email ? email.split("@")[0] : "Mi cuenta");
   return (
@@ -6195,17 +6217,10 @@ function BarraSuperior({ tab, log, nombre, email, foto, onPerfil, onReportes, on
         <Avatar nombre={nombre} email={email} foto={foto} />
       </button>
       {abierto && ReactDOM.createPortal(
-        <div className="nb-capa" onClick={() => { setAbierto(false); setRepAbierto(false); }}>
+        <div className="nb-capa" onClick={() => setAbierto(false)}>
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
             <div className="nb-quien"><Avatar nombre={nombre} email={email} foto={foto} size={46} /><span><b>{quien}</b>{email && <small>{email}</small>}</span></div>
-            <button type="button" role="menuitem" className="nb-item" onClick={() => ir(onPerfil)} style={{ animationDelay: "40ms" }}><NavPerfil size={22} /><span>Perfil nutricional<small>Edad, peso, talla, actividad y condiciones</small></span></button>
-            <button type="button" role="menuitem" className={`nb-item ${repAbierto ? "abierto" : ""}`} aria-expanded={repAbierto} onClick={() => setRepAbierto((v) => !v)} style={{ animationDelay: "80ms" }}><IconReporte size={22} /><span>Reportes<small>Reportes e historial de tus días</small></span><i className="flecha">›</i></button>
-            {repAbierto && (
-              <div className="nb-sub">
-                <button type="button" role="menuitem" onClick={() => ir(onReportes)}><IconReporte size={18} />Reportes<small>Peso, comparar, totales, resumen clínico</small></button>
-                <button type="button" role="menuitem" onClick={() => ir(onHistorial)}><IconHistorial size={18} />Historial<small>Tus días por semana o por mes</small></button>
-              </div>
-            )}
+            <button type="button" role="menuitem" className="nb-item" onClick={() => ir(onPerfil)} style={{ animationDelay: "40ms" }}><NavPerfil size={22} /><span>Perfil nutricional<small>Datos, condiciones, prescripción, suplementos, recipientes y medicamentos</small></span></button>
           </div>
         </div>, document.body)}
     </header>
@@ -6473,6 +6488,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
     { key: "menu", label: "Menú", icon: NavMenu, c: NAV_GRADIENTES.menu },
     { key: "registro", label: "Registro", icon: NavRegistro, c: NAV_GRADIENTES.registro },
     { key: "dashboard", label: "Panel", icon: NavPanel, c: NAV_GRADIENTES.panelA },
+    { key: "reportes", label: "Reportes", icon: NavReportes, c: NAV_GRADIENTES.reportes },
     { key: "opciones", label: "Opciones", icon: NavOpciones, c: NAV_GRADIENTES.opciones },
   ];
   /* Dirección de la transición entre pantallas: entra desde la derecha si el menú nuevo está a la
@@ -6488,6 +6504,8 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
     <div className="min-h-screen max-w-md mx-auto relative nutri-pantalla-der">
       <EncabezadoReporte titulo="Perfil nutricional" onVolver={() => setMostrarPerfil(false)} etiqueta="Cerrar" />
       <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />
+      <div className="nb-sep-clinico px-5"><b>Prescripción, suplementos, recipientes y medicamentos</b><span>Antes estaban en Opciones.</span></div>
+      <PantallaOpciones seccion="clinico" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />
     </div>
   );
   if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
@@ -6495,7 +6513,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
       <BarraSuperior tab={tab} log={log} nombre={nombre} email={email} foto={foto}
-        onPerfil={() => setMostrarPerfil(true)} onReportes={() => setMostrarReporte(true)} onHistorial={() => setMostrarHistorial(true)} onOpciones={() => setTab("opciones")} />
+        onPerfil={() => setMostrarPerfil(true)} />
       {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "#F6E7C7", color: "#5A4A1E" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
       {errorSync && (
         <div className="px-4 py-2 text-xs flex items-center justify-between gap-2 nutri-warn-bg">
@@ -6507,7 +6525,8 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
         {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
         {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
         {tab === "menu" && <PantallaMenuHoy requerimiento={requerimiento} pacienteId={pacienteId} addItem={addItem} onErrorSync={setErrorSync} log={log} />}
-        {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
+        {tab === "reportes" && <PantallaReportes enPestana onHistorial={() => setMostrarHistorial(true)} requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} />}
+        {tab === "opciones" && <PantallaOpciones seccion="cuenta" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       </div>
       <nav className="nutri-nav fixed flex max-w-md" aria-label="Navegación principal">
         <NavDefs />
