@@ -172,3 +172,9 @@ Repetir este bloque por cada pantalla.
   - Cumplimiento de la meta: semana con círculos por día (calorías y proteína) y mes como calendario de cuadritos, con promedio y racha.
   - Capturas: `pantallas/APP-2026-10-23-panel-*.png`.
 - **Alimentos:** solo queda "Arveja partida cocida" (se quitó la versión seca).
+- **Barra superior con avatar (2026-10-23, 🎨 implementado, pedido por el usuario; referencia `referencias/menu-avatar-video.png`):**
+  - Se quitaron el logo, el nombre y los botones Reportes / Historial de la cabecera, y las bandas de título de cada pestaña (Perfil nutricional, Menú de hoy, Registro de alimentos, Panel del día, Opciones): el contenido sube.
+  - Nueva barra: a la izquierda el nombre corto de la pestaña y la fecha; a la derecha la racha 🔥 (días seguidos registrando) y el avatar de quien inició sesión (foto de Google o iniciales).
+  - Al tocar el avatar se abre un menú: nombre y correo, **Perfil nutricional** (ya no es pestaña) y **Reportes**, que se despliega en Reportes e Historial.
+  - Barra inferior: Menú · Registro · Panel · Opciones. La app abre en Menú.
+  - Captura `pantallas/APP-2026-10-23-barra-avatar.png`.
