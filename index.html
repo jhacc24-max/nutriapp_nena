@@ -786,6 +786,35 @@
   .nb-racha-info .dias .ok i { border: 0; background: var(--tint); animation: icPop .4s cubic-bezier(.34,1.56,.64,1) both; }
   .nb-racha-info .dias .hoy { color: var(--accent); font-weight: 700; }
   .nb-racha-info .pie { margin-bottom: 0; color: var(--text); font-weight: 600; }
+
+  /* ===== Patrón B · capas superpuestas (capas-*) ===== */
+  .capas { position: relative; min-height: 100vh; }
+  .capas-cab { position: fixed; top: 0; left: 0; right: 0; z-index: 0; max-width: 28rem; margin: 0 auto; height: var(--capas-alto); overflow: hidden; color: var(--on-hero);
+    background: radial-gradient(110% 100% at 100% 0%, color-mix(in srgb, var(--tone-400) 46%, transparent) 0%, transparent 60%), linear-gradient(90deg, var(--hero), var(--hero-2)); }
+  .capas-cont { will-change: transform, opacity; transform-origin: 30% 0; }
+  .capas-panel { position: relative; z-index: 1; margin-top: calc(var(--capas-alto) - 26px); min-height: calc(100vh - var(--capas-alto) + 26px); border-radius: 28px 28px 0 0;
+    background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--tint) 55%, var(--bg)) 100%); box-shadow: 0 -14px 32px -22px rgba(0,0,0,.5); }
+  .capas-panel .nutri-pagina { background: none; }
+  .capas-panel .nutri-sheet { margin-top: 0; border-radius: 0; background: none; box-shadow: none; min-height: 0; }
+  .capas-panel > .min-h-screen, .capas-panel .nutri-pagina > .min-h-screen { min-height: 0; }
+  .capas .nb-barra { position: static; background: none; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0 20px; }
+  .capas .nb-izq b { font-size: 24px; }
+  .capas-fila { display: flex; align-items: center; gap: 12px; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0 12px; }
+  .capas-btn { flex: none; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--on-hero) 16%, transparent); color: var(--on-hero); font-size: 26px; line-height: 1; display: grid; place-items: center; padding-bottom: 3px; }
+  .capas-ico { flex: none; width: 42px; height: 42px; border-radius: 14px; background: var(--tint); color: var(--brand-text); display: grid; place-items: center; animation: icPop .5s .1s cubic-bezier(.34,1.56,.64,1) both; }
+  .capas-tit { display: flex; flex-direction: column; min-width: 0; }
+  .capas-tit b { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; line-height: 1.15; animation: nutriSube .45s .08s cubic-bezier(.22,1,.36,1) both; }
+  .capas-tit small { font-size: 12px; color: var(--on-hero-soft); animation: nutriSube .45s .14s cubic-bezier(.22,1,.36,1) both; }
+  .pf-sec .capas-cab { box-shadow: inset 0 -3px 0 var(--cat); }
+  .capas-sub { display: flex; align-items: center; gap: 10px; padding: 16px 20px 0; }
+  .capas-sub b { font-size: 17px; color: var(--text); }
+  /* card-arrow-nudge: el botón circular de flecha avanza 3 px con resorte al presionar */
+  .flecha-c { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--surface); color: var(--text); border: 1px solid var(--border); display: grid; place-items: center; font-size: 15px; font-style: normal; transition: transform .28s cubic-bezier(.34,1.56,.64,1), background .2s; }
+  .flecha-c.izq { font-size: 22px; padding-bottom: 2px; background: var(--tint); }
+  .nudge:hover .flecha-c, .nudge:active .flecha-c, .nudge:focus-visible .flecha-c { transform: translateX(3px); background: var(--tint); }
+  .nudge:hover .flecha-c.izq, .nudge:active .flecha-c.izq { transform: translateX(-3px); }
+  .nudge:active { transform: scale(.985); }
+  @media (prefers-reduced-motion: reduce) { .flecha-c { transition: none; } .capas-ico, .capas-tit b, .capas-tit small { animation: none !important; } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -823,7 +852,7 @@ function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
-const { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } = React;
+const { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect, useContext } = React;
 const PALETAS = [
   { id: "turquesa", nombre: "Turquesa", a: "#004A46", b: "#43B6AD" },
   { id: "esmeralda", nombre: "Esmeralda", a: "#004C33", b: "#42BA8A" },
@@ -849,7 +878,7 @@ function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
 
 /* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
 /* Debe coincidir con VERSION de sw.js: sirve para confirmar en el teléfono que ya se cargó la última versión */
-const VERSION_APP = "v10 · 23 oct 2026";
+const VERSION_APP = "v11 · 23 oct 2026";
 const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
 const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
 function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
@@ -3262,11 +3291,7 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
   ];
 
   return (
-    <div className="min-h-screen max-w-md mx-auto" style={{ background: "var(--bg)" }}>
-      <header className="sticky top-0 z-10 nutri-header px-5 py-4 flex items-center justify-between">
-        <span className="nutri-serif text-white text-lg">Historial</span>
-        <button onClick={onCerrar} className="text-white text-xl leading-none">✕</button>
-      </header>
+    <PantallaCapas cabecera={<CabeceraSimple titulo="Historial" sub="Tus días por semana o por mes" onCerrar={onCerrar} />}>
       <div className="px-5 pt-5 pb-24">
         <div className="flex nutri-chip rounded-full overflow-hidden mb-4 w-fit">
           <button onClick={() => setVista("semana")} className={`text-xs px-4 py-1.5 ${vista === "semana" ? "nutri-chip-active" : "nutri-ink"}`}>Por semana</button>
@@ -3339,7 +3364,7 @@ function PantallaHistorial({ requerimiento, pacienteId, onCerrar, onEditarDia })
           </>
         )}
       </div>
-    </div>
+    </PantallaCapas>
   );
 }
 
@@ -3812,7 +3837,56 @@ function exportarClinicoPDF({ datos, requerimiento, perfil, medicamentos, resume
 }
 
 /* ---------- Componentes de pantalla ---------- */
+/* ===================================================================================
+   Patrón B · capas superpuestas (07-MOTION: layer-overlap-scroll). La cabecera oscura queda
+   fija detrás; el panel claro se monta encima con esquinas redondeadas y, al deslizar, la tapa:
+   el contenido de la cabecera sube al 35 % de la velocidad, se achica un poco y se desvanece.
+   =================================================================================== */
+const CapasCtx = React.createContext(false);
+function useCapasScroll(ref, rango = 90) {
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf = 0;
+    const f = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => {
+      const y = Math.max(0, window.scrollY), p = Math.min(y, rango) / rango;
+      el.style.transform = quieto ? "" : `translateY(${-y * 0.35}px) scale(${1 - p * 0.08})`;
+      el.style.opacity = String(1 - p);
+      el.style.pointerEvents = p > 0.6 ? "none" : "";
+    }); };
+    f(); window.addEventListener("scroll", f, { passive: true });
+    return () => { window.removeEventListener("scroll", f); cancelAnimationFrame(raf); };
+  }, [ref, rango]);
+}
+function PantallaCapas({ cabecera, children, alto = 104, className = "" }) {
+  const ref = useRef(null);
+  useCapasScroll(ref);
+  useEffect(() => { try { window.scrollTo(0, 0); } catch {} }, []);
+  return (
+    <div className={`capas max-w-md mx-auto ${className}`} style={{ "--capas-alto": `${alto}px` }}>
+      <header className="capas-cab"><div className="capas-cont" ref={ref}>{cabecera}</div></header>
+      <main className="capas-panel"><CapasCtx.Provider value={true}>{children}</CapasCtx.Provider></main>
+    </div>
+  );
+}
+function CabeceraSimple({ titulo, sub, onCerrar, icono }) {
+  return (
+    <div className="capas-fila">
+      {onCerrar && <button type="button" className="capas-btn" onClick={onCerrar} aria-label="Volver">‹</button>}
+      {icono && <span className="capas-ico">{icono}</span>}
+      <span className="capas-tit"><b>{titulo}</b>{sub && <small>{sub}</small>}</span>
+    </div>
+  );
+}
+
 function EncabezadoReporte({ titulo, onVolver, etiqueta = "Volver" }) {
+  const enCapas = useContext(CapasCtx);
+  if (enCapas) return (
+    <div className="capas-sub">
+      <button type="button" onClick={onVolver} className="nudge" aria-label={etiqueta}><span className="flecha-c izq">‹</span></button>
+      <b>{titulo}</b>
+    </div>
+  );
   return (
     <header className="sticky top-0 z-10 nutri-header px-5 py-4 flex items-center justify-between">
       <span className="nutri-serif text-white text-lg">{titulo}</span>
@@ -4904,21 +4978,23 @@ function PantallaReportes({ requerimiento, pacienteId, perfil, pesos, agregarPes
         <p className="text-sm nutri-muted mb-4">Elige qué reporte quieres ver o exportar a PDF.</p>
         <div className="space-y-3">
           {onHistorial && (
-            <button onClick={onHistorial} className="w-full text-left nutri-panel rounded-2xl p-4 flex items-start gap-3">
+            <button onClick={onHistorial} className="nudge w-full text-left nutri-panel rounded-2xl p-4 flex items-center gap-3">
               <span className="nutri-brand-text mt-0.5"><IconHistorial size={20} /></span>
               <span className="flex-1">
                 <span className="block text-sm font-medium nutri-ink mb-0.5">Historial</span>
                 <span className="block text-xs nutri-muted leading-relaxed">Tus días por semana o por mes: lo que comiste cada día y si llegaste a tu meta. Desde aquí puedes editar un día.</span>
               </span>
+              <span className="flecha-c">→</span>
             </button>
           )}
           {opciones.map(({ key, titulo, desc, icono: Ico }) => (
-            <button key={key} onClick={() => setVista(key)} className="w-full text-left nutri-panel rounded-2xl p-4 flex items-start gap-3">
+            <button key={key} onClick={() => setVista(key)} className="nudge w-full text-left nutri-panel rounded-2xl p-4 flex items-center gap-3">
               <span className="nutri-brand-text mt-0.5"><Ico size={22} /></span>
               <span>
                 <span className="block text-sm font-medium nutri-ink mb-0.5">{titulo}</span>
                 <span className="block text-xs nutri-muted leading-relaxed">{desc}</span>
               </span>
+              <span className="flecha-c">→</span>
             </button>
           ))}
         </div>
@@ -6269,14 +6345,9 @@ const SECCIONES_CUENTA = [
 function SeccionCuenta({ sec, onCerrar, children }) {
   const c = SECCIONES_CUENTA.find((x) => x.key === sec) || SECCIONES_CUENTA[0];
   return (
-    <div className={`min-h-screen max-w-md mx-auto relative pf-sec cat-${c.cat} nutri-pantalla-der`}>
-      <header className="pf-cab">
-        <button type="button" className="pf-volver" onClick={onCerrar} aria-label="Volver">‹</button>
-        <span className="pf-ico">{c.icono}</span>
-        <span className="pf-tx"><b>{c.titulo}</b><small>{c.desc}</small></span>
-      </header>
+    <PantallaCapas className={`pf-sec cat-${c.cat} nutri-pantalla-der`} cabecera={<CabeceraSimple titulo={c.titulo} sub={c.desc} onCerrar={onCerrar} icono={c.icono} />}>
       <div className="pf-cuerpo">{children}</div>
-    </div>
+    </PantallaCapas>
   );
 }
 
@@ -6291,7 +6362,7 @@ function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
   useEffect(() => { if (!abierto) return; const k = (e) => e.key === "Escape" && setAbierto(false); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [abierto]);
   const quien = nombre || (email ? email.split("@")[0] : "Mi cuenta");
   return (
-    <header className="nb-barra">
+    <div className="nb-barra">
       <div className="nb-izq">
         <b key={tab}>{TITULO_TAB[tab] || "Hoy"}</b>
         <small>{fecha}</small>
@@ -6314,13 +6385,13 @@ function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
             <div className="nb-quien"><Avatar nombre={nombre} email={email} foto={foto} size={46} /><span><b>{quien}</b>{email && <small>{email}</small>}</span></div>
             {SECCIONES_CUENTA.map((c, k) => (
-              <button key={c.key} type="button" role="menuitem" className={`nb-item nb-color cat-${c.cat}`} onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms` }}>
-                <span className="nb-ico">{c.icono}</span><span>{c.titulo}<small>{c.desc}</small></span><i className="flecha">›</i>
+              <button key={c.key} type="button" role="menuitem" className={`nb-item nb-color nudge cat-${c.cat}`} onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms` }}>
+                <span className="nb-ico">{c.icono}</span><span>{c.titulo}<small>{c.desc}</small></span><span className="flecha-c">→</span>
               </button>
             ))}
           </div>
         </div>, document.body)}
-    </header>
+    </div>
   );
 }
 
@@ -6610,9 +6681,8 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
   if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
 
   return (
-    <div className="min-h-screen max-w-md mx-auto relative">
-      <BarraSuperior tab={tab} log={log} nombre={nombre} email={email} foto={foto}
-        onAbrir={(k) => setMostrarPerfil(k)} />
+    <PantallaCapas key={"capas-" + tab} cabecera={<BarraSuperior tab={tab} log={log} nombre={nombre} email={email} foto={foto}
+        onAbrir={(k) => setMostrarPerfil(k)} />}>
       {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "var(--warn-f)", color: "var(--warn-c)" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
       {errorSync && (
         <div className="px-4 py-2 text-xs flex items-center justify-between gap-2 nutri-warn-bg">
@@ -6635,7 +6705,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
           </button>
         ))}
       </nav>
-    </div>
+    </PantallaCapas>
   );
 }
 
