@@ -729,12 +729,39 @@
   .nutri-pagina > .nutri-sheet { margin-top: 0; padding-top: 18px; }
   @media (prefers-reduced-motion: reduce) { .nb-menu, .nb-item, .nb-sub, .nb-izq b, .nb-racha .fuego { animation: none !important; } }
 
-  .nb-sep-clinico { display: flex; flex-direction: column; margin: 4px 0 14px; padding-top: 8px; }
-  .nb-sep-clinico b { font-size: 16px; color: var(--text); }
-  .nb-sep-clinico span { font-size: 12px; color: var(--text-2); }
   .nutri-nav-item.activo .ico-barra { animation: navBarra .6s cubic-bezier(.34,1.56,.64,1) both; transform-box: fill-box; transform-origin: bottom; }
   .nutri-nav-item.activo .ico-barra.b2 { animation-delay: .08s; } .nutri-nav-item.activo .ico-barra.b3 { animation-delay: .16s; }
   @keyframes navBarra { from { transform: scaleY(.2); } }
+
+  /* ===== Secciones de la cuenta con color (pf-*) ===== */
+  .pf-sec { --brand: var(--sc); --brand-text: color-mix(in srgb, var(--sc) 80%, var(--text)); --chip-active-bg: var(--sc); --chip-active-text: #fff;
+    --brand-glow: color-mix(in srgb, var(--sc) 40%, transparent); --panel-border: color-mix(in srgb, var(--sc) 28%, var(--border));
+    --panel-bg: color-mix(in srgb, var(--sc) 4%, var(--surface)); --tint: color-mix(in srgb, var(--sc) 12%, var(--bg)); --track: color-mix(in srgb, var(--sc) 22%, var(--bg));
+    background: var(--bg); }
+  .pf-cab { position: sticky; top: 0; z-index: 10; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 22px 10px; color: #fff;
+    background: linear-gradient(120deg, var(--sc), var(--sc2)); border-radius: 0 0 26px 26px; box-shadow: 0 14px 30px -18px var(--sc); }
+  .pf-cab .burbuja { position: absolute; border-radius: 50%; background: rgb(255 255 255 / .16); pointer-events: none; animation: pfFlota 7s ease-in-out infinite; }
+  .pf-cab .b1 { width: 120px; height: 120px; right: -30px; top: -40px; } .pf-cab .b2 { width: 60px; height: 60px; right: 80px; bottom: -30px; animation-delay: -2s; } .pf-cab .b3 { width: 26px; height: 26px; right: 40px; top: 50px; animation-delay: -4s; }
+  @keyframes pfFlota { 50% { transform: translateY(-8px) scale(1.06); } }
+  .pf-volver { position: relative; width: 36px; height: 36px; border-radius: 50%; background: rgb(255 255 255 / .2); color: #fff; font-size: 26px; line-height: 1; display: grid; place-items: center; padding-bottom: 3px; }
+  .pf-ico { position: relative; width: 48px; height: 48px; border-radius: 16px; background: rgb(255 255 255 / .22); display: grid; place-items: center; font-size: 26px; animation: icPop .5s .1s cubic-bezier(.34,1.56,.64,1) both; }
+  .pf-tx { position: relative; display: flex; flex-direction: column; min-width: 0; }
+  .pf-tx b { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; line-height: 1.15; animation: nutriSube .45s .08s cubic-bezier(.22,1,.36,1) both; }
+  .pf-tx small { font-size: 12px; opacity: .9; animation: nutriSube .45s .14s cubic-bezier(.22,1,.36,1) both; }
+  .pf-cuerpo { padding-bottom: 40px; }
+  .pf-cuerpo .nutri-panel { position: relative; overflow: hidden; animation: nutriSube .5s cubic-bezier(.22,1,.36,1) both; }
+  .pf-cuerpo .nutri-panel::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--sc), var(--sc2)); }
+  .pf-cuerpo .nutri-panel:nth-of-type(2) { animation-delay: .07s; } .pf-cuerpo .nutri-panel:nth-of-type(3) { animation-delay: .14s; }
+  .pf-cuerpo .nutri-brand { background: linear-gradient(120deg, var(--sc), var(--sc2)); }
+  .pf-fila { animation: pfEntra .55s cubic-bezier(.34,1.4,.64,1) both; }
+  @keyframes pfEntra { 0% { opacity: 0; transform: translateY(-10px) scale(.94); box-shadow: 0 0 0 0 color-mix(in srgb, var(--sc, var(--accent)) 55%, transparent); } 60% { opacity: 1; transform: none; box-shadow: 0 0 0 6px color-mix(in srgb, var(--sc, var(--accent)) 18%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .pf-recipiente { display: flex; align-items: center; gap: 8px; border-radius: 12px; }
+  .pf-rec-ico { flex: none; width: 36px; height: 28px; display: grid; place-items: center; color: var(--text-2); }
+  .pf-rec-ico svg { width: 36px; height: 26px; }
+  .pf-aviso { font-size: 12px; color: var(--text-2); background: var(--tint); border-radius: 14px; padding: 8px 12px; margin: 0 0 -6px; }
+  .nb-color .nb-ico { flex: none; width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; font-size: 19px; background: linear-gradient(135deg, var(--sc), var(--sc2)); box-shadow: 0 6px 14px -8px var(--sc); }
+  .nb-color:hover { background: color-mix(in srgb, var(--sc) 10%, transparent); }
+  @media (prefers-reduced-motion: reduce) { .pf-cab .burbuja, .pf-fila, .pf-cuerpo .nutri-panel, .pf-ico, .pf-tx b, .pf-tx small { animation: none !important; } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -2254,15 +2281,16 @@ function CribadoGeriatrico({ perfil, setPerfil }) {
   );
 }
 
-function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom }) {
+function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom, seccion = "todo" }) {
+  const ver = (k) => seccion === "todo" || seccion === k;
   const [mostrarForm, setMostrarForm] = useState(false);
   const toggleCondicion = (id) => setPerfil((p) => ({ ...p, condiciones: p.condiciones.includes(id) ? p.condiciones.filter((c) => c !== id) : [...p.condiciones, id] }));
   const campo = (label, children) => <label className="block mb-4"><span className="text-sm nutri-muted block mb-1">{label}</span>{children}</label>;
   const inputCls = "w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink focus:outline-none focus:ring-2";
   return (
-    <div className="nutri-pagina">
-      <div className="nutri-sheet px-5 pt-6 pb-24">
-      <div className="nutri-panel rounded-2xl p-5 mb-5">
+    <div className={seccion === "todo" ? "nutri-pagina" : ""}>
+      <div className={seccion === "todo" ? "nutri-sheet px-5 pt-6 pb-24" : "px-5 pt-5"}>
+      {ver("datos") && <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="grid grid-cols-2 gap-3">
           {campo("Edad (años)", <input type="number" className={inputCls} value={perfil.edad} onChange={(e) => setPerfil((p) => ({ ...p, edad: Number(e.target.value) }))}  onFocus={(e) => e.target.select()} />)}
           {campo("Sexo biológico", <select className={inputCls} value={perfil.sexo} onChange={(e) => setPerfil((p) => ({ ...p, sexo: e.target.value }))}><option value="femenino">Femenino</option><option value="masculino">Masculino</option></select>)}
@@ -2272,8 +2300,8 @@ function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom })
         {campo("Nivel de actividad física", <select className={inputCls} value={perfil.actividad} onChange={(e) => setPerfil((p) => ({ ...p, actividad: e.target.value }))}><option value="sedentario">Sedentario</option><option value="ligero">Ligero</option><option value="moderado">Moderado</option><option value="intenso">Intenso</option></select>)}
         {campo("Objetivo", <select className={inputCls} value={perfil.objetivo} onChange={(e) => setPerfil((p) => ({ ...p, objetivo: e.target.value }))}><option value="perdida">Pérdida de peso</option><option value="mantenimiento">Mantenimiento</option><option value="ganancia_muscular">Ganancia muscular</option></select>)}
         {campo("Fórmula de gasto energético basal", <select className={inputCls} value={perfil.formulaGEB} onChange={(e) => setPerfil((p) => ({ ...p, formulaGEB: e.target.value }))}><option value="mifflin">Mifflin-St Jeor (recomendada)</option><option value="harris_benedict">Harris-Benedict</option></select>)}
-      </div>
-      <div className="nutri-panel rounded-2xl p-5">
+      </div>}
+      {ver("condiciones") && <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm nutri-muted">Condiciones médicas / especiales</span>
           <button onClick={() => setMostrarForm((v) => !v)} className="flex items-center gap-1 text-xs nutri-brand-text font-medium"><IconPlus size={13} /> Agregar condición</button>
@@ -2285,8 +2313,11 @@ function PantallaPerfil({ perfil, setPerfil, catalogo, agregarCondicionCustom })
         </div>
         {catalogo.some((c) => c.personalizada) && <p className="text-[11px] nutri-muted mt-2">• condición agregada por ti</p>}
         {mostrarForm && <FormularioCondicionNueva onCancelar={() => setMostrarForm(false)} onGuardar={(nueva) => { agregarCondicionCustom(nueva); setMostrarForm(false); toggleCondicion(nueva.id); }} />}
-      </div>
-      {perfil.edad >= EDAD_ADULTO_MAYOR && <CribadoGeriatrico perfil={perfil} setPerfil={setPerfil} />}
+      </div>}
+      {(seccion === "datos" || (seccion === "todo" && perfil.edad >= EDAD_ADULTO_MAYOR)) && <>
+        {perfil.edad < EDAD_ADULTO_MAYOR && <p className="pf-aviso">El cribado MNA-SF está pensado para personas de 60 años o más; puedes llenarlo igual si la nutricionista lo indica.</p>}
+        <CribadoGeriatrico perfil={perfil} setPerfil={setPerfil} />
+      </>}
       </div>
     </div>
   );
@@ -5820,9 +5851,9 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
   const inputCls = "w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink";
 
   return (
-    <div className={seccion === "clinico" ? "" : "nutri-pagina"}>
-      <div className={seccion === "clinico" ? "px-5 pb-24" : "nutri-sheet px-5 pt-6 pb-24"}>
-      {seccion !== "clinico" && <>
+    <div className={seccion === "cuenta" || seccion === "todo" ? "nutri-pagina" : ""}>
+      <div className={seccion === "cuenta" || seccion === "todo" ? "nutri-sheet px-5 pt-6 pb-24" : "px-5 pb-24"}>
+      {(seccion === "cuenta" || seccion === "todo") && <>
       <TarjetaCuenta salir={salir} email={email} instalar={instalar} />
 
       <div className="nutri-panel rounded-2xl p-5 mb-5">
@@ -5871,6 +5902,7 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
       </>}
 
       {seccion !== "cuenta" && <>
+      {seccion !== "medicamentos" && <>
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-2 mb-3"><IconSparkles size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Prescripción médica (manual)</span></div>
         <p className="text-xs nutri-muted mb-3">Si tu médico o nutricionista te dio metas específicas (kcal, proteína, % de macros), actívalo aquí para que la app las use en vez del cálculo automático. Deja un campo vacío para que ese valor se siga calculando solo.</p>
@@ -5922,7 +5954,7 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
         </div>
         <div className="space-y-2">
           {suplementos.map((s) => (
-            <div key={s.id} className="flex items-center justify-between text-sm nutri-panel rounded-lg px-3 py-2">
+            <div key={s.id} className="pf-fila flex items-center justify-between text-sm nutri-panel rounded-lg px-3 py-2">
               <div>
                 <span className="nutri-ink">{s.nombre}</span> <span className="nutri-muted text-xs">— {s.momento || "mañana"} · {s.kcal} kcal · {s.proteinaG} g prot · {s.vecesDia}x/día</span>
                 {s.notas && <div className="text-[11px] nutri-muted italic">{s.notas}</div>}
@@ -5942,9 +5974,10 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
         <p className="text-xs nutri-muted mb-3">Pesa cada recipiente vacío una vez y guarda su peso aquí. Cuando registres un alimento pesado junto con él, la app restará este valor automáticamente.</p>
         <div className="space-y-2">
           {recipientes.map((r) => (
-            <div key={r.id} className="flex items-center gap-2">
-              <input className={inputCls + " flex-1"} value={r.nombre} onChange={(e) => actualizarRecipiente(r.id, "nombre", e.target.value)} />
-              <input type="number" className={inputCls + " w-24"} value={r.taraG} onChange={(e) => actualizarRecipiente(r.id, "taraG", Number(e.target.value))}  onFocus={(e) => e.target.select()} />
+            <div key={r.id} className="pf-fila pf-recipiente">
+              <span className="pf-rec-ico"><IconoRecipiente nombre={r.nombre} /></span>
+              <input className={inputCls} style={{ flex: "1 1 auto", minWidth: 0, width: "auto" }} placeholder="Nombre (ej. Plato hondo)" aria-label="Nombre del recipiente" value={r.nombre} onChange={(e) => actualizarRecipiente(r.id, "nombre", e.target.value)} />
+              <input type="number" className={inputCls} style={{ flex: "0 0 74px", width: 74 }} aria-label="Peso del recipiente en gramos" value={r.taraG} onChange={(e) => actualizarRecipiente(r.id, "taraG", Number(e.target.value))}  onFocus={(e) => e.target.select()} />
               <span className="text-xs nutri-muted">g</span>
               <button onClick={() => eliminarRecipiente(r.id)} className="nutri-warn"><IconTrash size={15} /></button>
             </div>
@@ -5952,7 +5985,8 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
         </div>
       </div>
 
-      <div className="nutri-panel rounded-2xl p-5">
+      </>}
+      {seccion !== "plan" && <div className="nutri-panel rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-3"><IconPill size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Medicamentos</span></div>
 
         <div className="flex flex-col gap-2 mb-3">
@@ -5986,7 +6020,7 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
 
         <div className="space-y-2 mb-3">
           {medicamentos.map((m) => (
-            <div key={m.id} className="flex items-center justify-between text-sm nutri-panel rounded-lg px-3 py-2">
+            <div key={m.id} className="pf-fila flex items-center justify-between text-sm nutri-panel rounded-lg px-3 py-2">
               <div><span className="nutri-ink">{m.nombre}</span> <span className="nutri-muted text-xs">{m.dosis} {m.frecuencia}</span></div>
               <button onClick={() => eliminarMedicamento(m.id)} className="nutri-warn"><IconTrash size={15} /></button>
             </div>
@@ -5995,7 +6029,7 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
         </div>
 
         <p className="text-[11px] nutri-muted leading-relaxed">Esta información es orientativa y no reemplaza la indicación de tu médico o farmacéutico. Ante cualquier duda sobre interacciones fármaco-nutriente, consúltalo con un profesional de salud.</p>
-      </div>
+      </div>}
       </>}
       </div>
     </div>
@@ -6198,7 +6232,28 @@ function Avatar({ nombre, email, foto, size = 38 }) {
     </span>
   );
 }
-function BarraSuperior({ tab, log, nombre, email, foto, onPerfil }) {
+/* Tres secciones de la cuenta (menú del avatar), cada una con su color */
+const SECCIONES_CUENTA = [
+  { key: "perfil", titulo: "Perfil nutricional", desc: "Edad, sexo, peso, talla, actividad y cribado", c1: "#0EA5E9", c2: "#14B8A6", icono: "🧍" },
+  { key: "salud", titulo: "Condiciones y medicamentos", desc: "Condiciones médicas y lo que tomas", c1: "#F43F5E", c2: "#EC4899", icono: "💊" },
+  { key: "plan", titulo: "Prescripción y pesaje", desc: "Prescripción médica, suplementos y recipientes", c1: "#8B5CF6", c2: "#F59E0B", icono: "📋" },
+];
+function SeccionCuenta({ sec, onCerrar, children }) {
+  const c = SECCIONES_CUENTA.find((x) => x.key === sec) || SECCIONES_CUENTA[0];
+  return (
+    <div className="min-h-screen max-w-md mx-auto relative pf-sec nutri-pantalla-der" style={{ "--sc": c.c1, "--sc2": c.c2 }}>
+      <header className="pf-cab">
+        <i className="burbuja b1" /><i className="burbuja b2" /><i className="burbuja b3" />
+        <button type="button" className="pf-volver" onClick={onCerrar} aria-label="Volver">‹</button>
+        <span className="pf-ico">{c.icono}</span>
+        <span className="pf-tx"><b>{c.titulo}</b><small>{c.desc}</small></span>
+      </header>
+      <div className="pf-cuerpo">{children}</div>
+    </div>
+  );
+}
+
+function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
   const [abierto, setAbierto] = useState(false);
   const racha = useMemo(() => rachaDeRegistro(log), [log]);
   const fecha0 = new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Lima" });
@@ -6220,7 +6275,11 @@ function BarraSuperior({ tab, log, nombre, email, foto, onPerfil }) {
         <div className="nb-capa" onClick={() => setAbierto(false)}>
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
             <div className="nb-quien"><Avatar nombre={nombre} email={email} foto={foto} size={46} /><span><b>{quien}</b>{email && <small>{email}</small>}</span></div>
-            <button type="button" role="menuitem" className="nb-item" onClick={() => ir(onPerfil)} style={{ animationDelay: "40ms" }}><NavPerfil size={22} /><span>Perfil nutricional<small>Datos, condiciones, prescripción, suplementos, recipientes y medicamentos</small></span></button>
+            {SECCIONES_CUENTA.map((c, k) => (
+              <button key={c.key} type="button" role="menuitem" className="nb-item nb-color" onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms`, "--sc": c.c1, "--sc2": c.c2 }}>
+                <span className="nb-ico">{c.icono}</span><span>{c.titulo}<small>{c.desc}</small></span><i className="flecha">›</i>
+              </button>
+            ))}
           </div>
         </div>, document.body)}
     </header>
@@ -6299,7 +6358,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
   const registrarAgua = useCallback((ml) => setAguaMl((a) => Math.max(a + ml, 0)), []);
   const [log, setLog] = useState(() => { try { const s = localStorage.getItem("nutriapp_log_" + hoyISO()); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [tab, setTab] = useState("menu");
-  const [mostrarPerfil, setMostrarPerfil] = useState(false);
+  const [mostrarPerfil, setMostrarPerfil] = useState(null); // null | "perfil" | "salud" | "plan"
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [mostrarReporte, setMostrarReporte] = useState(false);
   const [fechaDesdeHistorial, setFechaDesdeHistorial] = useState(null);
@@ -6501,19 +6560,21 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
   if (mostrarPerfil) return (
-    <div className="min-h-screen max-w-md mx-auto relative nutri-pantalla-der">
-      <EncabezadoReporte titulo="Perfil nutricional" onVolver={() => setMostrarPerfil(false)} etiqueta="Cerrar" />
-      <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />
-      <div className="nb-sep-clinico px-5"><b>Prescripción, suplementos, recipientes y medicamentos</b><span>Antes estaban en Opciones.</span></div>
-      <PantallaOpciones seccion="clinico" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />
-    </div>
+    <SeccionCuenta sec={mostrarPerfil} onCerrar={() => setMostrarPerfil(null)}>
+      {mostrarPerfil === "perfil" && <PantallaPerfil seccion="datos" perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
+      {mostrarPerfil === "salud" && <>
+        <PantallaPerfil seccion="condiciones" perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />
+        <PantallaOpciones seccion="medicamentos" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />
+      </>}
+      {mostrarPerfil === "plan" && <PantallaOpciones seccion="plan" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
+    </SeccionCuenta>
   );
   if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
       <BarraSuperior tab={tab} log={log} nombre={nombre} email={email} foto={foto}
-        onPerfil={() => setMostrarPerfil(true)} />
+        onAbrir={(k) => setMostrarPerfil(k)} />
       {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "#F6E7C7", color: "#5A4A1E" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
       {errorSync && (
         <div className="px-4 py-2 text-xs flex items-center justify-between gap-2 nutri-warn-bg">

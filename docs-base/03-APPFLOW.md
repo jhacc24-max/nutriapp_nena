@@ -183,3 +183,10 @@ Repetir este bloque por cada pantalla.
   - Menú del avatar: solo **Perfil nutricional**, que ahora incluye también prescripción médica, suplementos, recipientes y medicamentos.
   - Opciones: solo cuenta, respaldo de datos, espacio compartido y apariencia.
   - Captura `pantallas/APP-2026-10-23-reportes-opciones-perfil.png`.
+- **Menú del avatar en 3 secciones con color (2026-10-23, pedido por el usuario):**
+  - 🧍 **Perfil nutricional** (celeste → turquesa): edad, sexo, peso, talla, actividad, objetivo, fórmula y cribado MNA-SF.
+  - 💊 **Condiciones y medicamentos** (rojo → rosa): condiciones médicas y medicamentos.
+  - 📋 **Prescripción y pesaje** (violeta → ámbar): prescripción médica, suplementos y recipientes.
+  - Cada sección abre con cabecera de color (burbujas que flotan), tarjetas con franja de color que suben al entrar, y cada fila nueva entra con rebote y un halo del color de la sección.
+  - Corregido: en Recipientes el nombre quedaba aplastado y solo se veía el peso; ahora se ve el ícono, el nombre y el peso.
+  - Captura `pantallas/APP-2026-10-23-secciones-cuenta.png`.
