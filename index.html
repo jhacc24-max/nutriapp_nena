@@ -863,6 +863,14 @@
 
   /* Dentro de las tarjetas tonales, chips y campos quedan sobre "surface" para que se distingan */
   .capas-panel :is(.tc-1, .tc-2) .nutri-chip:not(.nutri-chip-active) { background: color-mix(in srgb, var(--surface) 78%, transparent); }
+
+  /* Menú de la cuenta compacto: sin flecha, letra un poco menor para que cada título entre en una línea */
+  .nb-menu { width: min(320px, calc(100vw - 24px)); }
+  .nb-item { gap: 10px; padding: 9px 8px 9px 12px; }
+  .nb-item > span { font-size: 14px; line-height: 1.25; }
+  .nb-item small { font-size: 11px; line-height: 1.3; }
+  .nb-color .nb-ico { width: 34px; height: 34px; border-radius: 11px; }
+  .nb-color .nb-ico svg { width: 18px; height: 18px; }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -926,7 +934,7 @@ function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
 
 /* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
 /* Debe coincidir con VERSION de sw.js: sirve para confirmar en el teléfono que ya se cargó la última versión */
-const VERSION_APP = "v12 · 23 oct 2026";
+const VERSION_APP = "v13 · 23 oct 2026";
 const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
 const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
 function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
@@ -6516,8 +6524,8 @@ function BarraSuperior({ tab, log, nombre, email, foto, onAbrir, onRacha }) {
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
             <div className="nb-quien"><Avatar nombre={nombre} email={email} foto={foto} size={46} /><span><b>{quien}</b>{email && <small>{email}</small>}</span></div>
             {SECCIONES_CUENTA.map((c, k) => (
-              <button key={c.key} type="button" role="menuitem" className={`nb-item nb-color nudge cat-${c.cat}`} onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms` }}>
-                <span className="nb-ico">{c.icono}</span><span>{c.titulo}<small>{c.desc}</small></span><span className="flecha-c">→</span>
+              <button key={c.key} type="button" role="menuitem" className={`nb-item nb-color cat-${c.cat}`} onClick={() => ir(() => onAbrir(c.key))} style={{ animationDelay: `${40 + k * 50}ms` }}>
+                <span className="nb-ico">{c.icono}</span><span>{c.titulo}<small>{c.desc}</small></span>
               </button>
             ))}
           </div>
