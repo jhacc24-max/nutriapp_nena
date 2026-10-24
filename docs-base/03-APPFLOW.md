@@ -163,3 +163,4 @@ Repetir este bloque por cada pantalla.
   - Menú: P-05 versión final (avance con colores por estado, 4 comidas, ventana con variantes, confirmar y pasar al registro, que vacía el menú). Se guarda en el teléfono y en Firestore `pacientes/{id}/menuHoy/{fecha}`.
   - Capturas de la app funcionando: `pantallas/APP-2026-10-23-*.png`.
 
+- **Menú de hoy · ajuste pedido por el usuario (2026-10-23, ✅):** cada comida (desayuno, almuerzo, cena y colación) muestra su propio avance de calorías, proteína, carbohidratos y grasa con los mismos colores por estado: en la tarjeta (4 barras con %) y dentro de la ventana (4 indicadores con su meta, que se llenan al agregar alimentos). La ventana tiene buscador para sumar cualquier alimento de la base (ej. Ensure Advance). Capturas `pantallas/APP-2026-10-23-menu-v2-*.png`.

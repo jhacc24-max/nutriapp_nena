@@ -548,6 +548,17 @@
   .mh-resumen .tx { flex: 1; min-width: 0; font-size: 12px; color: var(--text-2); }
   .mh-resumen .tx b { display: block; font-size: 13.5px; color: var(--text); }
   .mh-resumen .pct { font-size: 17px; transition: color .5s; }
+  .mh-resumen { flex-wrap: wrap; }
+  .mh-resumen .mh-nutris { flex: 1 1 100%; }
+  .mh-nutris.compacto { gap: 5px; }
+  .mh-nutris.compacto .mh-nutri { padding: 6px 3px; border-radius: 12px; gap: 2px; }
+  .mh-nutris.compacto .mh-nutri small { font-size: 10px; }
+  .mh-buscados { margin-bottom: 4px; }
+  .mh-comida .mh-macros { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
+  .mh-comida .mh-macros > span { display: grid; grid-template-columns: 26px 1fr 30px; align-items: center; gap: 5px; }
+  .mh-comida .mh-macros em { font-style: normal; font-size: 10px; color: var(--text-2); }
+  .mh-comida .mh-macros em:last-child { text-align: right; }
+  .mh-comida .mh-macros .mini { margin-top: 0; }
   .mh-v-cuerpo { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px; }
   .mh-v-cuerpo::-webkit-scrollbar { display: none; }
   .mh-rapidas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; padding-bottom: 2px; }
@@ -2569,6 +2580,24 @@ function AvanceDia({ total, requerimiento, latir }) {
   );
 }
 
+/* Metas de una comida: el requerimiento del día repartido según el % de esa comida */
+const metasMomento = (req, m) => { const f = (MEAL_DEFS.find((d) => d.key === m) || {}).pct || 0.25; return { kcal: (req.get || 0) * f || 1, p: (req.proteinasG || 0) * f || 1, c: (req.carbohidratosG || 0) * f || 1, g: (req.grasasG || 0) * f || 1 }; };
+const NUTRIS_MENU = [["kcal", "calorias", "Calorías", ""], ["p", "proteina", "Proteína", " g"], ["c", "carbohidratos", "Carbohid.", " g"], ["g", "grasas", "Grasa", " g"]];
+/* Los 4 indicadores (calorías, proteína, carbohidratos, grasa) con valor, barra y %, por comida */
+function NutrisComida({ total, metas, compacto }) {
+  return (
+    <div className={`mh-nutris ${compacto ? "compacto" : ""}`}>
+      {NUTRIS_MENU.map(([k, ik, n, u]) => { const pk = total[k] / metas[k], ek = ESTADO_AVANCE(pk); return (
+        <div key={k} className={`mh-nutri ${ek === "exceso" ? "exceso" : ""}`}>
+          <IconoAlimento clave={ik} size={compacto ? 22 : 30} />
+          <span className="val"><b className="num-u"><NumeroAnimado valor={total[k]} duracion={500} /></b>{u}</span>
+          <span className="barra"><i style={{ width: `${Math.min(100, pk * 100)}%`, background: COLOR_ESTADO[ek] }} /></span>
+          <small>{compacto ? <>de <span className="num-u">{Math.round(metas[k])}</span>{u} · </> : <>{n} · </>}<span className="num-u" style={{ color: COLOR_ESTADO[ek] === "var(--border)" ? undefined : COLOR_ESTADO[ek], fontWeight: 600 }}>{Math.round(pk * 100)}</span>%</small>
+        </div>); })}
+    </div>
+  );
+}
+
 /* Ventana de una comida: variantes de un toque arriba; lo elegido sube con sus pesos y el resto
    baja a "¿Algo más?". Las animaciones de subir/bajar usan la técnica FLIP. */
 const PARTES_MENU = [["Base", ["carbohidrato", "quinua", "menestra"]], ["Proteína", ["proteina"]], ["Lácteos", ["lacteo"]], ["Fruta", ["fruta"]], ["Verduras", ["vegetal"]], ["Extras", ["grasa"]]];
@@ -2577,8 +2606,14 @@ function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar
   const [variante, setVariante] = useState(null);
   const [nuevos, setNuevos] = useState([]);
   const [saliendo, setSaliendo] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
   const contRef = useRef(null), posiciones = useRef(null);
-  const meta = metaMomento(requerimiento, momento);
+  const meta = metaMomento(requerimiento, momento), metas = metasMomento(requerimiento, momento);
+  const resultados = useMemo(() => {
+    const q = normalizarTexto(busqueda);
+    if (!q) return null;
+    return FOOD_DB.filter((f) => normalizarTexto(f.nombre).includes(q) || CLAVES_TEXTO.some(([k, id]) => id === f.id && k.startsWith(q))).slice(0, 16);
+  }, [busqueda]);
   const disponibles = useMemo(() => {
     const ids = new Set(); variantes.forEach((v) => v.items.forEach((it) => ids.add(it.alimento.id)));
     (FRECUENTES_BASE[momento] || []).forEach((id) => ids.add(id));
@@ -2596,7 +2631,8 @@ function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar
     });
   });
   const elegirVariante = (i) => { capturar(); setVariante(i); const it = variantes[i].items.map((x) => ({ alimento: x.alimento, gramos: x.gramos })); setSel(it); setNuevos(it.map((x) => x.alimento.id)); if (contRef.current) contRef.current.scrollTo({ top: 0, behavior: "smooth" }); };
-  const sumar = (a) => { capturar(); setVariante(null); setSel((s) => [...s, { alimento: a, gramos: porcionVar(a) }]); setNuevos([a.id]); };
+  const sumar = (a) => { capturar(); setVariante(null); setSel((s) => s.some((x) => x.alimento.id === a.id) ? s : [...s, { alimento: a, gramos: porcionVar(a) }]); setNuevos([a.id]); };
+  const sumarBuscado = (a) => { sumar(a); setBusqueda(""); if (contRef.current) contRef.current.scrollTo({ top: 0, behavior: "smooth" }); };
   const quitar = (i) => { capturar(); setVariante(null); setSel((s) => s.filter((_, j) => j !== i)); setNuevos([]); };
   const t = sumaMacros(sel), pm = t.kcal / (meta || 1);
   const elegidos = new Set(sel.map((x) => x.alimento.id));
@@ -2608,10 +2644,22 @@ function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar
       <div className="mh-v-cab"><span className="emo">{MOMENTO_EMOJI[momento]}</span><h2>{nom}<small>Meta <span className="num-u">{Math.round(meta)}</span> kcal</small></h2><button type="button" className="qc-x" aria-label="Cerrar" onClick={() => cerrar(false)}>✕</button></div>
       <div className="mh-resumen">
         <AnilloAvance pct={pm} size={46} grosor={5} />
-        <div className="tx"><b><span className="num-u"><NumeroAnimado valor={t.kcal} duracion={400} /></span> de {Math.round(meta)} kcal</b>{sel.length ? <span><span className="num-u">{t.p.toFixed(1)}</span> g prot · <span className="num-u">{t.c.toFixed(1)}</span> g carb · <span className="num-u">{t.g.toFixed(1)}</span> g grasa</span> : <span>Elige una variante o toca alimentos</span>}</div>
+        <div className="tx"><b><span className="num-u"><NumeroAnimado valor={t.kcal} duracion={400} /></span> de {Math.round(meta)} kcal</b><span>{sel.length ? TEXTO_ESTADO(pm) : "Elige una variante, busca o toca alimentos"}</span></div>
         <span className="num-u pct" style={{ color: colorEstado(pm) }}>{Math.round(pm * 100)}%</span>
+        <NutrisComida total={t} metas={metas} compacto />
       </div>
       <div className="mh-v-cuerpo" ref={contRef}>
+        <label className="qc-buscador">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+          <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Busca cualquier alimento (ej. Ensure)" aria-label="Buscar alimento" />
+          {busqueda && <button type="button" className="qc-x" style={{ width: 26, height: 26 }} aria-label="Borrar búsqueda" onClick={() => setBusqueda("")}>✕</button>}
+        </label>
+        {resultados && (
+          <div className="mh-buscados">
+            <p className="qc-tsec">{resultados.length ? `${resultados.length} resultado${resultados.length === 1 ? "" : "s"} · toca para sumar` : "No encontré ese alimento"}</p>
+            <div className="qc-rejilla">{resultados.map((a) => <button key={a.id} type="button" className={`qc-tile ${elegidos.has(a.id) ? "tiene" : ""}`} onClick={() => sumarBuscado(a)}><IconoAlimento alimento={a} size={34} /><span className="tn">{nombreMosaico(a)}</span></button>)}</div>
+          </div>
+        )}
         <p className="qc-tsec">Tus variantes · un toque</p>
         <div className="mh-rapidas">
           {variantes.map((v, i) => (
@@ -2702,7 +2750,7 @@ function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync }) {
               {its && its.length > 0 && <span className="ok">✓</span>}
               <span className="emo">{MOMENTO_EMOJI[m]}</span><b>{MOMENTO_LABEL_CAPITALIZADO[m]}</b>
               {its && its.length ? <><span className="icos">{its.slice(0, 4).map((it) => <IconoAlimento key={it.alimento.id} alimento={it.alimento} size={24} />)}</span><span className="est"><b className="num-u">{Math.round(tk)}</b> de {Math.round(meta)} kcal</span></> : <span className="est">Meta <span className="num-u">{Math.round(meta)}</span> kcal<br />Toca para elegir</span>}
-              <span className="mini"><i style={{ width: `${Math.min(100, tk / (meta || 1) * 100)}%`, background: colorEstado(tk / (meta || 1)) }} /></span>
+              <span className="mh-macros">{(() => { const tm = its ? sumaMacros(its) : { kcal: 0, p: 0, c: 0, g: 0 }, mm = metasMomento(requerimiento, m); return [["kcal", "kcal"], ["p", "P"], ["c", "C"], ["g", "G"]].map(([k, l]) => { const pk = tm[k] / mm[k]; return <span key={k} title={`${l}: ${Math.round(pk * 100)}%`}><em>{l}</em><span className="mini"><i style={{ width: `${Math.min(100, pk * 100)}%`, background: colorEstado(pk) }} /></span><em className="num-u">{Math.round(pk * 100)}%</em></span>; }); })()}</span>
             </button>); })}
         </div>
         {n === 4 ? (
