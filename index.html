@@ -11,15 +11,16 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="NutriApp" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>NutriClínica</title>
+<title>NutriApp</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="iconos-nutri.js"></script>
+<script src="corazon-nutri.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -295,6 +296,283 @@
   @keyframes nutri-ico-pop { 0% { transform: scale(.6); } 45% { transform: scale(1.25) rotate(-6deg); } 70% { transform: scale(.95) rotate(3deg); } 100% { transform: scale(1); } }
   .nutri-ico-pop { animation: nutri-ico-pop .55s cubic-bezier(.3,1.4,.5,1) both; }
   @media (prefers-reduced-motion: reduce) { .nutri-ico-pop { animation: none; } }
+
+  /* ---------- Marca NutriApp: ícono "corazón de alimentos" + nombre con letras que saltan ---------- */
+  .marca-n { font-family: "Baloo 2", "Nunito", system-ui, sans-serif; font-weight: 800; line-height: 1; letter-spacing: -.5px; white-space: nowrap; display: inline-flex; align-items: flex-end; color: #fff; }
+  .marca-n .l { display: inline-block; position: relative; }
+  .marca-n .app { color: #B6E86A; }
+  .marca-n .i-sin { position: relative; }
+  .marca-n .punto { position: absolute; left: 50%; top: .02em; width: .3em; height: .3em; margin-left: -.15em; }
+  .marca-n.salta .l { opacity: 0; animation: marcaSalta .6s cubic-bezier(.34,1.56,.64,1) calc(var(--t, 0s) + var(--k) * 75ms) forwards; }
+  @keyframes marcaSalta { 0% { opacity: 0; transform: translateY(.8em) scale(.3) rotate(-14deg); } 100% { opacity: 1; transform: none; } }
+  .marca-n.salta .punto { transform: scale(0); animation: marcaPunto .5s cubic-bezier(.34,1.56,.64,1) calc(var(--t, 0s) + .85s) forwards, marcaLate 1s ease-in-out calc(var(--t, 0s) + 1.5s) 2; }
+  @keyframes marcaPunto { to { transform: scale(1); } }
+  @keyframes marcaLate { 0%, 56%, 100% { transform: scale(1); } 14% { transform: scale(1.35); } 42% { transform: scale(1.18); } }
+  .icono-app { display: block; border-radius: 22.5%; overflow: hidden; flex: none; }
+  .icono-app svg, .icono-app img { display: block; width: 100%; height: 100%; }
+  .nutri-carga { position: fixed; inset: 0; z-index: 100; background: linear-gradient(160deg, var(--hero), var(--hero-2)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+  .nutri-carga .icono-app { width: min(46vw, 200px); box-shadow: 0 18px 34px -16px rgb(0 0 0 / .7); }
+  .nutri-carga .marca-n { font-size: 42px; }
+  .nutri-carga .barra { width: 120px; height: 4px; border-radius: 2px; background: rgb(255 255 255 / .18); overflow: hidden; }
+  .nutri-carga .barra i { display: block; height: 100%; width: 40%; border-radius: 2px; background: #B6E86A; animation: cargaBarra 1.2s ease-in-out infinite; }
+  @keyframes cargaBarra { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+  .nutri-carga.sale { animation: cargaSale .45s cubic-bezier(.2,0,0,1) forwards; }
+  @keyframes cargaSale { to { opacity: 0; transform: scale(1.06); filter: blur(6px); } }
+  /* Animación del corazón (mosaico): los alimentos aparecen desde la punta, sube la N y late */
+  .cn .letra, .cn .destello, .cn .latido { transform-box: view-box; }
+  .cn.anima .f { animation: cnPop .5s cubic-bezier(.34,1.56,.64,1) var(--d) both; }
+  @keyframes cnPop { from { transform: scale(0) rotate(-40deg); opacity: 0; } }
+  .cn.anima .base-c { animation: cnAparece .4s ease both; }
+  @keyframes cnAparece { from { opacity: 0; } }
+  .cn.anima .letra { transform-origin: 256px 272px; animation: cnSubeN .7s cubic-bezier(.34,1.56,.64,1) var(--tN) both; }
+  @keyframes cnSubeN { from { transform: translateY(40px) scale(.6); opacity: 0; } }
+  .cn.anima .destello { animation: cnDestello .9s ease-in-out var(--tL) both; }
+  @keyframes cnDestello { from { transform: skewX(-18deg) translateX(0); } to { transform: skewX(-18deg) translateX(560px); } }
+  .cn.anima .latido { transform-origin: 256px 280px; animation: cnLate 1.1s ease-in-out calc(var(--tL) + .3s) 2; }
+  @keyframes cnLate { 0%, 56%, 100% { transform: scale(1); } 14% { transform: scale(1.07); } 28% { transform: scale(1); } 42% { transform: scale(1.04); } }
+  .nl-logo.icono-app { width: 72px; height: 72px; border-radius: 22.5%; background: none; box-shadow: 0 10px 24px rgb(0 0 0 / .22); }
+  .nl-brand .marca-n { font-size: 36px; margin-bottom: 8px; }
+  .nutri-header .marca { display: flex; align-items: center; gap: 8px; }
+  .nutri-header .marca .icono-app { width: 28px; height: 28px; border-radius: 8px; box-shadow: 0 3px 8px rgb(0 0 0 / .3); }
+  .nutri-header .marca-n { font-size: 21px; }
+  @media (prefers-reduced-motion: reduce) { .marca-n.salta .l, .marca-n.salta .punto, .cn.anima * { animation: none !important; opacity: 1 !important; transform: none !important; } }
+
+  /* ---------- Registro "¿Qué comiste?" y Menú de hoy (rediseño 2026-10-23) ---------- */
+  body { --st-bajo: #E07A12; --st-meta: #16A34A; --st-exceso: #E5484D; --warn-c: #B45309; --warn-f: #FEF3C7; }
+  body[data-tema="oscuro"] { --st-bajo: #FFA94D; --st-meta: #3DD68C; --st-exceso: #FF6B6F; --warn-c: #FBBF24; --warn-f: #3A2A06; }
+  .num-u { font-family: "Inter", system-ui, sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .qc-capa { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; }
+  .qc-fondo { position: absolute; inset: 0; background: rgb(0 0 0 / .45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: qcFondo .36s ease both; }
+  @keyframes qcFondo { from { opacity: 0; } }
+  .qc-hoja { position: relative; width: 100%; max-width: 28rem; height: 92vh; height: 92dvh; background: var(--bg); color: var(--text); border-radius: 28px 28px 0 0; display: flex; flex-direction: column; gap: 10px; padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px)); animation: qcSube .5s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes qcSube { from { transform: translateY(100%); } }
+  .qc-capa.cierra .qc-hoja { animation: qcBaja .33s cubic-bezier(.3,0,1,1) forwards; }
+  .qc-capa.cierra .qc-fondo { animation: qcFondo .33s ease reverse forwards; }
+  @keyframes qcBaja { to { transform: translateY(100%); } }
+  .qc-asa { width: 40px; height: 5px; border-radius: 3px; background: var(--border); margin: 0 auto; flex: none; }
+  .qc-cab { position: relative; display: flex; align-items: center; gap: 8px; flex: none; }
+  .qc-cab h2 { margin: 0; flex: 1; font-family: 'Fraunces', serif; font-weight: 500; font-size: 20px; }
+  .qc-vidrio { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 6px 11px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .qc-morph { display: inline-block; animation: qcMorph .5s cubic-bezier(.2,0,0,1); }
+  @keyframes qcMorph { 0% { filter: blur(5px); opacity: 0; transform: translateY(6px); } }
+  .qc-x { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; flex: none; }
+  .qc-picker { position: absolute; right: 40px; top: 40px; z-index: 30; display: flex; flex-direction: column; gap: 2px; padding: 5px; border-radius: 16px; background: color-mix(in srgb, var(--surface) 85%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border); box-shadow: 0 16px 30px -12px rgb(0 0 0 / .35); transform-origin: top right; animation: qcPicker .36s cubic-bezier(.34,1.56,.64,1) both; }
+  @keyframes qcPicker { from { opacity: 0; transform: scale(.6) translateY(-8px); } }
+  .qc-picker button { text-align: left; font-size: 14px; padding: 8px 14px 8px 10px; border-radius: 11px; color: var(--text); }
+  .qc-picker button.on { background: var(--tint); font-weight: 600; }
+  .qc-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 3px; flex: none; }
+  .qc-seg button { position: relative; z-index: 1; height: 36px; font-size: 14px; font-weight: 600; color: var(--text-2); transition: color .24s; }
+  .qc-seg button.on { color: var(--on-accent); }
+  .qc-seg .ind { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 11px; background: var(--accent); transition: transform .36s cubic-bezier(.34,1.56,.64,1); }
+  .qc-seg.der .ind { transform: translateX(100%); }
+  .qc-zona { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+  .qc-vista { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 9px; overflow-y: auto; scrollbar-width: none; padding-bottom: 6px; }
+  .qc-vista::-webkit-scrollbar { display: none; }
+  .qc-vista.entra-der { animation: nutriEntraDer .36s cubic-bezier(.2,0,0,1.2) both; }
+  .qc-vista.entra-izq { animation: nutriEntraIzq .36s cubic-bezier(.2,0,0,1.2) both; }
+  .qc-buscador { display: flex; align-items: center; gap: 8px; height: 44px; border-radius: 22px; background: var(--surface); border: 1.5px solid var(--border); padding: 0 14px; color: var(--text-2); flex: none; }
+  .qc-buscador:focus-within { border-color: var(--accent); }
+  .qc-buscador input { flex: 1; min-width: 0; border: 0; background: none; font-size: 15px; color: var(--text); outline: none; }
+  .qc-tsec { font-size: 11.5px; font-weight: 600; color: var(--text-2); margin: 2px 2px -3px; text-transform: uppercase; letter-spacing: .05em; }
+  .qc-rejilla { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+  .qc-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px 6px; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text); text-align: center; line-height: 1.2; min-width: 0; animation: qcCluster .5s cubic-bezier(.34,1.56,.64,1) both; transition: border-color .24s, background .24s; }
+  .qc-tile:active { transform: scale(.93); }
+  @keyframes qcCluster { from { opacity: 0; transform: scale(.4); } }
+  .qc-tile.tiene { border-color: var(--accent); background: var(--tint); }
+  .qc-tile .tn { width: 100%; padding: 0 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .qc-tile .veces { font-size: 9.5px; font-weight: 500; color: var(--text-2); }
+  .qc-tile .badge { position: absolute; top: -6px; right: -4px; background: var(--accent); color: var(--on-accent); border-radius: 999px; font-size: 10px; padding: 1px 6px; font-weight: 700; animation: nutriChipPop .5s cubic-bezier(.34,1.56,.64,1); }
+  .qc-vacio { grid-column: 1 / -1; font-size: 13px; color: var(--text-2); }
+  .qc-pasos { display: inline-flex; align-items: center; gap: 2px; background: var(--tint); border-radius: 11px; padding: 2px; flex: none; }
+  .qc-pasos button { width: 28px; height: 28px; border-radius: 9px; background: var(--surface); color: var(--text); font-weight: 700; font-size: 16px; line-height: 1; transition: transform .15s; }
+  .qc-pasos button:active { transform: scale(.85); }
+  .qc-pasos label { display: flex; align-items: baseline; gap: 1px; padding: 0 2px; font-size: 13px; font-weight: 600; color: var(--text); }
+  .qc-pasos input { width: 40px; border: 0; background: transparent; font-family: "Inter", sans-serif; font-weight: 700; font-size: 14px; color: var(--text); text-align: right; padding: 2px 0; -moz-appearance: textfield; }
+  .qc-pasos input::-webkit-outer-spin-button, .qc-pasos input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .qc-pasos input:focus { outline: 2px solid var(--accent); border-radius: 6px; background: var(--surface); }
+  .qc-pasos.grande { padding: 4px; border-radius: 16px; }
+  .qc-pasos.grande button { width: 42px; height: 42px; border-radius: 13px; font-size: 22px; }
+  .qc-pasos.grande input { width: 60px; font-size: 17px; }
+  .qc-ficha { position: absolute; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column; gap: 10px; overflow-y: auto; scrollbar-width: none; animation: qcFicha .5s cubic-bezier(.2,0,0,1.2) both; }
+  @keyframes qcFicha { from { opacity: 0; transform: scale(.4); } }
+  .qc-ficha .cab-f { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 10px 12px; }
+  .qc-ficha .cab-f .tx { flex: 1; min-width: 0; }
+  .qc-ficha .cab-f b { display: block; font-family: 'Fraunces', serif; font-weight: 500; font-size: 18px; }
+  .qc-ficha .cab-f .tx > span { font-size: 12px; color: var(--text-2); }
+  .qc-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .qc-chips.wrap { flex-wrap: wrap; }
+  .qc-chip { flex: none; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--text-2); transition: background .24s, color .24s; }
+  .qc-chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .qc-centro { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .qc-mini { font-size: 12px; color: var(--text-2); }
+  .qc-mini b { color: var(--text); }
+  .qc-macros { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+  .qc-macros div { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 7px 4px; text-align: center; font-size: 11px; color: var(--text-2); }
+  .qc-macros strong { display: block; font-size: 16px; color: var(--text); }
+  .qc-macros strong small { font-size: 11px; font-weight: 600; color: var(--text-2); margin-left: 1px; }
+  .qc-recip { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; }
+  .qc-toggle { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13.5px; font-weight: 500; color: var(--text); width: 100%; text-align: left; }
+  .qc-toggle .sw { width: 38px; height: 22px; border-radius: 11px; background: var(--border); position: relative; transition: background .24s; flex: none; }
+  .qc-toggle .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .3s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 1px 3px rgb(0 0 0 / .25); }
+  .qc-toggle.on .sw { background: var(--accent); }
+  .qc-toggle.on .sw::after { transform: translateX(16px); }
+  .qc-recfila { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .qc-recfila .elegido { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px 3px 6px; font-size: 12.5px; font-weight: 600; color: var(--text); text-align: left; }
+  .qc-recfila .elegido svg { width: 28px; height: 20px; flex: none; }
+  .qc-recipientes { position: absolute; inset: 0; z-index: 25; background: var(--bg); display: flex; flex-direction: column; gap: 9px; overflow-y: auto; scrollbar-width: none; animation: nutriEntraDer .36s cubic-bezier(.2,0,0,1) both; }
+  .qc-recipientes h3 { margin: 0; font-family: 'Fraunces', serif; font-weight: 500; font-size: 18px; }
+  .qc-recipientes p { margin: -4px 0 0; font-size: 12.5px; color: var(--text-2); }
+  .qc-atras { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text); align-self: flex-start; }
+  .qc-rlista { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+  .qc-rop { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px 6px; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--border); color: var(--text); min-width: 0; text-align: center; animation: qcCluster .5s cubic-bezier(.34,1.56,.64,1) both; transition: border-color .24s, background .24s; }
+  .qc-rop.on { border-color: var(--accent); background: var(--tint); }
+  .qc-rop svg { width: 36px; height: 26px; color: var(--text-2); }
+  .qc-rop b { font-size: 11px; font-weight: 600; line-height: 1.2; min-height: 2.4em; display: flex; align-items: center; justify-content: center; padding: 0 2px; overflow-wrap: anywhere; }
+  .qc-rop span { font-size: 10px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .qc-carne h4 { margin: 4px 2px 6px; font-size: 13px; font-weight: 600; }
+  .qc-campo { position: relative; border: 1.5px solid var(--border); border-radius: 14px; background: var(--surface); flex: none; }
+  .qc-campo:focus-within { border-color: var(--accent); }
+  .qc-espejo, .qc-campo textarea { font-family: "Inter", sans-serif; font-size: 15px; line-height: 1.5; padding: 10px 12px; margin: 0; white-space: pre-wrap; word-wrap: break-word; letter-spacing: 0; }
+  .qc-espejo { position: absolute; inset: 0; color: var(--text); pointer-events: none; overflow: hidden; }
+  .qc-espejo mark { color: inherit; background: var(--selected); border-radius: 5px; box-shadow: inset 0 -2px 0 var(--accent); }
+  .qc-campo textarea { position: relative; display: block; width: 100%; min-height: 72px; resize: none; border: 0; background: transparent; color: transparent; caret-color: var(--text); outline: none; }
+  .qc-campo textarea::placeholder { color: var(--text-2); }
+  .qc-plato { position: relative; width: 150px; height: 150px; margin: 0 auto; flex: none; }
+  .qc-plato .aro { position: absolute; inset: 0; }
+  .qc-plato .base { position: absolute; inset: 13px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--surface) 55%, var(--tint)); box-shadow: inset 0 0 0 6px var(--surface), inset 0 0 0 7px var(--border), 0 10px 22px -12px rgb(0 0 0 / .35); }
+  .qc-plato .centro { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; pointer-events: none; z-index: 3; }
+  .qc-plato .centro strong { display: block; font-size: 20px; line-height: 1; }
+  .qc-plato .centro span { font-size: 10.5px; color: var(--text-2); }
+  .qc-plato .en-plato { position: absolute; width: 36px; height: 36px; margin: -18px 0 0 -18px; z-index: 2; animation: qcCae .6s cubic-bezier(.34,1.56,.64,1) both; filter: drop-shadow(0 3px 3px rgb(0 0 0 / .18)); }
+  @keyframes qcCae { 0% { transform: translateY(-70px) scale(.6); opacity: 0; } 60% { transform: translateY(3px) scale(1.06); opacity: 1; } 100% { transform: none; } }
+  .qc-lista { display: flex; flex-direction: column; gap: 6px; }
+  .qc-fila { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 7px 6px 9px; }
+  .qc-fila .n { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .qc-fila .n small { display: block; font-weight: 400; color: var(--text-2); font-size: 11.5px; }
+  .est { font-size: 10px; font-weight: 600; color: var(--text-2); background: var(--tint); border-radius: 5px; padding: 1px 5px; margin-left: 5px; vertical-align: 1px; }
+  .est.exacto { color: var(--accent); }
+  .qc-desc { display: flex; gap: 10px; align-items: center; background: var(--warn-f); color: var(--warn-c); border-radius: 14px; padding: 8px 10px; font-size: 12.5px; }
+  .qc-desc .q { flex: none; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--surface); font-weight: 700; }
+  .sube { animation: nutriSube .4s cubic-bezier(.2,0,0,1.2) both; }
+  .qc-pie { flex: none; display: flex; flex-direction: column; gap: 8px; }
+  .qc-bandeja { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 7px 10px; }
+  .qc-bandeja.llena { animation: nutriChipPop .5s cubic-bezier(.34,1.56,.64,1); }
+  .qc-bandeja .mini-plato { position: relative; width: 44px; height: 44px; flex: none; border-radius: 50%; background: radial-gradient(circle at 40% 35%, var(--surface) 55%, var(--tint)); box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--border); }
+  .qc-bandeja .mini-plato > * { position: absolute; }
+  .qc-bandeja .mini-plato > :nth-child(1) { left: 4px; top: 6px; } .qc-bandeja .mini-plato > :nth-child(2) { right: 4px; top: 8px; } .qc-bandeja .mini-plato > :nth-child(3) { left: 11px; bottom: 3px; } .qc-bandeja .mini-plato > :nth-child(4) { right: 6px; bottom: 5px; }
+  .qc-bandeja .info { flex: 1; min-width: 0; font-size: 12.5px; color: var(--text-2); line-height: 1.3; }
+  .qc-bandeja .info b { display: block; color: var(--text); font-size: 13.5px; }
+  .qc-vaciar { font-size: 12px; font-weight: 600; color: var(--text-2); padding: 6px; }
+  .qc-btn { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; border-radius: 15px; background: var(--accent); color: var(--on-accent); font-size: 15px; font-weight: 600; transition: width .36s cubic-bezier(.2,0,0,1), border-radius .36s, background .36s, transform .15s, opacity .24s; margin: 0 auto; flex: none; }
+  .qc-btn:active { transform: scale(.96); }
+  .qc-btn[disabled] { opacity: .45; }
+  .qc-btn .ok { position: absolute; width: 24px; height: 24px; opacity: 0; }
+  .qc-btn.exito { width: 48px; border-radius: 24px; background: var(--st-meta); }
+  .qc-btn.exito .txt { opacity: 0; }
+  .qc-btn.exito .ok { opacity: 1; }
+  .qc-btn.exito .ok path { animation: qcDibuja .45s cubic-bezier(.2,0,0,1) .1s both; }
+  @keyframes qcDibuja { from { stroke-dashoffset: 24; } }
+  .qc-abrir { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border-radius: 20px; background: linear-gradient(135deg, var(--hero-2), var(--accent)); color: #fff; text-align: left; margin-bottom: 14px; box-shadow: 0 12px 24px -14px var(--accent); transition: transform .18s cubic-bezier(.34,1.56,.64,1); }
+  .qc-abrir:active { transform: scale(.97); }
+  .qc-abrir .mas { width: 42px; height: 42px; border-radius: 14px; background: rgb(255 255 255 / .2); display: grid; place-items: center; font-size: 24px; flex: none; }
+  .qc-abrir b { display: block; font-family: 'Fraunces', serif; font-weight: 500; font-size: 18px; }
+  .qc-abrir span { font-size: 12.5px; color: rgb(255 255 255 / .85); }
+  /* Menú de hoy */
+  .mh-avance { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .mh-av-top { display: flex; align-items: center; gap: 14px; }
+  .mh-av-top .info { flex: 1; min-width: 0; }
+  .mh-av-top .grande { font-size: 32px; line-height: 1; }
+  .mh-av-top .grande small { font-size: 15px; color: var(--text-2); font-weight: 700; }
+  .mh-av-top p { margin: 3px 0 0; font-size: 12px; color: var(--text-2); }
+  .mh-av-top p b { color: var(--text); }
+  .mh-avance .pcw { transition: color .5s; }
+  .mh-avance.est-bajo .pcw { color: var(--st-bajo); } .mh-avance.est-meta .pcw { color: var(--st-meta); } .mh-avance.est-exceso .pcw { color: var(--st-exceso); }
+  .mh-estado { display: inline-flex; margin-top: 5px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; background: var(--tint); color: var(--text-2); transition: background .5s, color .5s; }
+  .mh-avance.est-bajo .mh-estado { background: color-mix(in srgb, var(--st-bajo) 16%, transparent); color: var(--st-bajo); }
+  .mh-avance.est-meta .mh-estado { background: color-mix(in srgb, var(--st-meta) 16%, transparent); color: var(--st-meta); }
+  .mh-avance.est-exceso .mh-estado { background: color-mix(in srgb, var(--st-exceso) 16%, transparent); color: var(--st-exceso); }
+  .mh-ring { position: relative; flex: none; display: inline-block; }
+  .mh-ring svg { display: block; overflow: visible; }
+  .mh-ring .arco { transition: stroke-dashoffset .9s cubic-bezier(.2,0,0,1), stroke .5s; }
+  .mh-ring.est-bajo svg { animation: mhRespira 2.4s ease-in-out infinite; }
+  @keyframes mhRespira { 50% { transform: scale(1.04); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--st-bajo) 45%, transparent)); } }
+  .mh-ring.est-meta svg { animation: mhBrilla 1.8s ease-in-out infinite; }
+  @keyframes mhBrilla { 50% { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--st-meta) 70%, transparent)); } }
+  .mh-ring.est-exceso svg { animation: mhSacude .5s ease-in-out 2; }
+  @keyframes mhSacude { 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+  .mh-estallido { position: absolute; left: 50%; top: 50%; }
+  .mh-estallido i { position: absolute; width: 6px; height: 6px; margin: -3px; border-radius: 50%; animation: mhEstalla .8s cubic-bezier(.2,0,0,1) forwards; }
+  @keyframes mhEstalla { to { transform: translate(var(--x), var(--y)) scale(.3); opacity: 0; } }
+  .mh-nutris { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+  .mh-nutri { display: flex; flex-direction: column; align-items: center; gap: 3px; background: var(--bg); border-radius: 14px; padding: 8px 4px; text-align: center; }
+  .mh-nutri .val { font-size: 11.5px; color: var(--text-2); }
+  .mh-nutri .val b { color: var(--text); font-size: 13px; }
+  .mh-nutri .barra { width: 100%; height: 5px; border-radius: 3px; background: var(--tint); overflow: hidden; }
+  .mh-nutri .barra i { display: block; height: 100%; border-radius: 3px; transition: width .9s cubic-bezier(.2,0,0,1), background .5s; }
+  .mh-nutri small { font-size: 10.5px; color: var(--text-2); }
+  .mh-nutri.exceso .nutri-ico-ali { animation: mhSacude .5s ease-in-out 2; }
+  .mh-late { animation: nutriLatido .9s ease-in-out; }
+  .mh-comidas { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 8px; }
+  .mh-comida { position: relative; display: flex; flex-direction: column; gap: 6px; text-align: left; background: var(--surface); border: 1.5px solid var(--border); border-radius: 18px; padding: 11px; color: var(--text); min-height: 118px; overflow: hidden; transition: transform .15s, border-color .24s; }
+  .mh-comida:active { transform: scale(.97); }
+  .mh-comida .emo { font-size: 22px; line-height: 1; }
+  .mh-comida b { font-size: 14px; }
+  .mh-comida .est { background: none; padding: 0; margin: 0; font-size: 11.5px; font-weight: 400; color: var(--text-2); }
+  .mh-comida .est b { font-size: 12px; color: var(--text); }
+  .mh-comida .icos { display: flex; } .mh-comida .icos > * { margin-right: -5px; }
+  .mh-comida.lista { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+  .mh-comida.recien { animation: mhRecien .7s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes mhRecien { 50% { transform: scale(1.04); } }
+  .mh-comida .ok { position: absolute; top: 9px; right: 9px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .mh-comida .mini { height: 4px; border-radius: 2px; background: var(--tint); overflow: hidden; margin-top: auto; }
+  .mh-comida .mini i { display: block; height: 100%; transition: width .8s cubic-bezier(.2,0,0,1); }
+  .mh-completado { position: relative; overflow: hidden; margin-top: 12px; border-radius: 20px; padding: 16px 14px; background: linear-gradient(140deg, var(--hero-2), var(--accent)); color: #fff; display: flex; flex-direction: column; gap: 8px; animation: mhTada .9s cubic-bezier(.2,0,0,1) both; }
+  @keyframes mhTada { 0% { transform: scale(.85); opacity: 0; } 30% { transform: scale(1.04) rotate(-2deg); opacity: 1; } 50% { transform: scale(1.04) rotate(2deg); } 70% { transform: scale(1.02) rotate(-1deg); } 100% { transform: none; } }
+  .mh-completado h3 { margin: 0; font-family: 'Fraunces', serif; font-weight: 500; font-size: 20px; }
+  .mh-completado p { margin: 0; font-size: 13px; color: rgb(255 255 255 / .88); }
+  .mh-completado button { height: 44px; border-radius: 14px; background: #fff; color: var(--hero); font-weight: 600; font-size: 15px; position: relative; z-index: 1; }
+  .mh-completado .confeti { position: absolute; top: -12px; width: 7px; height: 11px; border-radius: 2px; animation: mhConfeti 1.8s cubic-bezier(.2,0,0,1) forwards; }
+  @keyframes mhConfeti { to { transform: translateY(200px) rotate(540deg); opacity: 0; } }
+  .mh-pendiente { margin-top: 12px; border: 1.5px dashed var(--border); border-radius: 18px; padding: 12px; font-size: 13px; color: var(--text-2); text-align: center; }
+  .mh-toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70; background: var(--text); color: var(--bg); font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 999px; white-space: nowrap; animation: mhToast 2.6s cubic-bezier(.2,0,0,1) both; }
+  @keyframes mhToast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
+  .mh-ventana { position: fixed; inset: 0; z-index: 60; margin: 0 auto; max-width: 28rem; background: var(--bg); color: var(--text); display: flex; flex-direction: column; gap: 9px; padding: calc(14px + env(safe-area-inset-top, 0px)) 14px calc(14px + env(safe-area-inset-bottom, 0px)); animation: mhEntra .36s cubic-bezier(.2,0,0,1) both; }
+  @keyframes mhEntra { from { transform: translateX(100%); } }
+  .mh-ventana.sale { animation: mhSale .26s cubic-bezier(.3,0,1,1) forwards; }
+  @keyframes mhSale { to { transform: translateX(100%); } }
+  .mh-v-cab { display: flex; align-items: center; gap: 10px; flex: none; }
+  .mh-v-cab .emo { font-size: 24px; }
+  .mh-v-cab h2 { margin: 0; flex: 1; font-family: 'Fraunces', serif; font-weight: 500; font-size: 20px; }
+  .mh-v-cab h2 small { display: block; font-family: "Inter", sans-serif; font-size: 12px; color: var(--text-2); font-weight: 400; }
+  .mh-resumen { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 8px 10px; flex: none; }
+  .mh-resumen .tx { flex: 1; min-width: 0; font-size: 12px; color: var(--text-2); }
+  .mh-resumen .tx b { display: block; font-size: 13.5px; color: var(--text); }
+  .mh-resumen .pct { font-size: 17px; transition: color .5s; }
+  .mh-v-cuerpo { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 9px; }
+  .mh-v-cuerpo::-webkit-scrollbar { display: none; }
+  .mh-rapidas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; padding-bottom: 2px; }
+  .mh-rapidas::-webkit-scrollbar { display: none; }
+  .mh-rapida { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 11px 6px 7px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; font-weight: 600; color: var(--text); transition: background .24s, color .24s; }
+  .mh-rapida .icos { display: flex; } .mh-rapida .icos > * { margin-right: -5px; }
+  .mh-rapida small { font-size: 11px; opacity: .7; }
+  .mh-rapida.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .mh-seleccion { display: flex; flex-direction: column; gap: 8px; background: var(--surface); border: 1.5px solid var(--accent); border-radius: 18px; padding: 10px; animation: nutriSube .4s cubic-bezier(.2,0,0,1.2) both; }
+  .mh-seleccion .t-sel { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; }
+  .mh-seleccion .t-sel button { font-size: 12px; color: var(--accent); }
+  .mh-seleccion .qc-tile { animation: none; }
+  .mh-pesos { display: flex; flex-direction: column; gap: 5px; }
+  .mh-pesos .it { display: flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 12px; padding: 5px 6px 5px 8px; }
+  .mh-pesos .it .n { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .mh-pesos .it .n small { display: block; font-weight: 400; color: var(--text-2); font-size: 11px; }
+  .mh-pesos .quitar { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 11px; flex: none; }
+  .peso-in { animation: mhPesoIn .45s cubic-bezier(.2,0,0,1.2) both; }
+  @keyframes mhPesoIn { from { opacity: 0; transform: translateY(-8px) scaleY(.6); } }
+  .mh-resto { display: flex; flex-direction: column; gap: 8px; }
+  .mh-resto.atenuado .qc-tile { opacity: .74; }
+  .mh-resto .algo-mas { font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; margin: 2px 2px 0; }
+  .mh-resto .qc-tile { animation: none; }
+  .mh-parte h3 { margin: 2px 2px 5px; font-size: 11.5px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
+  @media (prefers-reduced-motion: reduce) { .qc-hoja, .qc-tile, .qc-ficha, .qc-recipientes, .qc-rop, .mh-ventana, .mh-ring svg, .mh-completado, .mh-comida, .peso-in, .sube { animation: none !important; } }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -332,7 +610,7 @@ function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
-const { useState, useEffect, useMemo, useCallback, useRef } = React;
+const { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } = React;
 const PALETAS = [
   { id: "turquesa", nombre: "Turquesa", a: "#004A46", b: "#43B6AD" },
   { id: "esmeralda", nombre: "Esmeralda", a: "#004C33", b: "#42BA8A" },
@@ -354,6 +632,41 @@ const PALETAS = [
 function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
   const html = window.NutriIconos ? (clave ? window.NutriIconos.svg(clave, size) : window.NutriIconos.alimento(alimento, size)) : "";
   return <span className={"nutri-ico-ali shrink-0 inline-flex " + className} style={{ width: size, height: size }} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+/* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
+const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
+const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
+function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
+  const html = useMemo(() => {
+    if (!animado || !window.CorazonN) return null;
+    let svg = window.CorazonN.svg("mosaico", { anim: true, sinBorde: true, id: "icanim" + Math.random().toString(36).slice(2, 7) });
+    if (rapido !== 1) svg = svg.replace(/--d:(\d+)ms/g, (m, d) => `--d:${Math.round(d * rapido)}ms`).replace(/--tN:(\d+)ms;--tL:(\d+)ms/, (m, a, b) => `--tN:${Math.round(a * rapido)}ms;--tL:${Math.round(b * rapido)}ms`);
+    return svg;
+  }, [animado, rapido]);
+  const estilo = size ? { width: size, height: size } : undefined;
+  if (html) return <span className={"icono-app " + className} style={estilo} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />;
+  return <span className={"icono-app " + className} style={estilo} aria-hidden="true"><img src={ICONO_APP_URI} alt="" /></span>;
+}
+function MarcaNombre({ salta = false, retraso = 0, className = "" }) {
+  return (
+    <span className={`marca-n ${salta ? "salta" : ""} ${className}`} style={{ "--t": retraso + "s" }} role="img" aria-label="NutriApp">
+      {"NutriApp".split("").map((ch, k) => (
+        <span key={k} className={`l ${k > 4 ? "app" : ""}`} style={{ "--k": k }} aria-hidden="true">
+          {ch === "i" ? <span className="i-sin">ı<svg className="punto" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3.1A4.6 4.6 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#FF6F61" /></svg></span> : ch}
+        </span>
+      ))}
+    </span>
+  );
+}
+function PantallaCarga({ saliendo }) {
+  return (
+    <div className={`nutri-carga ${saliendo ? "sale" : ""}`} role="status" aria-label="Cargando NutriApp">
+      <IconoApp animado rapido={0.6} />
+      <MarcaNombre salta retraso={1.25} />
+      <div className="barra"><i /></div>
+    </div>
+  );
 }
 
 /* ---------- Iconos SVG minimalistas (sin dependencias externas) ---------- */
@@ -1435,7 +1748,7 @@ function SugeridorIngrediente({ requerimiento }) {
       <div className="flex items-center gap-2 mb-2"><IconUtensils size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">¿Qué preparo con...?</span></div>
       <p className="text-xs nutri-muted mb-3">Escribe un ingrediente (ej. queso fresco, palta, pescado) y te sugiero cómo prepararlo o acompañarlo al estilo peruano, ajustado a tus condiciones y medicamentos.</p>
       <div className="flex gap-2 mb-1">
-        <input value={ingrediente} onChange={(e) => setIngrediente(e.target.value)} onKeyDown={(e) => e.key === "Enter" && buscar()} placeholder="Ej. queso fresco" className="flex-1 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
+        <input value={ingrediente} onChange={(e) => setIngrediente(e.target.value)} onKeyDown={(e) => e.key === "Enter" && buscar()} placeholder="Ej. queso fresco" className="flex-1 min-w-0 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
         <button onClick={buscar} disabled={!ingrediente.trim()} className="nutri-brand text-white rounded-lg px-4 text-sm disabled:opacity-40">Sugerir</button>
       </div>
       {resultado && (
@@ -1813,6 +2126,603 @@ function DesglosePreview({ alimento, gramos }) {
   );
 }
 
+/* ===================================================================================
+   Registro y Menú (rediseño 2026-10-23): herramientas compartidas
+   =================================================================================== */
+const ALIMENTO_POR_ID = Object.fromEntries(FOOD_DB.map((f) => [f.id, f]));
+/* Peso de una unidad (g) y porción habitual (g) por alimento; si no está, se usa la categoría. */
+const PORCION_UNIDAD = { f03: 50, f37: 33, f21: 120, f20: 150, f22: 180, f43: 80, f24: 150, f13: 40, f48: 30, f40: 75, f42: 150, f54: 170, f65: 50, f11: 150, f12: 150, f61: 5, f26: 1.2, f62: 5, f19: 120, f17: 70, f41: 200, f44: 300, f53: 5, f59: 200, f52: 30 };
+const PORCION_HABITUAL = { f01: 120, f31: 120, f32: 120, f33: 120, f34: 120, f05: 100, f10: 150, f09: 150, f14: 150, f18: 100, f08: 40, f28: 240, f27: 120, f29: 60, f25: 5, f60: 10, f26: 15, f62: 15, f30: 30, f24: 75, f15: 100, f49: 120, f50: 60, f51: 100, f36: 150, f56: 100, f57: 200, f58: 150, f55: 100, f23: 100 };
+const PORCION_CATEGORIA = { proteina: 120, menestra: 150, carbohidrato: 150, quinua: 150, vegetal: 100, fruta: 120, grasa: 10, lacteo: 200 };
+const porcionDe = (a) => Math.round(PORCION_HABITUAL[a.id] || PORCION_UNIDAD[a.id] || PORCION_CATEGORIA[a.categoria] || 100);
+function porcionesRapidas(a) {
+  const u = PORCION_UNIDAD[a.id];
+  if (u) return u < 10 ? [["5 unid.", u * 5], ["10 unid.", u * 10], ["15 unid.", u * 15]] : [["½ unidad", Math.round(u / 2)], ["1 unidad", u], ["2 unidades", u * 2]];
+  const cda = { f08: 10, f25: 13, f60: 21 }[a.id];
+  if (cda) return [["1 cda", cda], ["2 cdas", cda * 2], ["4 cdas", cda * 4]];
+  const p = porcionDe(a);
+  return [["½ porción", Math.round(p / 2)], ["1 porción", p], ["100 g", 100]];
+}
+const nombreCorto = (a) => a.nombre.replace(/ \(.*\)/, "").replace(/ \/.*/, "");
+const nombreMosaico = (a) => nombreCorto(a).replace(/ (cocid[oa]s?|enter[oa]|fresc[oa]|natural|crud[oa]|firme|al vapor|desamargado|tostada|partida cocida|mixta|en hojuelas|descremada)$/i, "");
+const pasoGramos = (g, d) => Math.max(5, g + d * (g >= 100 ? 10 : 5));
+const MOMENTO_EMOJI = { desayuno: "☕", almuerzo: "🍽", cena: "🌙", colacion: "🍎" };
+function momentoPorHora() {
+  let h = 12;
+  try { h = Number(new Date().toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/Lima" })); } catch {}
+  return h < 11 ? "desayuno" : h < 16 ? "almuerzo" : h < 19 ? "colacion" : "cena";
+}
+const sumaMacros = (items) => items.reduce((s, it) => { const t = calcularTotalesItem(it.alimento, it.gramos); return { kcal: s.kcal + t.kcal, p: s.p + t.proteinasG, c: s.c + t.carbohidratosG, g: s.g + t.grasasG }; }, { kcal: 0, p: 0, c: 0, g: 0 });
+const metaMomento = (requerimiento, momento) => (requerimiento.get || 0) * ((MEAL_DEFS.find((m) => m.key === momento) || {}).pct || 0.25);
+
+/* Número que sube animado (count-up) */
+function NumeroAnimado({ valor, decimales = 0, duracion = 600 }) {
+  const [mostrado, setMostrado] = useState(valor);
+  const anterior = useRef(valor);
+  useEffect(() => {
+    const desde = anterior.current, hasta = valor; anterior.current = valor;
+    if (desde === hasta) { setMostrado(hasta); return; }
+    let id; const t0 = performance.now();
+    const paso = (t) => { const x = Math.max(0, Math.min(1, (t - t0) / duracion)), e = 1 - Math.pow(1 - x, 3); setMostrado(desde + (hasta - desde) * e); if (x < 1) id = requestAnimationFrame(paso); };
+    id = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(id);
+  }, [valor]);
+  return <span className="num-u">{decimales ? mostrado.toFixed(decimales) : Math.round(mostrado)}</span>;
+}
+
+/* Control − / + con el número escribible (gramos) */
+function Pasos({ valor, onCambio, grande = false, etiqueta = "Gramos" }) {
+  const [texto, setTexto] = useState(String(valor));
+  useEffect(() => { setTexto(String(valor)); }, [valor]);
+  return (
+    <span className={`qc-pasos ${grande ? "grande" : ""}`} onClick={(e) => e.stopPropagation()}>
+      <button type="button" aria-label="Menos" onClick={() => onCambio(pasoGramos(valor, -1), false)}>−</button>
+      <label><input type="number" inputMode="numeric" min="1" aria-label={etiqueta} value={texto} onFocus={(e) => e.target.select()}
+        onChange={(e) => { setTexto(e.target.value); const v = parseInt(e.target.value, 10); if (v > 0) onCambio(v, true); }} />g</label>
+      <button type="button" aria-label="Más" onClick={() => onCambio(pasoGramos(valor, 1), false)}>+</button>
+    </span>
+  );
+}
+
+/* Historial de los últimos días (para frecuentes y variantes). Se guarda en el celular y se
+   refresca una vez al día, para no leer 30 días de la nube cada vez que se abre la hoja. */
+function useHistorialComidas(pacienteId, dias = 30) {
+  const clave = "nutriapp_hist_" + (pacienteId || "local");
+  const [hist, setHist] = useState(() => { try { const c = JSON.parse(localStorage.getItem(clave) || "null"); return c && c.datos ? c.datos : []; } catch { return []; } });
+  useEffect(() => {
+    let vivo = true;
+    try { const c = JSON.parse(localStorage.getItem(clave) || "null"); if (c && c.fecha === hoyISO()) return; } catch {}
+    Promise.all(Array.from({ length: dias }, (_, i) => { const fecha = fechaISOOffset(i + 1); return obtenerLogFecha(pacienteId, fecha).then((items) => ({ fecha, items: items.map((it) => ({ id: it.alimento && it.alimento.id, alimento: it.alimento, gramos: it.gramos, momento: it.momento })).filter((it) => it.alimento) })); }))
+      .then((res) => { if (!vivo) return; const datos = res.filter((d) => d.items.length); setHist(datos); try { localStorage.setItem(clave, JSON.stringify({ fecha: hoyISO(), datos })); } catch {} });
+    return () => { vivo = false; };
+  }, [pacienteId]);
+  return hist;
+}
+const FRECUENTES_BASE = {
+  desayuno: ["f08", "f27", "f21", "f03", "f48", "f28", "f24", "f20", "f60", "f65", "f40", "f13"],
+  almuerzo: ["f10", "f01", "f18", "f06", "f11", "f14", "f32", "f15", "f19", "f39", "f49", "f12"],
+  cena: ["f03", "f48", "f33", "f15", "f14", "f18", "f12", "f05", "f17", "f24", "f29", "f51"],
+  colacion: ["f20", "f27", "f26", "f43", "f62", "f40", "f55", "f65", "f56", "f54", "f53", "f29"],
+};
+function frecuentesPorMomento(hist, momento) {
+  const cuenta = {};
+  hist.forEach((d) => d.items.forEach((it) => { if (it.momento === momento && it.id) { const c = cuenta[it.id] || (cuenta[it.id] = { alimento: ALIMENTO_POR_ID[it.id] || it.alimento, veces: 0 }); c.veces++; } }));
+  const lista = Object.values(cuenta).sort((a, b) => b.veces - a.veces);
+  (FRECUENTES_BASE[momento] || []).forEach((id) => { if (!cuenta[id] && ALIMENTO_POR_ID[id]) lista.push({ alimento: ALIMENTO_POR_ID[id], veces: 0 }); });
+  return lista.slice(0, 16);
+}
+function unirNombres(items) {
+  const n = items.map((it) => nombreMosaico(it.alimento).toLowerCase());
+  const t = n.length > 1 ? n.slice(0, -1).join(", ") + " y " + n[n.length - 1] : n[0] || "";
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+/* Variantes de una comida: combinaciones que la persona ya registró en ese momento (las más
+   repetidas primero). Si todavía hay pocas, se completan con combinaciones sugeridas. */
+function variantesPorMomento(hist, momento, requerimiento) {
+  const combos = {};
+  hist.forEach((d) => {
+    const porId = {};
+    d.items.filter((it) => it.momento === momento && it.id).forEach((it) => { porId[it.id] = (porId[it.id] || 0) + (Number(it.gramos) || 0); });
+    const ids = Object.keys(porId).sort();
+    if (!ids.length) return;
+    const k = ids.join("|");
+    if (!combos[k]) combos[k] = { veces: 0, fecha: d.fecha, items: ids.map((id) => ({ alimento: ALIMENTO_POR_ID[id] || d.items.find((x) => x.id === id).alimento, gramos: Math.round(porId[id]) })) };
+    combos[k].veces++;
+  });
+  const lista = Object.values(combos).sort((a, b) => b.veces - a.veces || b.fecha.localeCompare(a.fecha)).map((c) => ({ ...c, nombre: unirNombres(c.items) }));
+  const vistos = new Set(Object.keys(combos));
+  for (let s = 0; lista.length < 6 && s < 24; s++) {
+    const meal = generarMenu(requerimiento, 7 + s * 13).find((m) => m.key === momento);
+    if (!meal || !meal.items.length) continue;
+    const k = meal.items.map((it) => it.alimento.id).sort().join("|");
+    if (vistos.has(k)) continue; vistos.add(k);
+    lista.push({ veces: 0, items: meal.items.map((it) => ({ alimento: it.alimento, gramos: it.gramos })), nombre: unirNombres(meal.items) });
+  }
+  return lista;
+}
+
+/* Intérprete de "Escribe lo que comiste": reconoce los alimentos de la base y calcula los
+   gramos (exactos si se escribieron, estimados si se dijo "una taza", "medio plátano"...). */
+const CLAVES_TEXTO = [["arroz integral","f09"],["pan integral","f48"],["clara","f37"],["pechuga de pavo","f31"],["pavo","f31"],["pavita","f31"],["pollo","f01"],["pechuga","f01"],["gallina","f01"],["huevo","f03"],["bonito","f32"],["atun","f32"],["pescado","f32"],["tilapia","f33"],["salmon","f34"],["tofu","f05"],["lenteja","f06"],["garbanzo","f07"],["tarwi","f35"],["chocho","f35"],["arveja","f38"],["frijol","f39"],["frejol","f39"],["avena","f08"],["arroz","f10"],["camote","f12"],["batata","f12"],["papa","f11"],["pan","f13"],["quinua","f14"],["quinoa","f14"],["arracacha","f36"],["racacha","f36"],["brocoli","f15"],["zanahoria","f17"],["ensalada","f18"],["lechuga","f18"],["tomate","f19"],["zapallo","f49"],["pimiento","f50"],["coliflor","f51"],["olluco","f52"],["manzana","f20"],["platano","f21"],["banana","f21"],["mandarina","f43"],["naranja","f22"],["fresa","f23"],["frutilla","f23"],["arandano","f23"],["kiwi","f40"],["mango","f41"],["durazno","f42"],["melocoton","f42"],["chirimoya","f44"],["aguaymanto","f53"],["pera","f54"],["pina","f55"],["uva","f56"],["sandia","f57"],["melon","f58"],["higo","f65"],["yuca","f59"],["miel","f60"],["palta","f24"],["aguacate","f24"],["aceituna","f61"],["aceite","f25"],["almendra","f26"],["nuez","f62"],["nueces","f62"],["semilla de calabaza","f45"],["ajonjoli","f46"],["girasol","f47"],["yogur","f27"],["yogurt","f27"],["leche","f28"],["queso","f29"],["cottage","f29"],["batido","f30"],["whey","f30"],["ensure","f63"]].filter(([, id]) => ALIMENTO_POR_ID[id]);
+const NUM_TEXTO = { medio: .5, media: .5, un: 1, una: 1, uno: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6 };
+const RELLENO_TEXTO = /^(y|e|de|del|el|la|los|las|un|una|unos|unas|con|a|al|para|tomar|tome|bebi|comi|almorce|desayune|cene|tambien|luego|mas|plancha|hervid[oa]s?|sancochad[oa]s?|cocid[oa]s?|fresc[oa]s?|natural|hoy|en|mi|me|poco|algo)$/;
+const momentoDeTexto = (t) => /desayun/.test(t) ? "desayuno" : /almorc|almuerz/.test(t) ? "almuerzo" : /\bcen[ae]/.test(t) ? "cena" : /colaci|merienda|lonche/.test(t) ? "colacion" : null;
+function gramosPorUnidad(u, id) {
+  if (/^tazas?$/.test(u)) return { f28: 240, f27: 245, f08: 80 }[id] || 150;
+  if (/^cucharaditas?$/.test(u)) return 5;
+  if (/^cucharadas?$/.test(u)) return { f25: 13, f60: 21, f08: 10 }[id] || 15;
+  if (/^(rebanadas?|tajadas?)$/.test(u)) return { f55: 100, f57: 200, f58: 150 }[id] || 30;
+  if (/^vasos?$/.test(u)) return 240;
+  if (/^(filetes?|presas?)$/.test(u)) return 120;
+  if (/^platos?$/.test(u)) return 250;
+  return null;
+}
+function interpretarTexto(texto) {
+  const t = normalizarTexto(texto); const items = [], desconocidos = [];
+  t.split(/,|;|\.|\n|\by\b|\bcon\b|\bmas\b|\bademas\b/).map((x) => x.trim()).filter(Boolean).forEach((seg) => {
+    let mejor = null, pos = -1;
+    for (const [k, id] of CLAVES_TEXTO) { const re = new RegExp("\\b" + k); const m = seg.match(re); if (m && (!mejor || k.length > mejor[0].length)) { mejor = [k, id]; pos = m.index; } }
+    if (!mejor) { const l = seg.split(/\s+/).filter((w) => !RELLENO_TEXTO.test(w) && !/^\d/.test(w)); if (l.length && l.join(" ").length > 2 && !momentoDeTexto(seg)) desconocidos.push(l.join(" ")); return; }
+    const id = mejor[1], alimento = ALIMENTO_POR_ID[id], antes = seg.slice(0, pos); let g, exacto = false;
+    const mg = antes.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|gramos?)\b/);
+    if (mg) { g = parseFloat(mg[1].replace(",", ".")); exacto = true; }
+    else {
+      const mn = antes.match(/(\d+(?:[.,]\d+)?|1\/2|medi[oa]|un[oa]?|dos|tres|cuatro|cinco|seis)\s*(tazas?|cucharaditas?|cucharadas?|rebanadas?|tajadas?|vasos?|filetes?|presas?|platos?)?/);
+      const cant = mn ? (mn[1] === "1/2" ? .5 : (NUM_TEXTO[mn[1]] ?? parseFloat(mn[1].replace(",", ".")))) : null;
+      if (mn && mn[2]) g = (cant || 1) * (gramosPorUnidad(mn[2], id) || porcionDe(alimento));
+      else if (cant != null) g = cant * (PORCION_UNIDAD[id] || porcionDe(alimento));
+      else g = porcionDe(alimento);
+    }
+    g = Math.max(1, Math.round(g));
+    const prev = items.find((x) => x.alimento.id === id); if (prev) prev.gramos += g; else items.push({ alimento, gramos: g, exacto });
+  });
+  return { momento: momentoDeTexto(t), items, desconocidos };
+}
+/* Marca en el texto las palabras reconocidas (para el resaltado en vivo) */
+function resaltarTexto(texto) {
+  const n = normalizarTexto(texto), marcas = [];
+  [...CLAVES_TEXTO].sort((a, b) => b[0].length - a[0].length).forEach(([k]) => { const re = new RegExp("\\b" + k, "g"); let m; while ((m = re.exec(n))) { const a = m.index, b = a + k.length; if (!marcas.some(([x, y]) => a < y && b > x)) marcas.push([a, b]); } });
+  marcas.sort((a, b) => a[0] - b[0]); const partes = []; let i = 0;
+  marcas.forEach(([a, b], j) => { if (a > i) partes.push(texto.slice(i, a)); partes.push(<mark key={j}>{texto.slice(a, b)}</mark>); i = b; });
+  partes.push(texto.slice(i) + "\n");
+  return partes;
+}
+/* Ícono simple para un recipiente según su nombre */
+function IconoRecipiente({ nombre }) {
+  const n = normalizarTexto(nombre || "");
+  if (!nombre) return <svg viewBox="0 0 44 32"><circle cx="22" cy="16" r="11" fill="none" stroke="currentColor" strokeWidth="2.4" opacity=".55" /><path d="M14 24 30 8" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" opacity=".55" /></svg>;
+  if (/taza/.test(n)) return <svg viewBox="0 0 44 32"><path d="M10 6h20v16a6 6 0 0 1-6 6h-8a6 6 0 0 1-6-6z" fill="#F2F4F7" stroke="#C7D0DA" /><path d="M30 10h3a4 4 0 0 1 0 8h-3" fill="none" stroke="#C7D0DA" strokeWidth="2.4" /></svg>;
+  if (/vaso/.test(n)) return <svg viewBox="0 0 44 32"><path d="M14 3h16l-2 26H16z" fill="#D9EEF8" stroke="#9CC9E4" /><path d="M15 12h14l-1.3 16H16.3z" fill="#B7DDF1" /></svg>;
+  if (/taper|tupper|recipiente/.test(n)) return <svg viewBox="0 0 44 32"><rect x="5" y="11" width="34" height="17" rx="4" fill="#BFE6DC" /><rect x="3" y="7" width="38" height="6" rx="3" fill="#2EA88C" /></svg>;
+  if (/tabla/.test(n)) return <svg viewBox="0 0 44 32"><rect x="3" y="9" width="34" height="16" rx="5" fill="#D9A066" /><circle cx="38" cy="17" r="3.5" fill="none" stroke="#B57A3E" strokeWidth="2" /></svg>;
+  if (/plato/.test(n) && !/hondo/.test(n)) return <svg viewBox="0 0 44 32"><ellipse cx="22" cy="20" rx="20" ry="7" fill="#E3E8EC" /><ellipse cx="22" cy="18.5" rx="20" ry="6.5" fill="#FFFFFF" stroke="#C7D0DA" /><ellipse cx="22" cy="18.5" rx="12" ry="3.6" fill="none" stroke="#D5DCE3" /></svg>;
+  const naranja = /2|4|hondo/.test(n);
+  return <svg viewBox="0 0 44 32"><path d="M4 12h36c0 10-8 17-18 17S4 22 4 12z" fill={naranja ? "#E59A5C" : "#5BA8D8"} /><ellipse cx="22" cy="12" rx="18" ry="4" fill={naranja ? "#F6C79C" : "#A9D5F0"} /></svg>;
+}
+
+/* ===================================================================================
+   Hoja "¿Qué comiste?" (Registro): Buscar (cuadrícula 4 por fila, frecuentes por momento,
+   ficha con − / + y recipiente en pantalla aparte) y Escribir (texto resaltado + plato).
+   Mockups aprobados: docs-base/pantallas/H-02-*, H-03-buscar-*.
+   =================================================================================== */
+function HojaQueComiste({ fecha, logDia, recipientes, historial, requerimiento, addItem, momentoInicial, onCerrar, onRegistrado }) {
+  const [momento, setMomento] = useState(momentoInicial || momentoPorHora());
+  const [modo, setModo] = useState("buscar");
+  const [plato, setPlato] = useState([]);           // { alimento, gramos, exacto, tara, origen }
+  const [texto, setTexto] = useState("");
+  const [desconocidos, setDesconocidos] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [ficha, setFicha] = useState(null);         // { alimento, g, recId, carneUid, origen }
+  const [elegirRec, setElegirRec] = useState(false);
+  const [picker, setPicker] = useState(false);
+  const [cerrando, setCerrando] = useState(false);
+  const [exito, setExito] = useState(false);
+  const meta = metaMomento(requerimiento, momento);
+  const totPlato = sumaMacros(plato);
+
+  const cerrar = () => { setCerrando(true); setTimeout(onCerrar, 330); };
+  const cambiarMomento = (m) => { setMomento(m); setPicker(false); };
+
+  /* ---------- Escribir: interpretar el texto mientras se escribe ---------- */
+  useEffect(() => {
+    if (modo !== "escribir") return;
+    const t = setTimeout(() => {
+      const r = interpretarTexto(texto);
+      // El texto solo cambia la comida si el plato no tiene alimentos elegidos a mano
+      if (r.momento && !plato.some((x) => x.origen !== "texto")) setMomento(r.momento);
+      setDesconocidos(r.desconocidos);
+      setPlato((prev) => {
+        const manual = prev.filter((x) => x.origen !== "texto");
+        const tocados = Object.fromEntries(prev.filter((x) => x.origen === "texto" && x.tocado).map((x) => [x.alimento.id, x]));
+        return [...manual, ...r.items.map((it) => tocados[it.alimento.id] ? { ...tocados[it.alimento.id] } : { ...it, origen: "texto" })];
+      });
+    }, 180);
+    return () => clearTimeout(t);
+  }, [texto, modo]);
+
+  /* ---------- Buscar ---------- */
+  const frecuentes = useMemo(() => frecuentesPorMomento(historial, momento), [historial, momento]);
+  const resultados = useMemo(() => {
+    const q = normalizarTexto(busqueda);
+    if (!q) return null;
+    return FOOD_DB.filter((f) => normalizarTexto(f.nombre).includes(q) || CLAVES_TEXTO.some(([k, id]) => id === f.id && k.startsWith(q))).slice(0, 16);
+  }, [busqueda]);
+  const abrirFicha = (alimento) => { const en = plato.find((x) => x.alimento.id === alimento.id && x.origen === "buscar"); setFicha({ alimento, g: en ? en.gramos : porcionDe(alimento), recId: "ninguno", carneUid: null }); };
+  const recFicha = ficha ? recipientes.find((r) => r.id === ficha.recId) : null;
+  const taraFicha = recFicha ? Number(recFicha.taraG) || 0 : 0;
+  const carnes = logDia.filter((it) => it.momento === "almuerzo" && it.alimento && it.alimento.categoria === "proteina");
+  const carneFicha = ficha && ficha.carneUid ? logDia.find((it) => it.uid === ficha.carneUid) : null;
+  const netoFicha = ficha ? Math.max(0, Math.round(ficha.g - taraFicha - (carneFicha ? carneFicha.gramos : 0))) : 0;
+  const agregarDeFicha = () => {
+    const tara = (recFicha || carneFicha) ? { recipiente: recFicha ? recFicha.nombre : null, pesoBruto: ficha.g, tara: taraFicha, carneNombre: carneFicha ? carneFicha.alimento.nombre : null, carneGramos: carneFicha ? carneFicha.gramos : null } : null;
+    setPlato((prev) => [...prev.filter((x) => !(x.alimento.id === ficha.alimento.id && x.origen === "buscar")), { alimento: ficha.alimento, gramos: netoFicha, exacto: true, tara, origen: "buscar" }]);
+    setFicha(null); setElegirRec(false);
+  };
+
+  const registrar = () => {
+    if (!plato.length) return;
+    setExito(true);
+    plato.forEach((it) => addItem(it.alimento, it.gramos, momento, it.tara || null, fecha));
+    if (onRegistrado) onRegistrado(plato.map((it) => ({ ...it, momento })));
+    setTimeout(cerrar, 750);
+  };
+  const cambiarGramos = (idx, v, escrito) => setPlato((prev) => prev.map((x, i) => (i === idx ? { ...x, gramos: v, exacto: escrito, tocado: true, tara: null } : x)));
+  const quitar = (idx) => setPlato((prev) => prev.filter((_, i) => i !== idx));
+
+  const POS = [[50, 27], [74, 46], [66, 73], [36, 75], [24, 50], [32, 27]];
+  const nombreMom = MOMENTO_LABEL_CAPITALIZADO[momento];
+
+  return (
+    <div className={`qc-capa ${cerrando ? "cierra" : ""}`} role="dialog" aria-modal="true" aria-label="¿Qué comiste?">
+      <div className="qc-fondo" onClick={cerrar} />
+      <div className="qc-hoja" onClick={() => picker && setPicker(false)}>
+        <div className="qc-asa" />
+        <div className="qc-cab">
+          <h2>¿Qué comiste?</h2>
+          <button type="button" className="qc-vidrio" aria-haspopup="listbox" onClick={(e) => { e.stopPropagation(); setPicker((v) => !v); }}>{MOMENTO_EMOJI[momento]} <span key={momento} className="qc-morph">{nombreMom}</span> ▾</button>
+          <button type="button" className="qc-x" aria-label="Cerrar" onClick={cerrar}>✕</button>
+          {picker && (
+            <div className="qc-picker" role="listbox">
+              {MOMENTOS_KEYS.map((m) => <button key={m} type="button" className={m === momento ? "on" : ""} onClick={() => cambiarMomento(m)}>{MOMENTO_EMOJI[m]} {MOMENTO_LABEL_CAPITALIZADO[m]}</button>)}
+            </div>
+          )}
+        </div>
+        <div className={`qc-seg ${modo === "escribir" ? "der" : ""}`}>
+          <span className="ind" />
+          <button type="button" className={modo === "buscar" ? "on" : ""} onClick={() => setModo("buscar")}>🔍 Buscar</button>
+          <button type="button" className={modo === "escribir" ? "on" : ""} onClick={() => setModo("escribir")}>✍ Escribir</button>
+        </div>
+
+        <div className="qc-zona">
+          {modo === "buscar" ? (
+            <div key="b" className="qc-vista entra-izq">
+              <label className="qc-buscador"><IconSearch size={16} /><input type="search" placeholder="Busca o filtra tus alimentos…" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} aria-label="Buscar alimento" /></label>
+              <p className="qc-tsec">{resultados ? (resultados.length === 1 ? "1 resultado" : `${resultados.length} resultados`) : `Lo que sueles comer ${{ desayuno: "en el desayuno", almuerzo: "en el almuerzo", cena: "en la cena", colacion: "en la colación" }[momento]}`}</p>
+              <div className="qc-rejilla" key={momento + (resultados ? "r" : "f")}>
+                {(resultados ? resultados.map((a) => ({ alimento: a, veces: 0 })) : frecuentes).map(({ alimento, veces }, i) => {
+                  const en = plato.find((x) => x.alimento.id === alimento.id);
+                  return (
+                    <button key={alimento.id} type="button" className={`qc-tile ${en ? "tiene" : ""}`} style={{ animationDelay: `${i * 30}ms` }} onClick={() => abrirFicha(alimento)}>
+                      {en && <span className="badge">{en.gramos} g</span>}
+                      <IconoAlimento alimento={alimento} size={34} />
+                      <span className="tn">{nombreMosaico(alimento)}</span>
+                      {veces > 0 && <span className="veces">{veces} {veces === 1 ? "vez" : "veces"}</span>}
+                    </button>
+                  );
+                })}
+                {resultados && resultados.length === 0 && <p className="qc-vacio">No encontramos "{busqueda}" en la base de alimentos.</p>}
+              </div>
+            </div>
+          ) : (
+            <div key="e" className="qc-vista entra-der">
+              <div className="qc-campo">
+                <div className="qc-espejo" aria-hidden="true">{resaltarTexto(texto)}</div>
+                <textarea rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe como hablas: almorcé una taza de arroz, 120 g de pollo y ensalada…" aria-label="Escribe lo que comiste" autoFocus />
+              </div>
+              <div className="qc-plato">
+                <svg className="aro" viewBox="0 0 150 150"><circle cx="75" cy="75" r="70" fill="none" stroke="var(--tint)" strokeWidth="6" /><circle cx="75" cy="75" r="70" fill="none" stroke={colorEstado(totPlato.kcal / (meta || 1))} strokeWidth="6" strokeLinecap="round" transform="rotate(-90 75 75)" strokeDasharray="440" strokeDashoffset={440 * (1 - Math.min(1, totPlato.kcal / (meta || 1)))} style={{ transition: "stroke-dashoffset .7s cubic-bezier(.2,0,0,1), stroke .5s" }} /></svg>
+                <div className="base" />
+                {plato.slice(0, 6).map((it, j) => <span key={it.alimento.id} className="en-plato" style={{ left: POS[j][0] + "%", top: POS[j][1] + "%" }}><IconoAlimento alimento={it.alimento} size={36} /></span>)}
+                <div className="centro"><div><strong className="num-u"><NumeroAnimado valor={totPlato.kcal} /></strong><span>kcal · meta {Math.round(meta)}</span></div></div>
+              </div>
+              <div className="qc-lista">
+                {plato.map((it, i) => { const t = calcularTotalesItem(it.alimento, it.gramos); return (
+                  <div key={it.alimento.id + it.origen} className="qc-fila sube">
+                    <IconoAlimento alimento={it.alimento} size={30} />
+                    <span className="n">{nombreCorto(it.alimento)}<span className={`est ${it.exacto ? "exacto" : ""}`}>{it.tocado ? "ajustado" : it.exacto ? "exacto" : "est."}</span><small><span className="num-u">{Math.round(t.kcal)}</span> kcal · <span className="num-u">{t.proteinasG.toFixed(1)}</span> g prot</small></span>
+                    <Pasos valor={it.gramos} onCambio={(v, e) => cambiarGramos(i, v, e)} />
+                  </div>); })}
+                {desconocidos.map((d) => <div key={d} className="qc-desc sube"><span className="q">?</span><span><b>«{d}»</b> no está en tu base de alimentos. Búscalo en "Buscar" o elige uno parecido.</span></div>)}
+              </div>
+            </div>
+          )}
+
+          {ficha && (
+            <div className="qc-ficha">
+              <div className="cab-f">
+                <IconoAlimento alimento={ficha.alimento} size={52} className="nutri-ico-pop" />
+                <div className="tx"><b>{nombreCorto(ficha.alimento)}</b><span><span className="num-u">{ficha.alimento.kcal}</span> kcal por 100 g</span></div>
+                <button type="button" className="qc-x" aria-label="Cerrar" onClick={() => { setFicha(null); setElegirRec(false); }}>✕</button>
+              </div>
+              <div className="qc-chips">
+                {porcionesRapidas(ficha.alimento).map(([n, g]) => <button key={n} type="button" className={`qc-chip ${ficha.g - taraFicha === g ? "on" : ""}`} onClick={() => setFicha((f) => ({ ...f, g: g + taraFicha + (carneFicha ? carneFicha.gramos : 0) }))}>{n}</button>)}
+              </div>
+              <div className="qc-centro"><span className="qc-mini">{(recFicha || carneFicha) ? "Peso total en la balanza" : "Peso del alimento"}</span><Pasos grande valor={ficha.g} onCambio={(v) => setFicha((f) => ({ ...f, g: v }))} /></div>
+              {(() => { const t = calcularTotalesItem(ficha.alimento, netoFicha); return (
+                <div className="qc-macros">
+                  <div><strong className="num-u"><NumeroAnimado valor={t.kcal} duracion={300} /></strong>kcal</div>
+                  <div><strong className="num-u"><NumeroAnimado valor={t.proteinasG} decimales={1} duracion={300} /><small>g</small></strong>proteína</div>
+                  <div><strong className="num-u"><NumeroAnimado valor={t.carbohidratosG} decimales={1} duracion={300} /><small>g</small></strong>carbohid.</div>
+                  <div><strong className="num-u"><NumeroAnimado valor={t.grasasG} decimales={1} duracion={300} /><small>g</small></strong>grasa</div>
+                </div>); })()}
+              <div className="qc-recip">
+                <button type="button" className={`qc-toggle ${(recFicha || carneFicha) ? "on" : ""}`} role="switch" aria-checked={!!(recFicha || carneFicha)} onClick={() => { if (recFicha || carneFicha) setFicha((f) => ({ ...f, g: netoFicha, recId: "ninguno", carneUid: null })); else setElegirRec(true); }}>
+                  <span>Lo pesé con un recipiente</span><span className="sw" />
+                </button>
+                {(recFicha || carneFicha) && (
+                  <div className="qc-recfila">
+                    <button type="button" className="elegido" onClick={() => setElegirRec(true)}>{recFicha && <IconoRecipiente nombre={recFicha.nombre} />}{[recFicha && `${recFicha.nombre} · ${taraFicha} g`, carneFicha && `− ${nombreCorto(carneFicha.alimento)} ${carneFicha.gramos} g`].filter(Boolean).join(" ")} ›</button>
+                    <span className="qc-mini">Neto <b className="num-u">{netoFicha} g</b></span>
+                  </div>
+                )}
+              </div>
+              <button type="button" className="qc-btn" disabled={netoFicha <= 0} onClick={agregarDeFicha}>Agregar {netoFicha} g al plato</button>
+
+              {elegirRec && (
+                <div className="qc-recipientes">
+                  <button type="button" className="qc-atras" onClick={() => setElegirRec(false)}>‹ <IconoAlimento alimento={ficha.alimento} size={24} /> {nombreCorto(ficha.alimento)}</button>
+                  <h3>¿En qué lo pesaste?</h3>
+                  <p>Se descuenta su peso (tara) para guardar solo el alimento.</p>
+                  <div className="qc-rlista">
+                    {[{ id: "ninguno", nombre: "", taraG: 0 }, ...recipientes].map((r, i) => (
+                      <button key={r.id} type="button" className={`qc-rop ${ficha.recId === r.id ? "on" : ""}`} style={{ animationDelay: `${i * 40}ms` }}
+                        onClick={() => { const t0 = taraFicha, t1 = Number(r.taraG) || 0; setFicha((f) => ({ ...f, recId: r.id, g: Math.max(1, f.g - t0 + t1) })); setTimeout(() => setElegirRec(false), 220); }}>
+                        <IconoRecipiente nombre={r.nombre} /><b>{r.nombre || "Sin recipiente"}</b><span>{r.id === "ninguno" ? "peso directo" : `tara ${Number(r.taraG) || 0} g`}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {recipientes.some((r) => !(Number(r.taraG) > 0)) && <p className="qc-mini">Los recipientes con tara 0 g todavía no tienen su peso: se configura en Opciones › Recipientes.</p>}
+                  {momento === "almuerzo" && ficha.alimento.categoria !== "proteina" && carnes.length > 0 && (
+                    <div className="qc-carne">
+                      <h4>¿Lo pesaste junto con una carne ya registrada?</h4>
+                      <div className="qc-chips wrap">
+                        <button type="button" className={`qc-chip ${!ficha.carneUid ? "on" : ""}`} onClick={() => setFicha((f) => ({ ...f, g: carneFicha ? f.g - carneFicha.gramos : f.g, carneUid: null }))}>No, es aparte</button>
+                        {carnes.map((c) => <button key={c.uid} type="button" className={`qc-chip ${ficha.carneUid === c.uid ? "on" : ""}`} onClick={() => setFicha((f) => ({ ...f, g: f.g - (carneFicha ? carneFicha.gramos : 0) + c.gramos, carneUid: c.uid }))}>Restar {nombreCorto(c.alimento)} ({c.gramos} g)</button>)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="qc-pie">
+          {modo === "buscar" && (
+            <div className={`qc-bandeja ${plato.length ? "llena" : ""}`} key={plato.length}>
+              <span className="mini-plato">{plato.slice(-4).map((x) => <IconoAlimento key={x.alimento.id} alimento={x.alimento} size={22} />)}</span>
+              <span className="info"><b>{plato.length ? `${plato.length} alimento${plato.length === 1 ? "" : "s"} en el plato` : "El plato está vacío"}</b>{plato.length ? <><span className="num-u">{Math.round(totPlato.kcal)}</span> kcal de {Math.round(meta)} · {nombreMom}</> : "Toca un alimento para agregarlo"}</span>
+              {plato.length > 0 && <button type="button" className="qc-vaciar" onClick={() => setPlato([])}>Vaciar</button>}
+            </div>
+          )}
+          <button type="button" className={`qc-btn ${exito ? "exito" : ""}`} disabled={!plato.length} onClick={registrar}>
+            <span className="txt">Registrar {plato.length ? plato.length + " " : ""}en {nombreMom}</span>
+            <svg className="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" strokeDasharray="24" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===================================================================================
+   Menú de hoy (rediseño 2026-10-23, aprobado): avance del día con colores por estado,
+   las 4 comidas, ventana "Arma por partes" por comida y pasar al registro.
+   Mockups: docs-base/pantallas/P-05-menu*.png
+   =================================================================================== */
+const ESTADO_AVANCE = (p) => p > 1.05 ? "exceso" : p >= .85 ? "meta" : p > 0 ? "bajo" : "cero";
+const COLOR_ESTADO = { cero: "var(--border)", bajo: "var(--st-bajo)", meta: "var(--st-meta)", exceso: "var(--st-exceso)" };
+const colorEstado = (p) => COLOR_ESTADO[ESTADO_AVANCE(p)];
+const TEXTO_ESTADO = (p) => p > 1.05 ? `▲ Te pasaste ${Math.round((p - 1) * 100)} %` : p >= 1 ? "✓ ¡Meta cumplida!" : p >= .85 ? "● ¡Por llegar a tu meta!" : p > 0 ? "◐ Vas en camino" : "○ Elige tu primera comida";
+
+function AnilloAvance({ pct, size = 88, grosor = 10 }) {
+  const r = (size - grosor) / 2, c = 2 * Math.PI * r, h = size / 2, est = ESTADO_AVANCE(pct);
+  const [estallido, setEstallido] = useState(0);
+  const prev = useRef(est);
+  useEffect(() => { if (est === "meta" && prev.current !== "meta") setEstallido((x) => x + 1); prev.current = est; }, [est]);
+  return (
+    <span className={`mh-ring est-${est}`} style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={h} cy={h} r={r} fill="none" stroke="var(--tint)" strokeWidth={grosor} />
+        <circle cx={h} cy={h} r={r} fill="none" stroke={COLOR_ESTADO[est]} strokeWidth={grosor} strokeLinecap="round" transform={`rotate(-90 ${h} ${h})`} strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct))} className="arco" />
+        <circle cx={h} cy={h} r={r} fill="none" stroke="var(--st-exceso)" strokeWidth={grosor - 3} strokeLinecap="round" transform={`rotate(-90 ${h} ${h})`} strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, pct - 1)))} className="arco" style={{ filter: "brightness(.8)" }} />
+      </svg>
+      {estallido > 0 && <span key={estallido} className="mh-estallido" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => { const a = i / 14 * Math.PI * 2, d = 46 + (i % 3) * 7; return <i key={i} style={{ "--x": `${Math.cos(a) * d}px`, "--y": `${Math.sin(a) * d}px`, background: i % 3 ? "var(--st-meta)" : "#FFD447" }} />; })}</span>}
+    </span>
+  );
+}
+
+function AvanceDia({ total, requerimiento, latir }) {
+  const metas = { kcal: requerimiento.get || 1, p: requerimiento.proteinasG || 1, c: requerimiento.carbohidratosG || 1, g: requerimiento.grasasG || 1 };
+  const p = total.kcal / metas.kcal, est = ESTADO_AVANCE(p);
+  const COLS = [["kcal", "calorias", "Calorías", ""], ["p", "proteina", "Proteína", " g"], ["c", "carbohidratos", "Carbohid.", " g"], ["g", "grasas", "Grasa", " g"]];
+  return (
+    <div className={`mh-avance est-${est}`}>
+      <div className="mh-av-top">
+        <AnilloAvance pct={p} />
+        <div className="info">
+          <div className="grande"><span className="pcw num-u"><NumeroAnimado valor={p * 100} duracion={900} /></span><small>%</small></div>
+          <p>de tu meta de hoy · <b className="num-u"><NumeroAnimado valor={total.kcal} duracion={900} /></b> de {Math.round(metas.kcal)} kcal</p>
+          <span className="mh-estado">{TEXTO_ESTADO(p)}</span>
+        </div>
+      </div>
+      <div className="mh-nutris">
+        {COLS.map(([k, ik, n, u]) => { const pk = total[k] / metas[k], ek = ESTADO_AVANCE(pk); return (
+          <div key={k} className={`mh-nutri ${ek === "exceso" ? "exceso" : ""}`}>
+            <IconoAlimento clave={ik} size={30} key={latir + k} className={latir ? "mh-late" : ""} />
+            <span className="val"><b className="num-u"><NumeroAnimado valor={total[k]} duracion={900} /></b>{u}</span>
+            <span className="barra"><i style={{ width: `${Math.min(100, pk * 100)}%`, background: COLOR_ESTADO[ek] }} /></span>
+            <small>{n} · <span className="num-u">{Math.round(pk * 100)}</span>%</small>
+          </div>); })}
+      </div>
+    </div>
+  );
+}
+
+/* Ventana de una comida: variantes de un toque arriba; lo elegido sube con sus pesos y el resto
+   baja a "¿Algo más?". Las animaciones de subir/bajar usan la técnica FLIP. */
+const PARTES_MENU = [["Base", ["carbohidrato", "quinua", "menestra"]], ["Proteína", ["proteina"]], ["Lácteos", ["lacteo"]], ["Fruta", ["fruta"]], ["Verduras", ["vegetal"]], ["Extras", ["grasa"]]];
+function VentanaComida({ momento, variantes, inicial, requerimiento, onConfirmar, onCerrar }) {
+  const [sel, setSel] = useState(() => (inicial || []).map((it) => ({ alimento: it.alimento, gramos: it.gramos })));
+  const [variante, setVariante] = useState(null);
+  const [nuevos, setNuevos] = useState([]);
+  const [saliendo, setSaliendo] = useState(false);
+  const contRef = useRef(null), posiciones = useRef(null);
+  const meta = metaMomento(requerimiento, momento);
+  const disponibles = useMemo(() => {
+    const ids = new Set(); variantes.forEach((v) => v.items.forEach((it) => ids.add(it.alimento.id)));
+    (FRECUENTES_BASE[momento] || []).forEach((id) => ids.add(id));
+    return [...ids].map((id) => ALIMENTO_POR_ID[id]).filter(Boolean);
+  }, [variantes, momento]);
+  const porcionVar = (a) => { const gs = []; variantes.forEach((v) => v.items.forEach((it) => { if (it.alimento.id === a.id) gs.push(it.gramos); })); return gs.length ? Math.round(gs.reduce((x, y) => x + y, 0) / gs.length / 5) * 5 : porcionDe(a); };
+  const capturar = () => { const m = {}; if (contRef.current) contRef.current.querySelectorAll("[data-flip]").forEach((el) => { m[el.dataset.flip] = el.getBoundingClientRect(); }); posiciones.current = m; };
+  useLayoutEffect(() => {
+    const antes = posiciones.current; posiciones.current = null;
+    if (!antes || !contRef.current || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    contRef.current.querySelectorAll("[data-flip]").forEach((el) => {
+      const a = antes[el.dataset.flip]; if (!a) return; const b = el.getBoundingClientRect(); const dx = a.left - b.left, dy = a.top - b.top; if (!dx && !dy) return;
+      el.style.transition = "none"; el.style.transform = `translate(${dx}px, ${dy}px)`; el.style.zIndex = 3;
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = "transform .55s cubic-bezier(.2,0,0,1.2)"; el.style.transform = ""; setTimeout(() => { el.style.zIndex = ""; }, 600); }));
+    });
+  });
+  const elegirVariante = (i) => { capturar(); setVariante(i); const it = variantes[i].items.map((x) => ({ alimento: x.alimento, gramos: x.gramos })); setSel(it); setNuevos(it.map((x) => x.alimento.id)); if (contRef.current) contRef.current.scrollTo({ top: 0, behavior: "smooth" }); };
+  const sumar = (a) => { capturar(); setVariante(null); setSel((s) => [...s, { alimento: a, gramos: porcionVar(a) }]); setNuevos([a.id]); };
+  const quitar = (i) => { capturar(); setVariante(null); setSel((s) => s.filter((_, j) => j !== i)); setNuevos([]); };
+  const t = sumaMacros(sel), pm = t.kcal / (meta || 1);
+  const elegidos = new Set(sel.map((x) => x.alimento.id));
+  const partes = PARTES_MENU.map(([n, cats]) => [n, disponibles.filter((a) => cats.includes(a.categoria) && !elegidos.has(a.id))]).filter((p) => p[1].length);
+  const cerrar = (ok) => { setSaliendo(true); setTimeout(() => (ok ? onConfirmar(sel) : onCerrar()), 260); };
+  const nom = MOMENTO_LABEL_CAPITALIZADO[momento];
+  return (
+    <div className={`mh-ventana ${saliendo ? "sale" : ""}`} role="dialog" aria-modal="true" aria-label={nom}>
+      <div className="mh-v-cab"><span className="emo">{MOMENTO_EMOJI[momento]}</span><h2>{nom}<small>Meta <span className="num-u">{Math.round(meta)}</span> kcal</small></h2><button type="button" className="qc-x" aria-label="Cerrar" onClick={() => cerrar(false)}>✕</button></div>
+      <div className="mh-resumen">
+        <AnilloAvance pct={pm} size={46} grosor={5} />
+        <div className="tx"><b><span className="num-u"><NumeroAnimado valor={t.kcal} duracion={400} /></span> de {Math.round(meta)} kcal</b>{sel.length ? <span><span className="num-u">{t.p.toFixed(1)}</span> g prot · <span className="num-u">{t.c.toFixed(1)}</span> g carb · <span className="num-u">{t.g.toFixed(1)}</span> g grasa</span> : <span>Elige una variante o toca alimentos</span>}</div>
+        <span className="num-u pct" style={{ color: colorEstado(pm) }}>{Math.round(pm * 100)}%</span>
+      </div>
+      <div className="mh-v-cuerpo" ref={contRef}>
+        <p className="qc-tsec">Tus variantes · un toque</p>
+        <div className="mh-rapidas">
+          {variantes.map((v, i) => (
+            <button key={i} type="button" className={`mh-rapida ${variante === i ? "on" : ""}`} onClick={() => elegirVariante(i)}>
+              <span className="icos">{v.items.slice(0, 3).map((it) => <IconoAlimento key={it.alimento.id} alimento={it.alimento} size={20} />)}</span>
+              {v.nombre}{v.veces > 0 && <small>{v.veces}×</small>}
+            </button>
+          ))}
+        </div>
+        {sel.length > 0 && (
+          <div className="mh-seleccion">
+            <div className="t-sel"><span>Tu {nom.toLowerCase()}</span><button type="button" onClick={() => { capturar(); setSel([]); setVariante(null); }}>Empezar de nuevo</button></div>
+            <div className="qc-rejilla">{sel.map((x) => <button key={x.alimento.id} type="button" data-flip={x.alimento.id} className="qc-tile tiene"><IconoAlimento alimento={x.alimento} size={34} /><span className="tn">{nombreMosaico(x.alimento)}</span></button>)}</div>
+            <div className="mh-pesos">
+              {sel.map((x, i) => { const tt = calcularTotalesItem(x.alimento, x.gramos); return (
+                <div key={x.alimento.id} className={`it ${nuevos.includes(x.alimento.id) ? "peso-in" : ""}`} style={{ animationDelay: `${nuevos.indexOf(x.alimento.id) * 80 + 380}ms` }}>
+                  <IconoAlimento alimento={x.alimento} size={26} />
+                  <span className="n">{nombreCorto(x.alimento)}<small><span className="num-u">{Math.round(tt.kcal)}</span> kcal</small></span>
+                  <Pasos valor={x.gramos} onCambio={(v) => setSel((s) => s.map((y, j) => (j === i ? { ...y, gramos: v } : y)))} />
+                  <button type="button" className="quitar" aria-label={`Quitar ${nombreCorto(x.alimento)}`} onClick={() => quitar(i)}>✕</button>
+                </div>); })}
+            </div>
+          </div>
+        )}
+        <div className={`mh-resto ${sel.length ? "atenuado" : ""}`}>
+          {sel.length > 0 && <p className="algo-mas">¿Algo más? Toca para sumar</p>}
+          {partes.map(([n, lista]) => (
+            <div key={n} className="mh-parte"><h3>{n}</h3>
+              <div className="qc-rejilla">{lista.map((a) => <button key={a.id} type="button" data-flip={a.id} className="qc-tile" onClick={() => sumar(a)}><IconoAlimento alimento={a} size={34} /><span className="tn">{nombreMosaico(a)}</span></button>)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <button type="button" className="qc-btn" disabled={!sel.length} onClick={() => cerrar(true)}>{sel.length ? `Confirmar ${nom.toLowerCase()} · ${Math.round(t.kcal)} kcal` : "Elige lo que comerás"}</button>
+    </div>
+  );
+}
+
+function PantallaMenuHoy({ requerimiento, pacienteId, addItem, onErrorSync }) {
+  const hoy = hoyISO();
+  const historial = useHistorialComidas(pacienteId);
+  const clave = "nutriapp_menu_hoy_" + hoy;
+  const [plan, setPlan] = useState(() => { try { const s = JSON.parse(localStorage.getItem(clave) || "{}"); const r = {}; Object.keys(s).forEach((m) => { r[m] = s[m].map((x) => ({ alimento: ALIMENTO_POR_ID[x.alimentoId], gramos: x.gramos })).filter((x) => x.alimento); }); return r; } catch { return {}; } });
+  const [abierta, setAbierta] = useState(null);
+  const [recien, setRecien] = useState(null);
+  const [aviso, setAviso] = useState("");
+  const [latir, setLatir] = useState(0);
+  const remoto = useRef(false);
+  const serializar = (p) => { const o = {}; Object.keys(p).forEach((m) => { o[m] = p[m].map((x) => ({ alimentoId: x.alimento.id, gramos: x.gramos })); }); return o; };
+  useEffect(() => { try { localStorage.setItem(clave, JSON.stringify(serializar(plan))); } catch {} }, [plan]);
+  /* El menú del día también se guarda en la nube (espacio compartido), igual que antes las ediciones del menú */
+  useEffect(() => {
+    if (!pacienteId) return;
+    return dbFirestore.collection("pacientes").doc(pacienteId).collection("menuHoy").doc(hoy).onSnapshot((snap) => {
+      const d = snap.data(); if (!d) return; const r = {};
+      Object.keys(d).forEach((m) => { r[m] = (d[m] || []).map((x) => ({ alimento: ALIMENTO_POR_ID[x.alimentoId], gramos: x.gramos })).filter((x) => x.alimento); });
+      remoto.current = true; setPlan(r);
+    }, () => onErrorSync && onErrorSync("No se pudo leer tu menú de hoy desde la nube. Revisa tu conexión."));
+  }, [pacienteId, hoy]);
+  useEffect(() => {
+    if (!pacienteId) return;
+    if (remoto.current) { remoto.current = false; return; }
+    const t = setTimeout(() => { dbFirestore.collection("pacientes").doc(pacienteId).collection("menuHoy").doc(hoy).set(serializar(plan)).catch(() => onErrorSync && onErrorSync("No se pudo guardar tu menú en la nube. Revisa tu conexión.")); }, 800);
+    return () => clearTimeout(t);
+  }, [plan, pacienteId]);
+
+  const variantes = useMemo(() => Object.fromEntries(MOMENTOS_KEYS.map((m) => [m, variantesPorMomento(historial, m, requerimiento)])), [historial, requerimiento]);
+  const total = sumaMacros(Object.values(plan).flat());
+  const n = MOMENTOS_KEYS.filter((m) => plan[m] && plan[m].length).length;
+  const confirmar = (m, items) => { setPlan((p) => ({ ...p, [m]: items })); setAbierta(null); setRecien(m); setLatir((x) => x + 1); setTimeout(() => setRecien(null), 800); };
+  const pasarAlRegistro = () => {
+    MOMENTOS_KEYS.forEach((m) => (plan[m] || []).forEach((it) => addItem(it.alimento, it.gramos, m, null, hoy)));
+    setPlan({}); setAviso("✓ Pasado a tu registro de hoy"); setTimeout(() => setAviso(""), 2600);
+    try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch {}
+  };
+  return (
+    <div className="nutri-pagina">
+      <div className="nutri-hero-titulo">
+        <h1 className="nutri-serif text-2xl nutri-ink mb-1">Menú de hoy</h1>
+        <p className="text-sm nutri-muted mb-3">Elige cada comida entre tus variantes y mira cómo se completa tu meta.</p>
+      </div>
+      <div className="nutri-sheet px-5 pt-6 pb-24">
+        <AvanceDia total={total} requerimiento={requerimiento} latir={latir} />
+        <p className="qc-tsec" style={{ marginTop: 16 }}>Elige tus comidas</p>
+        <div className="mh-comidas">
+          {MOMENTOS_KEYS.map((m) => { const its = plan[m], meta = metaMomento(requerimiento, m), tk = its ? sumaMacros(its).kcal : 0; return (
+            <button key={m} type="button" className={`mh-comida ${its && its.length ? "lista" : ""} ${recien === m ? "recien" : ""}`} onClick={() => setAbierta(m)}>
+              {its && its.length > 0 && <span className="ok">✓</span>}
+              <span className="emo">{MOMENTO_EMOJI[m]}</span><b>{MOMENTO_LABEL_CAPITALIZADO[m]}</b>
+              {its && its.length ? <><span className="icos">{its.slice(0, 4).map((it) => <IconoAlimento key={it.alimento.id} alimento={it.alimento} size={24} />)}</span><span className="est"><b className="num-u">{Math.round(tk)}</b> de {Math.round(meta)} kcal</span></> : <span className="est">Meta <span className="num-u">{Math.round(meta)}</span> kcal<br />Toca para elegir</span>}
+              <span className="mini"><i style={{ width: `${Math.min(100, tk / (meta || 1) * 100)}%`, background: colorEstado(tk / (meta || 1)) }} /></span>
+            </button>); })}
+        </div>
+        {n === 4 ? (
+          <div className="mh-completado" key={"c" + latir}>
+            <h3>¡Menú completado!</h3>
+            <p>Tus 4 comidas cubren el <b className="num-u">{Math.round(total.kcal / (requerimiento.get || 1) * 100)}%</b> de tus calorías y el <b className="num-u">{Math.round(total.p / (requerimiento.proteinasG || 1) * 100)}%</b> de tu proteína.</p>
+            <button type="button" onClick={pasarAlRegistro}>→ Pasar al registro</button>
+            {Array.from({ length: 22 }, (_, i) => <i key={i} className="confeti" style={{ left: `${(i * 37) % 100}%`, background: ["#FFD447", "#FF7B8E", "#6CB2FF", "#7CF2C5", "#FFFFFF"][i % 5], animationDelay: `${(i % 7) * 70}ms` }} />)}
+          </div>
+        ) : (
+          <div className="mh-pendiente">{n ? `Te faltan ${4 - n} comida${4 - n === 1 ? "" : "s"} para completar el menú.` : "Toca una comida para empezar tu menú de hoy."}</div>
+        )}
+        <div style={{ marginTop: 18 }}><SugeridorIngrediente requerimiento={requerimiento} /></div>
+      </div>
+      {aviso && ReactDOM.createPortal(<div className="mh-toast" role="status">{aviso}</div>, document.body)}
+      {abierta && ReactDOM.createPortal(<VentanaComida momento={abierta} variantes={variantes[abierta]} inicial={plan[abierta]} requerimiento={requerimiento} onConfirmar={(items) => confirmar(abierta, items)} onCerrar={() => setAbierta(null)} />, document.body)}
+    </div>
+  );
+}
+
 function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, pacienteId, fechaInicial, onFechaInicialConsumida, requerimiento }) {
   const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
@@ -1826,6 +2736,8 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
   const [logOtraFecha, setLogOtraFecha] = useState([]);
   const [filtroMomento, setFiltroMomento] = useState("todos");
   const [semanaOffset, setSemanaOffset] = useState(0);
+  const [hojaAbierta, setHojaAbierta] = useState(false);
+  const historial = useHistorialComidas(pacienteId);
 
   const hoy = hoyISO();
   const diasSemana = useMemo(() => { const l = getLunes(new Date()); l.setUTCDate(l.getUTCDate() + semanaOffset * 7); return Array.from({ length: 7 }, (_, i) => { const d = new Date(l); d.setUTCDate(d.getUTCDate() + i); return d; }); }, [semanaOffset]);
@@ -1901,7 +2813,7 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
     <div className="nutri-pagina">
       <div className="nutri-hero-titulo">
         <h1 className="nutri-serif text-2xl nutri-ink mb-1">Registro de alimentos</h1>
-        <p className="text-sm nutri-muted mb-3">Busca un alimento, indica el recipiente (si pesaste con él) y verás el cálculo al instante.</p>
+        <p className="text-sm nutri-muted mb-3">Toca "¿Qué comiste?" para buscar o escribir tus alimentos; los recipientes se descuentan solos.</p>
       </div>
       <div className="nutri-sheet px-5 pt-6 pb-24">
 
@@ -1925,66 +2837,15 @@ function PantallaRegistro({ log, addItem, removeItem, updateItem, recipientes, p
       {semanaOffset !== 0 && <button onClick={() => { setSemanaOffset(0); setFechaSeleccionada(hoy); setSeleccionado(null); }} className="text-xs nutri-brand-text mb-2 underline">Volver a esta semana</button>}
       {fechaSeleccionada !== hoy && <p className="text-xs nutri-brand-text mb-3">Editando el registro del {fechaSeleccionada}. Los cambios de esa fecha se guardan igual que los de hoy.</p>}
 
-      <div className="relative mb-3">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 nutri-muted"><IconSearch size={16} /></span>
-        <input className="w-full rounded-lg nutri-chip pl-9 pr-3 py-2.5 text-sm bg-white nutri-ink focus:outline-none" placeholder="Buscar alimento (ej. pollo, avena, palta...)" value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setSeleccionado(null); }} />
-      </div>
-      {resultados.length > 0 && !seleccionado && (
-        <div className="nutri-panel rounded-xl mb-3 overflow-hidden">
-          {resultados.map((f) => (
-            <button key={f.id} onClick={() => setSeleccionado(f)} className="w-full text-left px-4 py-3 text-sm border-b last:border-b-0 hover:bg-stone-50 flex items-center justify-between" style={{ borderColor: "#EEEAE0" }}>
-              <span className="nutri-ink flex items-center gap-3"><IconoAlimento alimento={f} size={30} />{f.nombre}</span><span className="nutri-muted text-xs">{f.kcal} kcal /100g</span>
-            </button>
-          ))}
-        </div>
-      )}
-      {seleccionado && (
-        <div className="nutri-panel rounded-xl p-4 mb-5">
-          <div className="flex items-center justify-between mb-3"><span className="text-sm font-medium nutri-ink flex items-center gap-3"><IconoAlimento alimento={seleccionado} size={44} className="nutri-ico-pop" key={seleccionado.id} />{seleccionado.nombre}</span><button onClick={() => setSeleccionado(null)} className="text-xs nutri-muted">cambiar</button></div>
-
-          <select value={momento} onChange={(e) => { setMomento(e.target.value); setRestarCarneId("ninguna"); }} className="w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink mb-3"><option value="desayuno">Desayuno</option><option value="almuerzo">Almuerzo</option><option value="cena">Cena</option><option value="colacion">Colación</option></select>
-
-          <label className="block mb-3">
-            <span className="text-xs nutri-muted block mb-1">Recipiente usado al pesar</span>
-            <select value={recipienteId} onChange={(e) => setRecipienteId(e.target.value)} className="w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink">
-              <option value="ninguno">Ninguno (peso directo del alimento)</option>
-              {recipientes.map((r) => <option key={r.id} value={r.id}>{r.nombre} (tara {r.taraG} g)</option>)}
-            </select>
-          </label>
-
-          {mostrarRestarCarne && (
-            <label className="block mb-3">
-              <span className="text-xs nutri-muted block mb-1">¿Pesaste esto junto con una carne ya registrada en el mismo plato?</span>
-              <select value={restarCarneId} onChange={(e) => setRestarCarneId(e.target.value)} className="w-full rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink">
-                <option value="ninguna">No, es un peso aparte</option>
-                {carnesAlmuerzo.map((it) => <option key={it.uid} value={it.uid}>{it.alimento.nombre} ({it.gramos} g ya registrados)</option>)}
-              </select>
-            </label>
-          )}
-
-          <div className="flex gap-2 mb-1">
-            <input type="number" value={pesoBruto} onChange={(e) => setPesoBruto(Number(e.target.value))} className="w-28 rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink"  onFocus={(e) => e.target.select()} />
-            <span className="self-center text-sm nutri-muted">gramos (todo lo que pesaste junto)</span>
-          </div>
-          {(recipienteId !== "ninguno" || carneRestada) && (
-            <p className="text-xs nutri-muted mb-3">Peso neto del alimento: <span className="nutri-ink font-medium">{pesoNeto} g</span> ({pesoBruto} g bruto{recipienteId !== "ninguno" ? ` − ${tara} g de ${recipiente.nombre}` : ""}{carneRestada ? ` − ${pesoCarneRestada} g de ${carneRestada.alimento.nombre} ya pesados` : ""})</p>
-          )}
-
-          <DesglosePreview alimento={seleccionado} gramos={pesoNeto} />
-
-          <button
-            onClick={() => {
-              const taraInfo = (recipienteId !== "ninguno" || carneRestada) ? { recipiente: recipiente ? recipiente.nombre : null, pesoBruto, tara, carneNombre: carneRestada ? carneRestada.alimento.nombre : null, carneGramos: carneRestada ? carneRestada.gramos : null } : null;
-              addItem(seleccionado, pesoNeto, momento, taraInfo, fechaSeleccionada);
-              if (fechaSeleccionada !== hoy) setLogOtraFecha((prev) => [...prev, { uid: `tmp_${Date.now()}`, alimento: seleccionado, gramos: pesoNeto, momento, tara: taraInfo, fecha: fechaSeleccionada }]);
-              setSeleccionado(null); setBusqueda(""); setPesoBruto(100); setRecipienteId("ninguno"); setRestarCarneId("ninguna");
-            }}
-            disabled={pesoNeto <= 0}
-            className="w-full nutri-brand text-white rounded-lg py-2.5 text-sm flex items-center justify-center gap-1.5 disabled:opacity-40"
-          >
-            <IconPlus size={15} /> Agregar al registro
-          </button>
-        </div>
+      <button type="button" className="qc-abrir" onClick={() => setHojaAbierta(true)}>
+        <span className="mas">+</span>
+        <span><b>¿Qué comiste?</b><span>Busca tus alimentos o escribe lo que comiste</span></span>
+      </button>
+      {hojaAbierta && ReactDOM.createPortal(
+        <HojaQueComiste fecha={fechaSeleccionada} logDia={logActivo} recipientes={recipientes} historial={historial} requerimiento={requerimiento}
+          momentoInicial={filtroMomento !== "todos" ? filtroMomento : undefined}
+          addItem={(alimento, gramos, mom, tara, fecha) => { addItem(alimento, gramos, mom, tara, fecha); if (fecha !== hoy) setLogOtraFecha((prev) => [...prev, { uid: "tmp_" + Date.now() + Math.random(), alimento, gramos, momento: mom, tara, fecha }]); }}
+          onCerrar={() => setHojaAbierta(false)} />, document.body
       )}
       <div className="nutri-panel rounded-2xl p-4 mb-5">
         <span className="text-sm font-medium nutri-ink block mb-2">
@@ -2504,7 +3365,7 @@ function pdfBarraMacros(L, real, objetivo) {
 function exportarTotalesPDF({ datos, requerimiento }) {
   const dias = datos.map((d) => ({ fecha: d.fecha, ...filasDelDia(d.items), hay: d.items.length > 0 }));
   const con = dias.filter((d) => d.hay);
-  const L = crearLienzoPDF("NutriClínica · Totales por día", `Del ${fechaCortaLima(datos[0].fecha)} al ${fechaCortaLima(datos[datos.length - 1].fecha)} (${datos.length} días)`);
+  const L = crearLienzoPDF("NutriApp · Totales por día", `Del ${fechaCortaLima(datos[0].fecha)} al ${fechaCortaLima(datos[datos.length - 1].fecha)} (${datos.length} días)`);
   if (!L) return;
   const n = con.length;
   const prom = (k) => (n ? con.reduce((s, d) => s + d.totales[k], 0) / n : 0);
@@ -2577,7 +3438,7 @@ function dibujarHojaDia(L, dia, requerimiento) {
 }
 
 function exportarDetallePDF({ dias, requerimiento }) {
-  const L = crearLienzoPDF("NutriClínica · Reporte diario", fechaLargaLima(dias[0].fecha));
+  const L = crearLienzoPDF("NutriApp · Reporte diario", fechaLargaLima(dias[0].fecha));
   if (!L) return;
   dias.forEach((d, i) => {
     if (i > 0) { L.doc.addPage(); L.subtitulo = fechaLargaLima(d.fecha); L.encabezado(); }
@@ -2592,7 +3453,7 @@ const SEVERIDAD_TXT = { alta: "PRIORIDAD ALTA", media: "A VIGILAR", info: "INFOR
 
 function exportarClinicoPDF({ datos, requerimiento, perfil, medicamentos, resumen }) {
   const r = resumen;
-  const L = crearLienzoPDF("NutriClínica · Resumen clínico", `Período: ${fechaCortaLima(datos[0].fecha)} al ${fechaCortaLima(datos[datos.length - 1].fecha)} (${datos.length} días)`);
+  const L = crearLienzoPDF("NutriApp · Resumen clínico", `Período: ${fechaCortaLima(datos[0].fecha)} al ${fechaCortaLima(datos[datos.length - 1].fecha)} (${datos.length} días)`);
   if (!L) return;
   const { doc, M, ANCHO } = L;
   const imc = calcularIMC(perfil.pesoKg, perfil.tallaCm);
@@ -3274,7 +4135,7 @@ function categoriaIMCPaciente(perfil, imc) {
 
 /* ---------- PDF: evolución del peso ---------- */
 function exportarPesoPDF({ serie, ordenados, perfil, etiqueta }) {
-  const L = crearLienzoPDF("NutriClínica · Evolución del peso", etiqueta);
+  const L = crearLienzoPDF("NutriApp · Evolución del peso", etiqueta);
   if (!L) return;
   const { M, ANCHO } = L;
   const ultimo = serie[serie.length - 1], primero = serie[0];
@@ -3302,7 +4163,7 @@ function exportarPesoPDF({ serie, ordenados, perfil, etiqueta }) {
 
 /* ---------- PDF: comparación de períodos ---------- */
 function exportarComparacionPDF({ ra, rb, etiquetaA, etiquetaB, tipoTxt, comparados, lectura }) {
-  const L = crearLienzoPDF("NutriClínica · Comparación de períodos", `${tipoTxt}: A frente a B`);
+  const L = crearLienzoPDF("NutriApp · Comparación de períodos", `${tipoTxt}: A frente a B`);
   if (!L) return;
   const { doc, M } = L;
   L.seccion("Períodos comparados");
@@ -4803,10 +5664,8 @@ function PantallaLogin({ auth }) {
         <div className="nl-wave">{ONDA_SVG("var(--bg)")}</div>
       </div>
       <div className="nl-brand">
-        <div className="nl-logo">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>
-        </div>
-        <h1 className="nutri-serif">NutriClínica</h1>
+        <IconoApp className="nl-logo" size={72} />
+        <h1><MarcaNombre salta retraso={0.2} /></h1>
         <p>{entrando ? "Tu plan de comidas, simple y a tiempo." : "Crea tu cuenta para guardar tus datos y usarlos en todos tus celulares."}</p>
       </div>
       <form className={`nl-form ${sacudir ? "nl-sacude" : ""}`} onSubmit={enviar} noValidate>
@@ -4901,6 +5760,11 @@ function PantallaEspacio({ uid, onListo }) {
 function Raiz() {
   const [usuario, setUsuario] = useState(FIREBASE_ACTIVO ? undefined : null);
   const [pacienteId, setPacienteId] = useState(undefined);
+  /* Pantalla de carga con el logo animado: se muestra al menos lo que dura la animación y, si la
+     sesión tarda más, sigue hasta que esté lista. Reemplaza el antiguo texto "Cargando...". */
+  const [introLista, setIntroLista] = useState(false);
+  const [saliendo, setSaliendo] = useState(false);
+  useEffect(() => { const t1 = setTimeout(() => setSaliendo(true), 2300); const t2 = setTimeout(() => setIntroLista(true), 2750); return () => { clearTimeout(t1); clearTimeout(t2); }; }, []);
   useEffect(() => {
     if (!FIREBASE_ACTIVO) return;
     return authFirebase.onAuthStateChanged((u) => { setUsuario(u); setPacienteId(undefined); });
@@ -4912,10 +5776,10 @@ function Raiz() {
     });
   }, [usuario]);
 
+  const cargando = FIREBASE_ACTIVO && (usuario === undefined || (usuario && pacienteId === undefined));
+  if (!introLista || cargando) return <PantallaCarga saliendo={saliendo && !cargando} />;
   if (!FIREBASE_ACTIVO) return <NutriApp pacienteId={null} />;
-  if (usuario === undefined) return <div className="min-h-screen flex items-center justify-center nutri-muted text-sm">Cargando...</div>;
   if (!usuario) return <PantallaLogin auth={authFirebase} />;
-  if (pacienteId === undefined) return <div className="min-h-screen flex items-center justify-center nutri-muted text-sm">Cargando...</div>;
   if (!pacienteId) return <PantallaEspacio uid={usuario.uid} onListo={setPacienteId} />;
   return <NutriApp pacienteId={pacienteId} salir={() => authFirebase.signOut()} email={usuario.email} />;
 }
@@ -5178,9 +6042,9 @@ function NutriApp({ pacienteId, salir, email }) {
 
   const TABS = [
     { key: "perfil", label: "Perfil", icon: NavPerfil, c: NAV_GRADIENTES.perfil },
+    { key: "menu", label: "Menú", icon: NavMenu, c: NAV_GRADIENTES.menu },
     { key: "registro", label: "Registro", icon: NavRegistro, c: NAV_GRADIENTES.registro },
     { key: "dashboard", label: "Panel", icon: NavPanel, c: NAV_GRADIENTES.panelA },
-    { key: "menu", label: "Menú", icon: NavMenu, c: NAV_GRADIENTES.menu },
     { key: "opciones", label: "Opciones", icon: NavOpciones, c: NAV_GRADIENTES.opciones },
   ];
   /* Dirección de la transición entre pantallas: entra desde la derecha si el menú nuevo está a la
@@ -5197,7 +6061,7 @@ function NutriApp({ pacienteId, salir, email }) {
   return (
     <div className="min-h-screen max-w-md mx-auto relative">
       <header className="sticky top-0 z-10 nutri-header px-5 py-4 flex items-center justify-between">
-        <span className="nutri-serif text-white text-lg">NutriClínica</span>
+        <span className="marca"><IconoApp size={28} /><MarcaNombre salta retraso={0.1} /></span>
         <div className="flex items-center gap-3">
           <button onClick={() => setMostrarReporte(true)} className="text-white flex items-center gap-1 text-xs"><IconReporte size={18} /> Reportes</button>
           <button onClick={() => setMostrarHistorial(true)} className="text-white flex items-center gap-1 text-xs"><IconHistorial size={18} /> Historial</button>
@@ -5214,7 +6078,7 @@ function NutriApp({ pacienteId, salir, email }) {
         {tab === "perfil" && <PantallaPerfil perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
         {tab === "registro" && <PantallaRegistro log={log} addItem={addItem} removeItem={removeItem} updateItem={updateItem} recipientes={recipientes} pacienteId={pacienteId} fechaInicial={fechaDesdeHistorial} onFechaInicialConsumida={() => setFechaDesdeHistorial(null)} requerimiento={requerimiento} />}
         {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
-        {tab === "menu" && <PantallaMenu requerimiento={requerimiento} pacienteId={pacienteId} onErrorSync={setErrorSync} pasarARegistro={pasarMenuARegistro} />}
+        {tab === "menu" && <PantallaMenuHoy requerimiento={requerimiento} pacienteId={pacienteId} addItem={addItem} onErrorSync={setErrorSync} />}
         {tab === "opciones" && <PantallaOpciones recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       </div>
       <nav className="nutri-nav fixed flex max-w-md" aria-label="Navegación principal">

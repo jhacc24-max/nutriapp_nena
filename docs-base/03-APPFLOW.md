@@ -125,7 +125,7 @@ Repetir este bloque por cada pantalla.
 
 ## 8. Cambios respecto a la base
 
-- App de una sola página (`index.html`) con 5 pestañas: Perfil, Registro, Panel, Menú, Opciones; más Historial y Reportes como pantallas aparte.
+- App de una sola página (`index.html`) con 5 pestañas en este orden (desde 2026-10-23): **Perfil, Menú, Registro, Panel, Opciones**; más Historial y Reportes como pantallas aparte.
 - **Rediseño de color (2026-10-22):** las 5 pestañas siguen el Patrón B (cabecera oscura + hoja redondeada) y el Panel usa tarjeta héroe del Patrón A. Capturas en `pantallas/P-00-tabs-rediseno*.png` y `pantallas/P-04-panel*.png`: estado 🎨 en revisión. Se hicieron después del código, no antes; falta que el usuario las apruebe (✅).
 - **Ingreso (P-03):** modelo **F2 · Ola líquida** (elegido por el usuario el 2026-10-22), con `wave-flood` simplificado y el botón `btn-liquid-fill`. Capturas `pantallas/P-03-auth*.png` (🎨 en revisión).
 - **Cuenta e instalación:** tarjeta "Cuenta y aplicación" al inicio de Opciones (cerrar sesión con confirmación, instalar app). Captura `pantallas/P-07-opciones-cuenta*.png`.
@@ -155,3 +155,11 @@ Repetir este bloque por cada pantalla.
   - **Ventana de cada comida = "Arma por partes"** (`push-slide`), `pantallas/P-05-menu-ventana*.png`: arriba "Tus variantes · un toque" (de su registro). Al tocar una variante, sus alimentos **suben** (animación FLIP) al recuadro "Tu desayuno" y **debajo aparecen sus pesos** (− / +, escribibles, con ✕ para quitar); el resto de alimentos **baja** a "¿Algo más? Toca para sumar" (atenuado). Lo que se toca abajo sube y se agrega con su peso. Resumen con anillo de la meta de esa comida (mismos colores).
   - **Confirmar** cierra la ventana, marca la comida y llena el avance. Con las 4 comidas aparece "¡Menú completado!" (confeti + `tada`), `pantallas/P-05-menu-completado*.png`.
   - **Pasar al registro:** los íconos viajan a la pestaña Registro (que rebota), aparece "✓ Pasado a tu registro de hoy" y **el menú queda vacío**. `pantallas/P-05-menu-pasado*.png`.
+
+- **Implementado en la app (2026-10-23, ✅ aprobado por el usuario):**
+  - Orden de pestañas: Perfil · Menú · Registro · Panel · Opciones.
+  - Marca: ícono corazón "Mosaico" sin borde blanco con la N en relieve (`corazon-nutri.js`, `icons/*.png`); nombre "NutriApp" con letras que saltan en la pantalla de carga (P-01), el inicio de sesión y la cabecera. Se mantienen las animaciones que ya tenía la app.
+  - Registro: botón "¿Qué comiste?" que abre la hoja Buscar | Escribir (H-02 modelo C + H-03 modelo 2, 4 por fila, recipientes en pantalla aparte). Si el plato ya tiene alimentos elegidos a mano, el texto escrito no cambia la comida elegida.
+  - Menú: P-05 versión final (avance con colores por estado, 4 comidas, ventana con variantes, confirmar y pasar al registro, que vacía el menú). Se guarda en el teléfono y en Firestore `pacientes/{id}/menuHoy/{fecha}`.
+  - Capturas de la app funcionando: `pantallas/APP-2026-10-23-*.png`.
+
