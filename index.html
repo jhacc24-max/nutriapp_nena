@@ -815,6 +815,54 @@
   .nudge:hover .flecha-c.izq, .nudge:active .flecha-c.izq { transform: translateX(-3px); }
   .nudge:active { transform: scale(.985); }
   @media (prefers-reduced-motion: reduce) { .flecha-c { transition: none; } .capas-ico, .capas-tit b, .capas-tit small { animation: none !important; } }
+
+  /* ===== Patrón A · tone-cascade (tc-*) ===== */
+  .capas-panel .tc-1 { background: linear-gradient(160deg, var(--selected), color-mix(in srgb, var(--selected) 45%, var(--tint))) !important; border-color: color-mix(in srgb, var(--selected) 70%, var(--border)) !important; }
+  .capas-panel .tc-2 { background: linear-gradient(160deg, var(--tint), color-mix(in srgb, var(--tint) 40%, var(--surface))) !important; border-color: color-mix(in srgb, var(--tint) 60%, var(--border)) !important; }
+  .capas-panel .tc-3 { background: var(--surface) !important; }
+  .capas-panel .tc-entra { animation: tcEntra .5s cubic-bezier(.22,1,.36,1) var(--tc-d, 0ms) both !important; }
+  @keyframes tcEntra { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+  @media (prefers-reduced-motion: reduce) { .capas-panel .tc-entra { animation: none !important; } }
+
+  /* ===== Pantalla de racha (rc-*) ===== */
+  .rc-resumen { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+  .rc-resumen > div { display: flex; flex-direction: column; }
+  .rc-resumen b { font-size: 28px; color: var(--text); line-height: 1.1; }
+  .rc-resumen small { font-size: 11.5px; color: var(--text-2); }
+  .rc-mes-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .rc-mes-cab b { font-size: 16px; color: var(--text); }
+  .rc-mes-cab button { width: 34px; height: 34px; border-radius: 50%; background: var(--tint); color: var(--text); font-size: 20px; }
+  .rc-mes-cab button:disabled { opacity: .35; }
+  .rc-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .rc-cal .dh { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-2); }
+  .rc-cal .dia { position: relative; aspect-ratio: 1; border-radius: 12px; border: 1.5px dashed var(--border); display: grid; place-items: center; color: var(--text-2); animation: icPop .4s cubic-bezier(.34,1.56,.64,1) both; }
+  .rc-cal .dia i { font-style: normal; font-size: 12px; font-weight: 600; }
+  .rc-cal .dia em { position: absolute; right: 2px; bottom: 1px; font-style: normal; font-size: 10px; }
+  .rc-cal .dia.reg { border: 0; background: var(--tint); color: var(--text); }
+  .rc-cal .dia.meta { background: color-mix(in srgb, var(--st-meta) 18%, var(--surface)); color: var(--text); box-shadow: inset 0 0 0 2px var(--st-meta); }
+  .rc-cal .dia.meta em { color: var(--st-meta); font-weight: 800; font-size: 11px; }
+  .rc-cal .dia.hoy { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .rc-cal .dia.fut { opacity: .35; }
+  .rc-ley { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; color: var(--text-2); margin: 10px 0 0; }
+  .rc-ley span { display: inline-flex; align-items: center; gap: 4px; }
+  .rc-ley em { font-style: normal; width: 16px; height: 16px; border-radius: 5px; display: inline-grid; place-items: center; font-size: 9px; }
+  .rc-ley em.m { box-shadow: inset 0 0 0 1.5px var(--st-meta); color: var(--st-meta); font-weight: 800; }
+  .rc-ley em.r { background: var(--tint); }
+  .rc-ley em.s { border: 1.5px dashed var(--border); }
+  .rc-mes-tot { font-size: 13px; color: var(--text-2); margin: 8px 0 0; }
+  .rc-mes-tot b { color: var(--text); }
+  .rc-tt { font-size: 15px; color: var(--text); }
+  .rc-fila { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .rc-fila:last-child { border-bottom: 0; }
+  .rc-fila .b { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--tint); font-size: 15px; }
+  .rc-fila .b.m { background: color-mix(in srgb, var(--st-meta) 18%, transparent); color: var(--st-meta); font-weight: 800; }
+  .rc-fila .t { display: flex; flex-direction: column; font-size: 13.5px; color: var(--text); }
+  .rc-fila .t small { font-size: 11.5px; color: var(--text-2); }
+  .rc-fila .e { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 9px; background: var(--tint); color: var(--text-2); }
+  .rc-fila .e.m { background: color-mix(in srgb, var(--st-meta) 15%, transparent); color: var(--st-meta); }
+
+  /* Dentro de las tarjetas tonales, chips y campos quedan sobre "surface" para que se distingan */
+  .capas-panel :is(.tc-1, .tc-2) .nutri-chip:not(.nutri-chip-active) { background: color-mix(in srgb, var(--surface) 78%, transparent); }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -878,7 +926,7 @@ function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
 
 /* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
 /* Debe coincidir con VERSION de sw.js: sirve para confirmar en el teléfono que ya se cargó la última versión */
-const VERSION_APP = "v11 · 23 oct 2026";
+const VERSION_APP = "v12 · 23 oct 2026";
 const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
 const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
 function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
@@ -3858,14 +3906,37 @@ function useCapasScroll(ref, rango = 90) {
     return () => { window.removeEventListener("scroll", f); cancelAnimationFrame(raf); };
   }, [ref, rango]);
 }
+/* Patrón A · tone-cascade: dentro del panel, las tarjetas van del tono más intenso al más claro
+   (seleccionado → tintado → blanco) y entran en ese orden, cada una sube 14 px con escala
+   0.98 → 1 y 70 ms entre una y otra. Se recalcula cuando cambia el contenido. */
+const SELECTOR_TARJETAS = ".nutri-panel, .pn-cuadro, .pn-heroe, .pn-ayer, .pn-cumple, .mh-avance";
+function useToneCascade(ref) {
+  useEffect(() => {
+    const raiz = ref.current; if (!raiz) return;
+    let raf = 0, n = 0;
+    const marcar = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => {
+      const todas = [...raiz.querySelectorAll(SELECTOR_TARJETAS)].filter((el) => !el.parentElement.closest(SELECTOR_TARJETAS) && !el.closest(".nb-menu"));
+      todas.forEach((el, i) => {
+        const tono = i === 0 ? "tc-1" : i === 1 ? "tc-2" : "tc-3";
+        if (!el.classList.contains(tono)) { el.classList.remove("tc-1", "tc-2", "tc-3"); el.classList.add(tono); }
+        if (!el.dataset.tc) { el.dataset.tc = "1"; el.style.setProperty("--tc-d", `${Math.min(n, 8) * 70}ms`); n++; el.classList.add("tc-entra"); setTimeout(() => { n = Math.max(0, n - 1); }, 700); }
+      });
+    }); };
+    marcar();
+    const obs = new MutationObserver(marcar);
+    obs.observe(raiz, { childList: true, subtree: true });
+    return () => { obs.disconnect(); cancelAnimationFrame(raf); };
+  }, [ref]);
+}
 function PantallaCapas({ cabecera, children, alto = 104, className = "" }) {
-  const ref = useRef(null);
+  const ref = useRef(null), panelRef = useRef(null);
   useCapasScroll(ref);
+  useToneCascade(panelRef);
   useEffect(() => { try { window.scrollTo(0, 0); } catch {} }, []);
   return (
     <div className={`capas max-w-md mx-auto ${className}`} style={{ "--capas-alto": `${alto}px` }}>
       <header className="capas-cab"><div className="capas-cont" ref={ref}>{cabecera}</div></header>
-      <main className="capas-panel"><CapasCtx.Provider value={true}>{children}</CapasCtx.Provider></main>
+      <main className="capas-panel" ref={panelRef}><CapasCtx.Provider value={true}>{children}</CapasCtx.Provider></main>
     </div>
   );
 }
@@ -6336,6 +6407,77 @@ function Avatar({ nombre, email, foto, size = 38 }) {
     </span>
   );
 }
+/* Pantalla de la racha: días registrados y días en meta, en calendario por mes */
+function diaDeRegistro(fecha, logHoy, requerimiento) {
+  let l = [];
+  if (fecha === hoyISO() && logHoy) l = logHoy; else { try { l = JSON.parse(localStorage.getItem("nutriapp_log_" + fecha) || "[]"); } catch {} }
+  if (!l.length) return { fecha, registrado: false };
+  const t = calcularTotalesLog(l);
+  return { fecha, registrado: true, kcal: t.kcal, prot: t.proteinasG, enMeta: estadoNutriente(NUTRI_PANEL[0], t.kcal, requerimiento.get) === "meta", protOk: estadoNutriente(NUTRI_PANEL[1], t.proteinasG, requerimiento.proteinasG) === "meta" };
+}
+function PantallaRacha({ log, requerimiento, onCerrar }) {
+  const hoy = hoyISO();
+  const [mesOff, setMesOff] = useState(0);
+  const anio = useMemo(() => Array.from({ length: 366 }, (_, i) => diaDeRegistro(fechaISOOffset(i), log, requerimiento)), [log, requerimiento]);
+  let actual = 0; for (let i = 0; i < anio.length; i++) { if (anio[i].registrado) actual++; else if (i === 0) continue; else break; }
+  let mejor = 0, corr = 0; for (let i = anio.length - 1; i >= 0; i--) { if (anio[i].registrado) { corr++; mejor = Math.max(mejor, corr); } else corr = 0; }
+  let rachaMeta = 0; for (let i = 0; i < anio.length; i++) { if (anio[i].enMeta) rachaMeta++; else if (i === 0 && !anio[i].registrado) continue; else break; }
+  const porFecha = Object.fromEntries(anio.map((d) => [d.fecha, d]));
+  const [y0, m0] = hoy.split("-").map(Number);
+  const ref = new Date(Date.UTC(y0, m0 - 1 - mesOff, 1, 12));
+  const Y = ref.getUTCFullYear(), M = ref.getUTCMonth();
+  const diasMes = new Date(Date.UTC(Y, M + 1, 0, 12)).getUTCDate();
+  const offset = (new Date(Date.UTC(Y, M, 1, 12)).getUTCDay() + 6) % 7;
+  const celdas = [...Array(offset).fill(null), ...Array.from({ length: diasMes }, (_, d) => `${Y}-${String(M + 1).padStart(2, "0")}-${String(d + 1).padStart(2, "0")}`)];
+  const delMes = celdas.filter(Boolean).map((f) => porFecha[f]).filter(Boolean);
+  const regMes = delMes.filter((d) => d.registrado).length, metaMes = delMes.filter((d) => d.enMeta).length;
+  const nombreMes = ref.toLocaleDateString("es-PE", { month: "long", year: "numeric", timeZone: "UTC" });
+  const ultimos = anio.slice(0, 14).filter((d) => d.registrado);
+  const fechaTxt = (f) => { const t = new Date(f + "T12:00:00Z").toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "short", timeZone: "UTC" }); return t.charAt(0).toUpperCase() + t.slice(1); };
+  return (
+    <PantallaCapas cabecera={<CabeceraSimple titulo={`🔥 ${actual} día${actual === 1 ? "" : "s"} seguido${actual === 1 ? "" : "s"}`} sub="Tu racha registrando comidas" onCerrar={onCerrar} />}>
+      <div className="px-5 pt-5 pb-24 rc">
+        <div className="nutri-panel rounded-2xl p-4 mb-3 rc-resumen">
+          <div><b className="num-u">{actual}</b><small>racha actual</small></div>
+          <div><b className="num-u">{mejor}</b><small>mejor racha</small></div>
+          <div><b className="num-u">{rachaMeta}</b><small>seguidos en meta</small></div>
+        </div>
+        <div className="nutri-panel rounded-2xl p-4 mb-3">
+          <div className="rc-mes-cab">
+            <button type="button" onClick={() => setMesOff((v) => Math.min(11, v + 1))} aria-label="Mes anterior">‹</button>
+            <b>{nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)}</b>
+            <button type="button" onClick={() => setMesOff((v) => Math.max(0, v - 1))} disabled={mesOff === 0} aria-label="Mes siguiente">›</button>
+          </div>
+          <div className="rc-cal" key={mesOff}>
+            {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => <span key={"h" + i} className="dh">{d}</span>)}
+            {celdas.map((f, i) => {
+              if (!f) return <span key={"v" + i} />;
+              const d = porFecha[f] || { registrado: false }, futuro = f > hoy;
+              return <span key={f} className={`dia ${d.registrado ? "reg" : ""} ${d.enMeta ? "meta" : ""} ${f === hoy ? "hoy" : ""} ${futuro ? "fut" : ""}`} style={{ animationDelay: `${i * 12}ms` }} title={d.registrado ? `${fmtN(d.kcal)} kcal` : "Sin registro"}>
+                <i>{Number(f.slice(8))}</i>{d.registrado && <em>{d.enMeta ? "✓" : "🔥"}</em>}
+              </span>;
+            })}
+          </div>
+          <p className="rc-ley"><span><em className="m">✓</em> registrado y en meta</span><span><em className="r">🔥</em> registrado</span><span><em className="s" /> sin registro</span></p>
+          <p className="rc-mes-tot"><b className="num-u">{regMes}</b> días registrados · <b className="num-u">{metaMes}</b> en tu meta de calorías</p>
+        </div>
+        <div className="nutri-panel rounded-2xl p-4 mb-3">
+          <b className="rc-tt">Últimos días registrados</b>
+          {ultimos.length === 0 && <p className="text-sm nutri-muted mt-2">Aún no registras comidas en los últimos 14 días.</p>}
+          {ultimos.map((d) => (
+            <div key={d.fecha} className="rc-fila">
+              <span className={`b ${d.enMeta ? "m" : ""}`}>{d.enMeta ? "✓" : "🔥"}</span>
+              <span className="t">{fechaTxt(d.fecha)}<small><span className="num-u">{fmtN(d.kcal)}</span> kcal · <span className="num-u">{fmtN(d.prot)}</span> g proteína</small></span>
+              <span className={`e ${d.enMeta ? "m" : ""}`}>{d.enMeta ? "En meta" : "Registrado"}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] nutri-muted">La racha cuenta los días seguidos con al menos un alimento registrado. "En meta" = calorías dentro de ±10 % de tu objetivo.</p>
+      </div>
+    </PantallaCapas>
+  );
+}
+
 /* Tres secciones de la cuenta (menú del avatar), cada una con su color */
 const SECCIONES_CUENTA = [
   { key: "perfil", titulo: "Perfil nutricional", desc: "Edad, sexo, peso, talla, actividad y cribado", cat: "azul", icono: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2" /><path d="M3.8 20.4a8.2 8.2 0 0 1 16.4 0c0 .4-.2.7-.5.8A18 18 0 0 1 12 22.5c-2.7 0-5.3-.5-7.7-1.3-.3-.1-.5-.4-.5-.8Z" /></svg> },
@@ -6351,11 +6493,9 @@ function SeccionCuenta({ sec, onCerrar, children }) {
   );
 }
 
-function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
+function BarraSuperior({ tab, log, nombre, email, foto, onAbrir, onRacha }) {
   const [abierto, setAbierto] = useState(false);
-  const [rachaInfo, setRachaInfo] = useState(false);
   const racha = useMemo(() => rachaDeRegistro(log), [log]);
-  const semanaRacha = useMemo(() => Array.from({ length: 7 }, (_, k) => { const i = 6 - k, f = fechaISOOffset(i); let n = 0; if (i === 0) n = (log || []).length; else { try { n = JSON.parse(localStorage.getItem("nutriapp_log_" + f) || "[]").length; } catch {} } return { f, ok: n > 0, hoy: i === 0 }; }), [log]);
   const fecha0 = new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Lima" });
   const fecha = fecha0.charAt(0).toUpperCase() + fecha0.slice(1);
   const ir = (fn) => { setAbierto(false); setTimeout(fn, 160); };
@@ -6367,19 +6507,10 @@ function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
         <b key={tab}>{TITULO_TAB[tab] || "Hoy"}</b>
         <small>{fecha}</small>
       </div>
-      <button type="button" className={`nb-racha ${racha ? "" : "apagada"}`} aria-label={`Racha: ${racha} días seguidos registrando`} onClick={() => setRachaInfo((v) => !v)}><span className="fuego">🔥</span><b className="num-u">{racha}</b></button>
+      <button type="button" className={`nb-racha ${racha ? "" : "apagada"}`} aria-label={`Racha: ${racha} días seguidos registrando`} onClick={onRacha}><span className="fuego">🔥</span><b className="num-u">{racha}</b></button>
       <button type="button" className={`nb-avatar-btn ${abierto ? "on" : ""}`} aria-label="Abrir menú de la cuenta" aria-expanded={abierto} onClick={() => setAbierto((v) => !v)}>
         <Avatar nombre={nombre} email={email} foto={foto} />
       </button>
-      {rachaInfo && ReactDOM.createPortal(
-        <div className="nb-capa" onClick={() => setRachaInfo(false)}>
-          <div className="nb-menu nb-racha-info" role="dialog" aria-label="Tu racha" onClick={(e) => e.stopPropagation()}>
-            <div className="cab"><span className="fuego-g">🔥</span><span><b><span className="num-u">{racha}</span> día{racha === 1 ? "" : "s"} seguido{racha === 1 ? "" : "s"}</b><small>registrando tus comidas</small></span></div>
-            <p>Tu racha cuenta los días seguidos en que registraste al menos un alimento. Si un día no registras nada, vuelve a empezar desde cero.</p>
-            <div className="dias">{semanaRacha.map((d) => <span key={d.f} className={`${d.ok ? "ok" : ""} ${d.hoy ? "hoy" : ""}`}><i>{d.ok ? "🔥" : ""}</i>{d.hoy ? "hoy" : new Date(d.f + "T12:00:00Z").toLocaleDateString("es-PE", { weekday: "short", timeZone: "America/Lima" }).replace(".", "").slice(0, 3)}</span>)}</div>
-            <p className="pie">{semanaRacha[6].ok ? "¡Hoy ya registraste! Sigue mañana para sumar un día más." : "Hoy aún no registras: anota tu primera comida para no perder la racha."}</p>
-          </div>
-        </div>, document.body)}
       {abierto && ReactDOM.createPortal(
         <div className="nb-capa" onClick={() => setAbierto(false)}>
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
@@ -6468,6 +6599,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
   const [log, setLog] = useState(() => { try { const s = localStorage.getItem("nutriapp_log_" + hoyISO()); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [tab, setTab] = useState("menu");
   const [mostrarPerfil, setMostrarPerfil] = useState(null); // null | "perfil" | "salud" | "plan"
+  const [mostrarRacha, setMostrarRacha] = useState(false);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [mostrarReporte, setMostrarReporte] = useState(false);
   const [fechaDesdeHistorial, setFechaDesdeHistorial] = useState(null);
@@ -6668,6 +6800,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
   const clasePantalla = dirTabRef.current.clase;
 
   if (mostrarHistorial) return <PantallaHistorial requerimiento={requerimiento} pacienteId={pacienteId} onCerrar={() => setMostrarHistorial(false)} onEditarDia={(fecha) => { setFechaDesdeHistorial(fecha); setMostrarHistorial(false); setTab("registro"); }} />;
+  if (mostrarRacha) return <PantallaRacha log={log} requerimiento={requerimiento} onCerrar={() => setMostrarRacha(false)} />;
   if (mostrarPerfil) return (
     <SeccionCuenta sec={mostrarPerfil} onCerrar={() => setMostrarPerfil(null)}>
       {mostrarPerfil === "perfil" && <PantallaPerfil seccion="datos" perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
@@ -6682,7 +6815,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
 
   return (
     <PantallaCapas key={"capas-" + tab} cabecera={<BarraSuperior tab={tab} log={log} nombre={nombre} email={email} foto={foto}
-        onAbrir={(k) => setMostrarPerfil(k)} />}>
+        onAbrir={(k) => setMostrarPerfil(k)} onRacha={() => setMostrarRacha(true)} />}>
       {!enLinea && <div className="px-4 py-2 text-xs text-center" style={{ background: "var(--warn-f)", color: "var(--warn-c)" }}>📶 Sin conexión — tus cambios se guardarán cuando vuelva la señal.</div>}
       {errorSync && (
         <div className="px-4 py-2 text-xs flex items-center justify-between gap-2 nutri-warn-bg">
