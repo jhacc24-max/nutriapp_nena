@@ -735,11 +735,8 @@
 
   /* ===== Secciones de la cuenta (pf-*): colores de la paleta (roles); cada sección solo se
      distingue por una línea delgada con su color de categoría (08-PALETAS §5) ===== */
-  body { --cat-azul: #0782F8; --cat-azul-bg: #E1EEFF; --cat-azul-fg: #0053A5; --cat-violeta: #975EEF; --cat-violeta-bg: #EFE9FF; --cat-violeta-fg: #6530AC; --cat-ambar: #D3940A; --cat-ambar-bg: #FEEACC; --cat-ambar-fg: #714D00; }
-  body[data-tema="oscuro"] { --cat-azul: #5AA3FF; --cat-azul-bg: #122E51; --cat-azul-fg: #96C4FF; --cat-violeta: #B085FF; --cat-violeta-bg: #33244E; --cat-violeta-fg: #C9B2FF; --cat-ambar: #D3940A; --cat-ambar-bg: #3E2901; --cat-ambar-fg: #E9B869; }
-  .cat-azul { --cat: var(--cat-azul); --cat-bg: var(--cat-azul-bg); --cat-fg: var(--cat-azul-fg); }
-  .cat-violeta { --cat: var(--cat-violeta); --cat-bg: var(--cat-violeta-bg); --cat-fg: var(--cat-violeta-fg); }
-  .cat-ambar { --cat: var(--cat-ambar); --cat-bg: var(--cat-ambar-bg); --cat-fg: var(--cat-ambar-fg); }
+  /* Las 3 secciones usan solo roles de la paleta: la línea y el cuadro del ícono cambian con la paleta elegida */
+  .cat-azul, .cat-violeta, .cat-ambar { --cat: var(--accent); --cat-bg: var(--tint); --cat-fg: var(--brand-text); }
   .pf-sec { background: var(--bg); }
   .pf-cab { position: sticky; top: 0; z-index: 10; overflow: hidden; display: flex; align-items: center; gap: 12px; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 14px 10px; color: var(--on-hero);
     background: linear-gradient(90deg, var(--hero), var(--hero-2)); border-bottom: 3px solid var(--cat); }
@@ -763,7 +760,8 @@
   @media (prefers-reduced-motion: reduce) { .pf-fila, .pf-cuerpo .nutri-panel, .pf-ico, .pf-tx b, .pf-tx small { animation: none !important; } }
 
   /* Sin selección de texto (evita el menú "Buscar en Google" del celular); sí en campos de texto */
-  body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  html, body, body *:not(input):not(textarea):not(select):not([contenteditable="true"]) { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
+  body { -webkit-tap-highlight-color: transparent; }
   input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
   img, svg { -webkit-user-drag: none; }
   /* Campos de datos con los roles de la paleta (no gris): fondo surface/tint y borde de la paleta */
@@ -773,6 +771,21 @@
 
   body { --nav-g1: var(--tone-400); --nav-g2: var(--tone-700); }
   body[data-tema="oscuro"] { --nav-g1: var(--tone-200); --nav-g2: var(--tone-400); }
+
+  .nb-racha { color: var(--on-hero); border-radius: 999px; padding: 4px 8px; background: color-mix(in srgb, var(--on-hero) 12%, transparent); }
+  .nb-racha:active { transform: scale(.94); }
+  .nb-racha-info { padding: 14px; }
+  .nb-racha-info .cab { display: flex; align-items: center; gap: 12px; }
+  .nb-racha-info .fuego-g { width: 46px; height: 46px; border-radius: 15px; background: var(--tint); display: grid; place-items: center; font-size: 26px; animation: nbFuego 1.6s ease-in-out infinite; }
+  .nb-racha-info .cab span:last-child { display: flex; flex-direction: column; }
+  .nb-racha-info .cab b { font-size: 17px; } .nb-racha-info .cab small { font-size: 12px; color: var(--text-2); }
+  .nb-racha-info p { font-size: 13px; line-height: 1.45; color: var(--text-2); margin: 10px 0; }
+  .nb-racha-info .dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 10.5px; color: var(--text-2); }
+  .nb-racha-info .dias span { display: flex; flex-direction: column; align-items: center; gap: 3px; text-transform: capitalize; }
+  .nb-racha-info .dias i { font-style: normal; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 2px dashed var(--border); font-size: 14px; }
+  .nb-racha-info .dias .ok i { border: 0; background: var(--tint); animation: icPop .4s cubic-bezier(.34,1.56,.64,1) both; }
+  .nb-racha-info .dias .hoy { color: var(--accent); font-weight: 700; }
+  .nb-racha-info .pie { margin-bottom: 0; color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body data-paleta="turquesa">
@@ -835,6 +848,8 @@ function IconoAlimento({ alimento, clave, size = 32, className = "" }) {
 }
 
 /* ---------- Marca NutriApp: ícono "corazón de alimentos" (corazon-nutri.js) y nombre con letras que saltan ---------- */
+/* Debe coincidir con VERSION de sw.js: sirve para confirmar en el teléfono que ya se cargó la última versión */
+const VERSION_APP = "v10 · 23 oct 2026";
 const ICONO_APP_SVG = window.CorazonN ? window.CorazonN.svg("mosaico", { sinBorde: true, id: "icapp" }) : "";
 const ICONO_APP_URI = ICONO_APP_SVG ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(ICONO_APP_SVG) : "icons/icon-192.png";
 function IconoApp({ size, className = "", animado = false, rapido = 1 }) {
@@ -5867,6 +5882,7 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
       <div className={seccion === "cuenta" || seccion === "todo" ? "nutri-sheet px-5 pt-6 pb-24" : "px-5 pb-24"}>
       {(seccion === "cuenta" || seccion === "todo") && <>
       <TarjetaCuenta salir={salir} email={email} instalar={instalar} />
+      <p className="text-[11px] nutri-muted text-center -mt-3 mb-4">Versión de la app: <b className="nutri-ink">{VERSION_APP}</b></p>
 
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-2 mb-2"><IconActivity size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Respaldo de datos</span></div>
@@ -6266,7 +6282,9 @@ function SeccionCuenta({ sec, onCerrar, children }) {
 
 function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
   const [abierto, setAbierto] = useState(false);
+  const [rachaInfo, setRachaInfo] = useState(false);
   const racha = useMemo(() => rachaDeRegistro(log), [log]);
+  const semanaRacha = useMemo(() => Array.from({ length: 7 }, (_, k) => { const i = 6 - k, f = fechaISOOffset(i); let n = 0; if (i === 0) n = (log || []).length; else { try { n = JSON.parse(localStorage.getItem("nutriapp_log_" + f) || "[]").length; } catch {} } return { f, ok: n > 0, hoy: i === 0 }; }), [log]);
   const fecha0 = new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Lima" });
   const fecha = fecha0.charAt(0).toUpperCase() + fecha0.slice(1);
   const ir = (fn) => { setAbierto(false); setTimeout(fn, 160); };
@@ -6278,10 +6296,19 @@ function BarraSuperior({ tab, log, nombre, email, foto, onAbrir }) {
         <b key={tab}>{TITULO_TAB[tab] || "Hoy"}</b>
         <small>{fecha}</small>
       </div>
-      <span className={`nb-racha ${racha ? "" : "apagada"}`} title={`${racha} día${racha === 1 ? "" : "s"} seguidos registrando`}><span className="fuego">🔥</span><b className="num-u">{racha}</b></span>
+      <button type="button" className={`nb-racha ${racha ? "" : "apagada"}`} aria-label={`Racha: ${racha} días seguidos registrando`} onClick={() => setRachaInfo((v) => !v)}><span className="fuego">🔥</span><b className="num-u">{racha}</b></button>
       <button type="button" className={`nb-avatar-btn ${abierto ? "on" : ""}`} aria-label="Abrir menú de la cuenta" aria-expanded={abierto} onClick={() => setAbierto((v) => !v)}>
         <Avatar nombre={nombre} email={email} foto={foto} />
       </button>
+      {rachaInfo && ReactDOM.createPortal(
+        <div className="nb-capa" onClick={() => setRachaInfo(false)}>
+          <div className="nb-menu nb-racha-info" role="dialog" aria-label="Tu racha" onClick={(e) => e.stopPropagation()}>
+            <div className="cab"><span className="fuego-g">🔥</span><span><b><span className="num-u">{racha}</span> día{racha === 1 ? "" : "s"} seguido{racha === 1 ? "" : "s"}</b><small>registrando tus comidas</small></span></div>
+            <p>Tu racha cuenta los días seguidos en que registraste al menos un alimento. Si un día no registras nada, vuelve a empezar desde cero.</p>
+            <div className="dias">{semanaRacha.map((d) => <span key={d.f} className={`${d.ok ? "ok" : ""} ${d.hoy ? "hoy" : ""}`}><i>{d.ok ? "🔥" : ""}</i>{d.hoy ? "hoy" : new Date(d.f + "T12:00:00Z").toLocaleDateString("es-PE", { weekday: "short", timeZone: "America/Lima" }).replace(".", "").slice(0, 3)}</span>)}</div>
+            <p className="pie">{semanaRacha[6].ok ? "¡Hoy ya registraste! Sigue mañana para sumar un día más." : "Hoy aún no registras: anota tu primera comida para no perder la racha."}</p>
+          </div>
+        </div>, document.body)}
       {abierto && ReactDOM.createPortal(
         <div className="nb-capa" onClick={() => setAbierto(false)}>
           <div className="nb-menu" role="menu" onClick={(e) => e.stopPropagation()}>
