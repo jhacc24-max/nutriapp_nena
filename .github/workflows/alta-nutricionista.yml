@@ -1,4 +1,4 @@
-# Da acceso al panel a una nutricionista cuya cuenta ya existe en Firebase Authentication.
+# Da acceso al panel (nutricionista o administrador) a una cuenta que ya existe en Firebase Authentication.
 # Se lanza a mano desde Actions › "Alta de nutricionista" › Run workflow.
 name: Alta de nutricionista
 
@@ -11,6 +11,11 @@ on:
       nombre:
         description: "Nombre que se verá en el panel, p. ej. Lic. Ana Torres"
         required: false
+      rol:
+        description: "Rol en el panel"
+        type: choice
+        options: [nutricionista, admin]
+        default: nutricionista
 
 jobs:
   alta:
@@ -27,4 +32,5 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           CORREO: ${{ inputs.correo }}
           NOMBRE: ${{ inputs.nombre }}
+          ROL: ${{ inputs.rol }}
         run: node scripts/alta-nutricionista.mjs

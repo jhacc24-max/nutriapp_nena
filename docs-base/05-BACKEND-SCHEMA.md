@@ -120,8 +120,11 @@ Tablas con suscripción en vivo (para animar cambios en pantalla, ver `07-MOTION
 | Colección | Documento | Contenido |
 |---|---|---|
 | `usuarios/{uid}` | una por cuenta | `pacienteId` — el espacio al que está vinculada |
-| `nutricionistas/{uid}` | una por nutricionista | `nombre`, `avisos` (preferencias de notificación). **Se crea solo desde la consola de Firebase:** nadie puede darse el rol a sí mismo |
-| `codigosNutri/{codigo}` | p. ej. `NUT-4821` | `uid` de la nutricionista, para que el paciente la elija desde la app |
+| `nutricionistas/{uid}` | una por nutricionista | `nombre`, `codigo`, `correo`, `ultimoIngreso`, `avisos`. Lo crea el workflow de alta o la propia invitada al aceptar su invitación (con correo verificado); nadie más puede darse el rol |
+| `admins/{uid}` | una por administrador | `correo`, `creadoEn`. Solo lo crea el workflow de alta con rol `admin` |
+| `invitaciones/{correo}` | correo en minúsculas | `nombre`, `codigo`, `creadoEn`. La crea el administrador; la invitada la borra al aceptarla |
+| `codigosNutri/{codigo}` | p. ej. `NUT-4821` | `uid` de la nutricionista (vacío mientras la invitación está pendiente) y `correo`, para que el paciente la elija desde la app |
+| `sistema/estado` | uno | `respaldo {en, pacientes, dias}`, `avisos {en, enviados}`, `reglas {en}`. Lo escriben los workflows; lo lee solo el administrador |
 | `pacientes/{codigo}` | el espacio compartido | `perfil`, `prescripcion`, `suplementos`, `medicamentos`, `recipientes`, `catalogoCustom`, `pesos`, `tema`, `creadoPor`, y los campos nuevos de abajo |
 | `pacientes/{codigo}/registros/{fecha}/items/{itemId}` | un alimento | `alimento`, `gramos`, `momento`, `tara`, `fecha`, `agregadoEn` |
 | `pacientes/{codigo}/menuHoy/{fecha}`, `menuEdiciones/{dia}` | | menú sugerido y sus ajustes |

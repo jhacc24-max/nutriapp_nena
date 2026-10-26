@@ -25,10 +25,13 @@ const SUBCOLECCIONES = ["menuHoy", "menuEdiciones", "dispositivos", "evaluacione
 const datos = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
 async function respaldar() {
-  const salida = { generado: new Date().toISOString(), proyecto: credencial.project_id, pacientes: {}, citas: [], notificaciones: [], usuarios: [], nutricionistas: [] };
+  const salida = { generado: new Date().toISOString(), proyecto: credencial.project_id, pacientes: {}, citas: [], notificaciones: [], usuarios: [], nutricionistas: [], admins: [], invitaciones: [], codigosNutri: [] };
 
   salida.usuarios = datos(await db.collection("usuarios").get());
   salida.nutricionistas = datos(await db.collection("nutricionistas").get());
+  salida.admins = datos(await db.collection("admins").get());
+  salida.invitaciones = datos(await db.collection("invitaciones").get());
+  salida.codigosNutri = datos(await db.collection("codigosNutri").get());
   salida.citas = datos(await db.collection("citas").get());
   salida.notificaciones = datos(await db.collection("notificaciones").get());
 
@@ -58,6 +61,8 @@ async function respaldar() {
     dias_de_registro: Object.values(salida.pacientes).reduce((n, p) => n + Object.keys(p.registros).length, 0),
   };
   await writeFile(join(destino, "resumen.json"), JSON.stringify(resumen, null, 1));
+  // Para la pestaña Sistema del panel (la lee solo el administrador).
+  await db.collection("sistema").doc("estado").set({ respaldo: { en: Date.now(), pacientes: resumen.pacientes, dias: resumen.dias_de_registro } }, { merge: true });
   console.log("Respaldo listo:", JSON.stringify(resumen));
 }
 

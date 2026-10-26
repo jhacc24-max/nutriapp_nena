@@ -24,6 +24,8 @@ const horaAhora = ahoraLima.toISOString().slice(11, 13) + ":00";
 const minutosDelDia = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
 const enEstaHora = (hhmm) => hhmm && hhmm.slice(0, 2) === horaAhora.slice(0, 2);
 
+let enviados = 0;
+
 /* Evita avisos repetidos: el id del documento lleva la clave del aviso. */
 async function enviar({ clave, destinoUid, pacienteId, tipo, titulo, cuerpo, canal, citaId, tokens }) {
   const ref = db.collection("notificaciones").doc(clave);
@@ -37,6 +39,7 @@ async function enviar({ clave, destinoUid, pacienteId, tipo, titulo, cuerpo, can
     }
   }
   console.log("Aviso:", clave, "·", titulo);
+  enviados++;
   return true;
 }
 
@@ -100,4 +103,6 @@ async function avisosDeComidas() {
 
 await avisosDeCitas();
 await avisosDeComidas();
+// Para la pestaña Sistema del panel (la lee solo el administrador).
+await db.collection("sistema").doc("estado").set({ avisos: { en: Date.now(), enviados } }, { merge: true });
 console.log("Listo:", hoy, horaAhora, "(Lima)");

@@ -11,6 +11,11 @@ rules_version = '2';
 //   espacio la eligió (pacientes/{codigo}.nutricionistaUid == su uid), puede listarlos,
 //   y solo puede cambiar el estado del paciente (activo / pausado / baja), sus citas,
 //   evaluaciones y notas de consulta. No puede editar comidas, perfil ni pesos.
+// - Administrador: existe si su documento admins/{uid} fue creado por el servidor. Ve a todas
+//   las nutricionistas y a todos los pacientes, invita nutricionistas (invitaciones/{correo}),
+//   les quita el acceso y cambia la nutricionista de un paciente. No edita datos clínicos.
+// - Invitación: la persona invitada, al entrar con su correo verificado, crea su propio
+//   nutricionistas/{uid} con el nombre y el código que le dejó el administrador.
 // - Las notificaciones y el respaldo los escribe solo el servidor (GitHub Actions con
 //   cuenta de servicio, que no pasa por estas reglas).
 // - Nadie puede borrar espacios desde la app.
@@ -25,6 +30,31 @@ service cloud.firestore {
       return iniciada()
         && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
         && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.pacienteId == codigo;
+    }
+
+    function esAdmin() {
+      return iniciada()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Correo verificado de quien hace la petición, en minúsculas (id de invitaciones/{correo}).
+    function correoVerificado() {
+      return iniciada()
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+
+    function miCorreo() {
+      return request.auth.token.email.lower();
+    }
+
+    function invitacion() {
+      return get(/databases/$(database)/documents/invitaciones/$(miCorreo())).data;
+    }
+
+    function tengoInvitacion() {
+      return correoVerificado()
+        && exists(/databases/$(database)/documents/invitaciones/$(miCorreo()));
     }
 
     function esNutricionista() {
@@ -60,17 +90,63 @@ service cloud.firestore {
     // Perfil de la nutricionista. Se crea desde la consola; ella solo puede ajustar
     // sus preferencias de avisos y su nombre visible.
     match /nutricionistas/{uid} {
-      allow read: if iniciada() && request.auth.uid == uid;
+      allow read: if (iniciada() && request.auth.uid == uid) || esAdmin();
       allow update: if iniciada() && request.auth.uid == uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre', 'avisos']);
-      allow create, delete: if false;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre', 'avisos', 'ultimoIngreso']);
+      // Quien fue invitada crea su propio perfil con el nombre y código de la invitación.
+      allow create: if iniciada() && request.auth.uid == uid && tengoInvitacion()
+        && request.resource.data.keys().hasOnly(['nombre', 'codigo', 'correo', 'creadoEn', 'ultimoIngreso'])
+        && request.resource.data.nombre == invitacion().nombre
+        && request.resource.data.codigo == invitacion().codigo
+        && request.resource.data.correo == miCorreo();
+      // El administrador le cambia el nombre o le quita el acceso.
+      allow update: if esAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre']);
+      allow delete: if esAdmin();
+    }
+
+    // Administradores: los crea solo el servidor. Cada uno lee el suyo.
+    match /admins/{uid} {
+      allow read: if iniciada() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Invitaciones de nutricionista, por correo en minúsculas. Las maneja el administrador;
+    // la persona invitada lee la suya y la borra al aceptarla.
+    match /invitaciones/{correo} {
+      allow read, delete: if esAdmin() || (correoVerificado() && miCorreo() == correo);
+      allow create: if esAdmin()
+        && correo == correo.lower()
+        && request.resource.data.keys().hasOnly(['nombre', 'codigo', 'creadoEn'])
+        && request.resource.data.nombre is string
+        && request.resource.data.codigo is string
+        && request.resource.data.codigo.matches('^NUT-[0-9]{4}$');
+      allow update: if false;
     }
 
     // Código corto de cada nutricionista (p. ej. "NUT-4821") para que el paciente la elija
-    // desde la app. Se crea desde la consola junto con nutricionistas/{uid}.
+    // desde la app. El administrador lo reserva al invitar (uid vacío) y la invitada lo toma.
     match /codigosNutri/{codigoNutri} {
       allow get: if iniciada();
-      allow list, write: if false;
+      allow list: if esAdmin();
+      allow create: if esAdmin()
+        && codigoNutri.matches('^NUT-[0-9]{4}$')
+        && request.resource.data.keys().hasOnly(['uid', 'correo'])
+        && request.resource.data.uid == null
+        && request.resource.data.correo is string;
+      allow update: if tengoInvitacion()
+        && resource.data.uid == null
+        && resource.data.correo == miCorreo()
+        && invitacion().codigo == codigoNutri
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if esAdmin();
+    }
+
+    // Estado de los procesos automáticos (respaldo, avisos, reglas). Lo escribe el servidor.
+    match /sistema/{docId} {
+      allow read: if esAdmin();
+      allow write: if false;
     }
 
     match /pacientes/{codigo} {
@@ -80,7 +156,9 @@ service cloud.firestore {
         && codigo.matches('^[A-Z0-9]{4,12}$')
         && request.resource.data.creadoPor == request.auth.uid
         && !request.resource.data.keys().hasAny(camposEstado());
-      allow get: if puedeVer(codigo);
+      allow get: if puedeVer(codigo) || esAdmin();
+      // El administrador ve a todos los pacientes.
+      allow list: if esAdmin();
       // La nutricionista lista solo los espacios que la eligieron
       // (la consulta debe filtrar por where('nutricionistaUid', '==', uid)).
       allow list: if esNutricionista() && resource.data.get('nutricionistaUid', null) == request.auth.uid;
@@ -96,6 +174,11 @@ service cloud.firestore {
       allow update: if esSuNutricionista(codigo)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(camposEstado())
         && request.resource.data.estado in ['activo', 'pausado', 'baja'];
+      // Administrador: solo cambia la nutricionista del paciente (a una que exista, o ninguna).
+      allow update: if esAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nutricionistaUid'])
+        && (request.resource.data.get('nutricionistaUid', null) == null
+            || exists(/databases/$(database)/documents/nutricionistas/$(request.resource.data.nutricionistaUid)));
       allow delete: if false;
 
       // Subcolecciones del espacio. Se listan explícitamente: en la versión 2 de las reglas

@@ -12,4 +12,6 @@ admin.initializeApp({ credential: admin.credential.cert(credencial) });
 
 const fuente = await readFile("firestore.rules", "utf8");
 const ruleset = await admin.securityRules().releaseFirestoreRulesetFromSource(fuente);
+// Para la pestaña Sistema del panel (la lee solo el administrador).
+await admin.firestore().collection("sistema").doc("estado").set({ reglas: { en: Date.now() } }, { merge: true });
 console.log("Reglas publicadas:", ruleset.name, "·", ruleset.createTime);

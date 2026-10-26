@@ -173,6 +173,7 @@ svg.hi { display: block; transform-box: fill-box; transform-origin: center; }
 @keyframes unlock { to { transform: translateY(-4px) rotate(-30deg); } }
 .lg-foot { text-align: center; font-size: 12px; color: rgb(255 255 255 / .5); }
 .lg-foot.warn { color: #ffd3c4; font-weight: 600; }
+.lg-alt { display: block; margin: 10px auto 0; color: var(--tone-200); font-weight: 600; font-size: 13px; }
 .sw-tgl { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
 .login .toggle { width: 38px; height: 22px; }
 .login .toggle::after { width: 16px; height: 16px; }
@@ -1187,18 +1188,38 @@ const FIREBASE_CONFIG = { apiKey: "AIzaSyC9M27aXLoteosqW-F-gs8kGCVI63YDIjk", aut
 const FB = window.firebase ? (firebase.apps.length ? firebase.app() : firebase.initializeApp(FIREBASE_CONFIG)) : null;
 const authFB = FB ? firebase.auth() : null, dbFB = FB ? firebase.firestore() : null;
 const MIN_CLAVE = authFB ? 6 : 4;
-/* Solo entra quien tiene su documento en nutricionistas/{uid} (se crea desde la consola o con el workflow de alta). */
+/* Entra quien tiene nutricionistas/{uid} (workflow de alta o invitación aceptada) o admins/{uid}
+   (workflow de alta con rol admin). Una invitada con el correo verificado acepta su invitación aquí. */
 async function perfilNutri(user) {
-  const d = await dbFB.collection("nutricionistas").doc(user.uid).get();
-  return d.exists ? { nombre: d.data().nombre || user.email, ...d.data() } : null;
+  const [n, a] = await Promise.all([dbFB.collection("nutricionistas").doc(user.uid).get(), dbFB.collection("admins").doc(user.uid).get()]);
+  let nutri = n.exists ? n.data() : null;
+  if (!nutri && user.email && user.emailVerified) nutri = await aceptarInvitacion(user);
+  if (!nutri && !a.exists) return null;
+  if (n.exists) dbFB.collection("nutricionistas").doc(user.uid).update({ ultimoIngreso: Date.now() }).catch(() => {});
+  return { nombre: (nutri && nutri.nombre) || "Administrador", codigo: nutri && nutri.codigo, nutri: !!nutri, admin: a.exists };
+}
+async function aceptarInvitacion(user) {
+  const correo = user.email.toLowerCase();
+  let inv; try { inv = await dbFB.collection("invitaciones").doc(correo).get(); } catch { return null; }
+  if (!inv.exists) return null;
+  const { nombre, codigo } = inv.data(), datos = { nombre, codigo, correo, creadoEn: Date.now(), ultimoIngreso: Date.now() };
+  const b = dbFB.batch();
+  b.set(dbFB.collection("nutricionistas").doc(user.uid), datos);
+  b.update(dbFB.collection("codigosNutri").doc(codigo), { uid: user.uid });
+  b.delete(inv.ref);
+  await b.commit();
+  return datos;
 }
 function ponerPerfil(perfil) {
   const n = (perfil && perfil.nombre) || "Lic. Nutricionista";
   const ini = n.replace(/^(Lic\.?|Dra?\.?)\s+/i, "").split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "LN";
   $(".who .av").textContent = ini; $(".who-txt b").textContent = n;
-  $(".who-txt span").textContent = authFB ? "Datos de ejemplo" : "Consultorio · Lima";
+  $(".who-txt span").textContent = !authFB ? "Consultorio · Lima" : perfil && perfil.admin && !perfil.nutri ? "Administrador · datos de ejemplo" : "Datos de ejemplo";
+  activarAdmin(!authFB || !!(perfil && perfil.admin));
 }
+let modoCrear = false;
 function mostrarLogin() {
+  modoCrear = false;
   const recordado = store.get("ses", null);
   login.hidden = false; login.classList.remove("out");
   const titular = "Sigue a tus pacientes entre una consulta y otra".split(" ").map((w, i) => `<span class="wr" style="--w:${i}">${w}</span>`).join(" ");
@@ -1218,6 +1239,7 @@ function mostrarLogin() {
       <div class="lg-row"><label class="sw-tgl"><button type="button" class="toggle" role="switch" aria-checked="${recordado ? "true" : "false"}" id="lgRem" aria-label="Recordarme"></button>Recordarme</label><button type="button" class="lnk" id="lgForgot">¿Olvidaste tu contraseña?</button></div>
       <button class="lg-btn" id="lgBtn" type="submit" disabled><svg class="lk" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5" fill="currentColor"/><path class="sh" d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2.4" fill="none"/></svg><span>Ingresar</span></button>
       <div class="lg-foot" id="lgFoot">${authFB ? "Acceso solo para nutricionistas registradas en NutriApp." : "Demostración: escribe cualquier correo y una contraseña de 4 caracteres o más."}</div>
+      ${authFB ? `<button type="button" class="lnk lg-alt" id="lgAlt">¿Te invitaron? Crea tu cuenta</button>` : ""}
     </form>
   </div>`;
   setTimeout(() => { $("#lgBtn").disabled = false; }, OPT.motion === "reducido" ? 0 : 1100);
@@ -1232,6 +1254,33 @@ function mostrarLogin() {
   });
   ["lgEmail", "lgPass"].forEach((id) => $("#" + id).addEventListener("input", (e) => e.target.closest(".fld").classList.remove("bad")));
   $("#lgForm").addEventListener("submit", ingresar);
+  if (authFB) $("#lgAlt").addEventListener("click", () => {
+    modoCrear = !modoCrear;
+    $("#lgForm h2").textContent = modoCrear ? "Crea tu cuenta" : "Ingresa a tu panel";
+    $("#lgForm .sub").textContent = modoCrear ? "Usa el correo con el que te invitaron" : "Panel clínico para nutricionistas";
+    $("#lgBtn span").textContent = modoCrear ? "Crear cuenta" : "Ingresar";
+    $("#lgAlt").textContent = modoCrear ? "Ya tengo cuenta: ingresar" : "¿Te invitaron? Crea tu cuenta";
+    $("#lgPass").setAttribute("autocomplete", modoCrear ? "new-password" : "current-password");
+    $("#fPass .err").textContent = modoCrear ? "Usa al menos 6 caracteres" : "Correo o contraseña incorrectos";
+    $("#lgForgot").hidden = modoCrear;
+    piePanel(modoCrear ? "Te enviaremos un correo para verificar tu dirección." : "Acceso solo para nutricionistas registradas en NutriApp.", false);
+  });
+}
+function piePanel(txt, warn = true) { const f = $("#lgFoot"); if (!f) return; f.textContent = txt; f.classList.toggle("warn", warn); }
+/* Cuenta nueva para una nutricionista invitada: se crea, se manda el correo de verificación y se
+   cierra la sesión; al volver a ingresar con el correo verificado, acepta su invitación. */
+async function crearCuenta(em, pw, btn) {
+  try {
+    const cred = await authFB.createUserWithEmailAndPassword(em, pw);
+    await cred.user.sendEmailVerification();
+    await authFB.signOut();
+    $("#lgAlt").click();
+    piePanel("Cuenta creada. Abre el correo que te enviamos para verificarla y luego ingresa aquí.", false);
+  } catch (err) {
+    const c = err.code || "";
+    piePanel(/email-already/.test(c) ? "Ese correo ya tiene cuenta: ingresa con tu contraseña o usa “¿Olvidaste tu contraseña?”." : /weak-password/.test(c) ? "La contraseña es muy débil: usa al menos 6 caracteres." : /invalid-email/.test(c) ? "Revisa que el correo esté bien escrito." : /network/.test(c) ? "Sin conexión. Revisa tu internet e inténtalo de nuevo." : "No se pudo crear la cuenta. Inténtalo de nuevo.");
+  }
+  btn.classList.remove("loading"); btn.disabled = false;
 }
 async function ingresar(e) {
   e.preventDefault();
@@ -1242,6 +1291,7 @@ async function ingresar(e) {
   const recordar = $("#lgRem").getAttribute("aria-checked") === "true";
   store.set("ses", recordar ? em : null);
   const btn = $("#lgBtn"); btn.classList.add("loading"); btn.disabled = true;
+  if (authFB && modoCrear) { await crearCuenta(em, pw, btn); return; }
   if (authFB) {
     // Ingreso real: "Recordarme" deja la sesión abierta en este equipo; si no, se cierra al cerrar la pestaña.
     let perfil = null, motivo = "";
@@ -1249,7 +1299,12 @@ async function ingresar(e) {
       await authFB.setPersistence(recordar ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
       const cred = await authFB.signInWithEmailAndPassword(em, pw);
       perfil = await perfilNutri(cred.user);
-      if (!perfil) { motivo = "Esta cuenta no tiene acceso al panel de nutricionista."; await authFB.signOut(); }
+      if (!perfil && !cred.user.emailVerified) {
+        // Puede ser una invitada que aún no verificó su correo.
+        try { await cred.user.sendEmailVerification(); } catch {}
+        motivo = "Esta cuenta aún no tiene acceso. Si te invitaron, abre el correo que te enviamos para verificar tu dirección y vuelve a ingresar.";
+        await authFB.signOut();
+      } else if (!perfil) { motivo = "Esta cuenta no tiene acceso al panel de nutricionista."; await authFB.signOut(); }
     } catch (err) {
       motivo = /network/i.test(err.code || "") ? "Sin conexión. Revisa tu internet e inténtalo de nuevo." : /too-many/i.test(err.code || "") ? "Demasiados intentos. Espera unos minutos." : /permission/i.test(err.code || err.message || "") ? "Esta cuenta no tiene acceso al panel de nutricionista." : "";
       if (!motivo) { const f = $("#fPass"); f.classList.add("bad"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); }
@@ -1287,7 +1342,7 @@ const app = $("#app"), nav = $("#nav"), pill = $("#navPill"), tip = $("#tip");
 function pintarNav() {
   $$(".nav-item, .nav-label", nav).forEach((x) => x.remove());
   nav.insertAdjacentHTML("beforeend", RUTAS.map(([k, label, ic], i) =>
-    `${i === 5 ? '<span class="nav-label">Ajustes</span>' : i === 0 ? '<span class="nav-label">Consulta</span>' : ""}<a class="nav-item" href="#${k}" data-r="${k}" data-tip="${label}">${ico(ic, 28, "n", "off-g")}${ico(ic, 28, "a", "on-g")}<span class="nav-txt">${label}</span>${k === "alertas" && nAlta() ? `<span class="nav-badge">${nAlta()}</span>` : k === "citas" && citasHoy().filter((c) => !c.hecha).length ? `<span class="nav-badge light">${citasHoy().filter((c) => !c.hecha).length}</span>` : ""}</a>`).join(""));
+    `${i === 6 ? '<span class="nav-label">Administrador</span>' : i === 5 ? '<span class="nav-label">Ajustes</span>' : i === 0 ? '<span class="nav-label">Consulta</span>' : ""}<a class="nav-item" href="#${k}" data-r="${k}" data-tip="${label}">${ico(ic, 28, "n", "off-g")}${ico(ic, 28, "a", "on-g")}<span class="nav-txt">${label}</span>${k === "alertas" && nAlta() ? `<span class="nav-badge">${nAlta()}</span>` : k === "citas" && citasHoy().filter((c) => !c.hecha).length ? `<span class="nav-badge light">${citasHoy().filter((c) => !c.hecha).length}</span>` : ""}</a>`).join(""));
   $$(".nav-item", nav).forEach((a) => { if (a.dataset.r === ruta) a.setAttribute("aria-current", "page"); });
   moverPill();
 }
@@ -1309,7 +1364,7 @@ function pintarBell() { const n = notifs().filter((x) => !x.leida).length; $("#b
 setCollapsed(inicialColapsado(), false);
 $("#collapseBtn").addEventListener("click", () => { setCollapsed(!app.classList.contains("collapsed")); setTimeout(moverPill, 380); });
 $("#menuBtn").addEventListener("click", () => abrirDrawer(true));
-$("#logoutBtn").addEventListener("click", async () => { try { sessionStorage.removeItem("nutripanel_in"); } catch {} if (authFB) { try { await authFB.signOut(); } catch {} } cerrarFicha(); $("#fan").hidden = true; mostrarLogin(); });
+$("#logoutBtn").addEventListener("click", async () => { try { sessionStorage.removeItem("nutripanel_in"); } catch {} if (authFB) { try { await authFB.signOut(); } catch {} activarAdmin(false); ADM.listo = false; } cerrarFicha(); $("#fan").hidden = true; mostrarLogin(); });
 function abrirDrawer(on) { app.classList.toggle("drawer", on); $("#scrim").classList.toggle("on", on || ficha.classList.contains("on")); }
 nav.addEventListener("mousemove", (e) => {
   if (!app.classList.contains("collapsed") || esMovil() || OPT.motion === "reducido") return;
@@ -1680,6 +1735,173 @@ VISTAS.reportes = () => {
       <td>${r.delta !== null ? `${r.delta >= 0 ? "+" : ""}${n1(r.delta)} kg` : "—"}</td><td>${chipEstado(r.estado)}</td></tr>`).join("")}
   </tbody></table></div>`;
 };
+
+/* ============ Administración (solo la cuenta de administrador) ============
+   Equipo: nutricionistas e invitaciones · Todos los pacientes: cambiar su nutricionista ·
+   Sistema: último respaldo, avisos y reglas (sistema/estado, lo escriben los workflows).
+   Con Firebase lee los datos reales; en la demostración usa datos de ejemplo. */
+const RUTA_ADMIN = ["admin", "Administración", "shield", "Equipo, pacientes y sistema"];
+function activarAdmin(on) {
+  const i = RUTAS.findIndex((r) => r[0] === "admin");
+  if (on && i < 0) RUTAS.push(RUTA_ADMIN);
+  if (!on && i >= 0) RUTAS.splice(i, 1);
+  pintarNav();
+}
+const ADM = { listo: false, cargando: false, error: false, nutris: [], invit: [], pacs: [], sis: {} };
+let tabAdm = "equipo", quitarUid = null;
+function admDemo() {
+  const ahora = Date.now(), h = 3600e3;
+  ADM.nutris = [
+    { uid: "d1", nombre: "Lic. Raquel", correo: "raquel@ejemplo.pe", codigo: "NUT-7501", ultimoIngreso: ahora - 2 * h },
+    { uid: "d2", nombre: "Lic. Ana Torres", correo: "ana.torres@ejemplo.pe", codigo: "NUT-3318", ultimoIngreso: ahora - 22 * h },
+  ];
+  ADM.invit = [{ correo: "mario.vega@ejemplo.pe", nombre: "Lic. Mario Vega", codigo: "NUT-6240", creadoEn: ahora - 50 * h }];
+  ADM.pacs = PACIENTES.map((p, i) => ({ codigo: p.codigo, nombre: p.nombre, estado: p.estado.e, nutri: i % 5 === 4 ? "d2" : "d1", p }));
+  ADM.sis = { respaldo: { en: ahora - 9 * h, pacientes: 3, dias: 34 }, avisos: { en: ahora - .4 * h, enviados: 0 }, reglas: { en: ahora - 3 * h } };
+  ADM.listo = true;
+}
+async function cargarAdm() {
+  if (!authFB) { admDemo(); return; }
+  ADM.cargando = true; ADM.error = false;
+  try {
+    const [n, i, p, s] = await Promise.all([dbFB.collection("nutricionistas").get(), dbFB.collection("invitaciones").get(), dbFB.collection("pacientes").get(), dbFB.collection("sistema").doc("estado").get()]);
+    ADM.nutris = n.docs.map((d) => ({ uid: d.id, ...d.data() }));
+    ADM.invit = i.docs.map((d) => ({ correo: d.id, ...d.data() }));
+    ADM.pacs = p.docs.map((d) => { const x = d.data(); return { codigo: d.id, nombre: (x.perfil && x.perfil.nombre) || x.nombre || "", estado: x.estado || "activo", nutri: x.nutricionistaUid || null, creadoEn: x.creadoEn }; });
+    ADM.sis = s.exists ? s.data() : {};
+    ADM.listo = true;
+  } catch { ADM.error = true; }
+  ADM.cargando = false;
+  if (ruta === "admin") { keepScroll = true; render(false); }
+}
+const iniDe = (t) => (t || "?").replace(/^(Lic\.?|Dra?\.?)\s+/i, "").split(/[\s@.]+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const avAdm = (t, a1 = "var(--tone-400)", a2 = "var(--tone-700)") => `<span class="av" style="--a1:${a1};--a2:${a2}">${esc(iniDe(t))}</span>`;
+function cuando(ts) {
+  if (!ts) return "Nunca";
+  const d = new Date(ts), hoy = new Date(), dias = Math.floor((new Date(hoy.toDateString()) - new Date(d.toDateString())) / 864e5);
+  const hm = d.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return dias <= 0 ? `Hoy, ${hm}` : dias === 1 ? `Ayer, ${hm}` : `Hace ${dias} días`;
+}
+VISTAS.admin = () => {
+  if (!ADM.listo) {
+    if (!ADM.cargando && !ADM.error) cargarAdm();
+    if (ADM.error) return `<div class="card empty"><span class="fl">${ico("alert", 28)}</span><br>No se pudieron cargar los datos de administración.<br><button class="btn btn-ghost btn-sm" data-adm="recargar" style="margin-top:10px">Reintentar</button></div>`;
+    if (!ADM.listo) return `<div class="sk" style="height:56px;width:420px;max-width:100%"></div><div class="sk" style="height:150px;margin-top:14px"></div><div class="sk" style="height:260px;margin-top:14px"></div>`;
+  }
+  const { nutris, invit, pacs, sis } = ADM;
+  const existe = (uid) => nutris.some((n) => n.uid === uid);
+  const sinNutri = pacs.filter((p) => !p.nutri || !existe(p.nutri)).length;
+  const nPac = (uid) => pacs.filter((p) => p.nutri === uid).length;
+  const tabs = `<div class="toolbar"><div class="seg" data-seg="tabAdm">${[["equipo", "Equipo", "shield"], ["pacientes", "Todos los pacientes", "users"], ["sistema", "Sistema", "gear"]].map(([k, l, ic]) => `<button aria-pressed="${tabAdm === k}" data-v="${k}">${ico(ic, 15, "cur")}${l}</button>`).join("")}</div><span class="grow"></span><button class="btn btn-ghost btn-sm" data-adm="recargar">${ico("hist", 15)} Actualizar</button></div>`;
+
+  const cells = `<section class="tinted" style="--i:0" aria-label="Resumen del equipo">
+    ${[["shield", "Nutricionistas", nutris.length, "Con acceso al panel", "var(--accent)"],
+       ["users", "Pacientes", pacs.length, (() => { const k = pacs.filter((p) => p.estado === "activo").length; return `${k} ${k === 1 ? "activo" : "activos"}`; })(), "var(--c-grasa)"],
+       ["alert", "Sin nutricionista", sinNutri, "No tienen una nutricionista con acceso", "var(--st-exceso)"],
+       ["mail", "Invitaciones", invit.length, "Esperan su primer ingreso", "var(--c-fibra)"]]
+      .map(([ic, l, v, sub, c]) => `<div class="cell" style="--c:${c}"><span class="k-top"><span class="eyebrow">${l}</span><span class="k-ico">${ico(ic, 18, "cur")}</span></span><span class="v"><span data-odo="${v}">${v}</span></span><span class="s">${sub}</span></div>`).join("")}</section>`;
+  const filasN = nutris.map((x, i) => `<tr class="row" style="--i:${i}"><td><div class="who-cell">${avAdm(x.nombre)}<div><b style="font-weight:600">${esc(x.nombre || "Sin nombre")}</b><div class="muted" style="font-size:12px">${esc(x.correo || "")}</div></div></div></td><td>${x.codigo ? `<span class="sev sev-info">${esc(x.codigo)}</span>` : "—"}</td><td>${nPac(x.uid)}</td><td>${cuando(x.ultimoIngreso)}</td><td><span class="chip st-meta"><span class="d"></span>Activa</span></td>
+      <td style="text-align:right">${quitarUid === x.uid ? `<button class="btn btn-sm" style="background:var(--st-exceso);color:#fff" data-adm="quitar" data-uid="${x.uid}">¿Quitar acceso?</button>` : `<button class="btn btn-ghost btn-sm" data-adm="pedirQuitar" data-uid="${x.uid}" aria-label="Quitar acceso a ${esc(x.nombre || "")}">${ico("more", 16)}</button>`}</td></tr>`);
+  const filasI = invit.map((x, i) => `<tr class="row" style="--i:${i + nutris.length}"><td><div class="who-cell"><span class="av" style="--a1:var(--text-2);--a2:var(--text-2)">${ico("mail", 16, "cur")}</span><div><b style="font-weight:600">${esc(x.nombre || "")}</b><div class="muted" style="font-size:12px">${esc(x.correo)}</div></div></div></td><td><span class="sev sev-media">${esc(x.codigo || "")}</span></td><td>—</td><td class="muted">Invitada ${cuando(x.creadoEn).toLowerCase()}</td><td><span class="chip st-bajo"><span class="d"></span>Invitada</span></td><td style="text-align:right"><button class="btn btn-ghost btn-sm" data-adm="quitarInv" data-correo="${esc(x.correo)}" aria-label="Quitar invitación">${ico("x", 16)}</button></td></tr>`);
+  const equipo = `${cells}
+  <div class="cascade" style="margin-top:16px;display:flex;flex-direction:column;gap:16px">
+    <section class="card tbl-wrap" style="--i:1"><div class="card-h"><h2>Nutricionistas</h2><span class="hint">Solo tú ves esta sección</span></div><table><thead><tr><th>Nombre</th><th>Código</th><th>Pacientes</th><th>Último ingreso</th><th>Acceso</th><th></th></tr></thead><tbody class="stagger">
+      ${[...filasN, ...filasI].join("") || `<tr><td colspan="6"><div class="empty">Aún no hay nutricionistas. Invita a la primera abajo.</div></td></tr>`}
+    </tbody></table></section>
+    <section class="card" style="--i:2"><div class="card-h">${ico("plus", 20)}<h2>Invitar nutricionista</h2></div><div class="card-b">
+      <p class="fine" style="margin-bottom:12px">Escribe su correo. Cuando entre al panel con ese correo (o cree su cuenta con él), queda como nutricionista y recibe su código para los pacientes.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px">
+        <label style="display:block"><span class="eyebrow">Correo</span><input class="select" id="admCorreo" type="email" autocomplete="off" placeholder="nombre@correo.com" style="width:100%;margin-top:6px"></label>
+        <label style="display:block"><span class="eyebrow">Nombre en el panel</span><input class="select" id="admNombre" autocomplete="off" placeholder="Lic. Nombre Apellido" style="width:100%;margin-top:6px"></label></div>
+      <button class="btn btn-primary" data-adm="invitar">${ico("mail", 18, "w")}<span>Enviar invitación</span></button>
+      <p class="fine" style="margin-top:12px">Al guardarla copiamos un mensaje con el enlace del panel para que se lo envíes. Para quitar el acceso a alguien, usa el botón ⋯ de su fila: sus pacientes quedan guardados y puedes pasarlos a otra nutricionista.</p>
+    </div></section>
+  </div>`;
+
+  const opciones = (sel) => nutris.map((n) => `<option value="${n.uid}" ${n.uid === sel ? "selected" : ""}>${esc(n.nombre || n.correo || n.uid)}</option>`).join("") + `<option value="" ${!sel || !existe(sel) ? "selected" : ""}>Sin nutricionista</option>`;
+  const pac = `<div class="card tbl-wrap cascade"><table><thead><tr><th>Paciente</th><th>Código</th><th>Estado</th><th>Nutricionista</th><th>${authFB ? "Creado" : "Último registro"}</th></tr></thead><tbody class="stagger">
+    ${pacs.map((x, i) => { const E = EST_PAC[x.estado] || EST_PAC.activo;
+      return `<tr class="row" style="--i:${Math.min(i, 14)}"><td><div class="who-cell">${x.p ? av(x.p) : avAdm(x.nombre || x.codigo)}<b style="font-weight:600">${esc(x.nombre || "Espacio " + x.codigo)}</b></div></td><td class="muted">${esc(x.codigo)}</td><td><span class="chip" style="--c:${E.c}"><span class="d"></span>${E.n}</span></td>
+      <td><label><span class="sr">Nutricionista de ${esc(x.nombre || x.codigo)}</span><select class="select" data-reasignar="${esc(x.codigo)}">${opciones(x.nutri)}</select></label></td><td>${x.p ? ultTxt(x.p) : x.creadoEn ? new Date(x.creadoEn).toLocaleDateString("es-PE") : "—"}</td></tr>`; }).join("") || `<tr><td colspan="5"><div class="empty">Aún no hay pacientes.</div></td></tr>`}
+  </tbody></table></div><p class="fine" style="margin-top:12px">Cambiar la nutricionista de un paciente le pasa su ficha, citas y notas. El paciente lo ve en la app.</p>`;
+
+  const viejo = (x, horas) => !x || !x.en || Date.now() - x.en > horas * 3600e3;
+  const r = sis.respaldo, a = sis.avisos, g = sis.reglas;
+  const SIS = [
+    ["cloud", "Respaldo nocturno", "Repositorio privado nutriapp-respaldo", r ? `${cuando(r.en)} · ${r.pacientes} espacios · ${r.dias} días` : "Se anotará aquí después del próximo respaldo (01:15).", !r ? null : viejo(r, 30) ? ["Revisar", "st-exceso"] : ["Correcto", "st-meta"]],
+    ["bellAlert", "Avisos y recordatorios", "Corre cada hora", a ? `${cuando(a.en)} · ${a.enviados} ${a.enviados === 1 ? "aviso enviado" : "avisos enviados"}` : "Se anotará aquí en la próxima vuelta.", !a ? null : viejo(a, 3) ? ["Revisar", "st-exceso"] : ["Correcto", "st-meta"]],
+    ["lock", "Reglas de acceso", "Se publican solas al cambiar", g ? `Publicadas ${cuando(g.en).toLowerCase()}` : "Se anotará aquí en la próxima publicación.", g ? ["Al día", "st-meta"] : null],
+    ["shield", "Cuentas con acceso", "Firebase Authentication", `${nutris.length} ${nutris.length === 1 ? "nutricionista" : "nutricionistas"} · ${invit.length} ${invit.length === 1 ? "invitación" : "invitaciones"}`, null]];
+  const sist = `<div class="alerts stagger">${SIS.map(([ic, t, sub, d, e], i) => `<article class="card alert" style="--i:${i};--c:var(--accent)"><span class="av" style="--a1:var(--tone-400);--a2:var(--tone-700)">${ico(ic, 18, "w")}</span><div style="min-width:0"><div class="meta"><b>${t}</b><span>· ${sub}</span></div><p>${d}</p></div>${e ? `<span class="chip ${e[1]}"><span class="d"></span>${e[0]}</span>` : ""}</article>`).join("")}</div>
+    <p class="fine" style="margin-top:12px">Todo usa los planes gratuitos de Firebase y GitHub.</p>`;
+  return tabs + (tabAdm === "equipo" ? equipo : tabAdm === "pacientes" ? pac : sist);
+};
+const marcarCampo = (el) => { el.style.borderColor = "var(--st-exceso)"; el.focus(); el.addEventListener("input", () => el.style.borderColor = "", { once: true }); };
+async function invitar(btn) {
+  const ci = $("#admCorreo"), ni = $("#admNombre"), correo = ci.value.trim().toLowerCase(), nombre = ni.value.trim().replace(/\s+/g, " ");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(correo)) { marcarCampo(ci); toast("Revisa el correo", "Por ejemplo nombre@correo.com"); return; }
+  if (nombre.length < 3) { marcarCampo(ni); toast("Falta el nombre", "Así la verán sus pacientes"); return; }
+  if (ADM.nutris.some((n) => (n.correo || "").toLowerCase() === correo)) { toast("Ya tiene acceso", correo); return; }
+  if (ADM.invit.some((i) => i.correo === correo)) { toast("Ya está invitada", correo); return; }
+  btn.disabled = true;
+  let codigo;
+  try {
+    if (authFB) {
+      do { codigo = "NUT-" + String(1000 + Math.floor(Math.random() * 9000)); } while ((await dbFB.collection("codigosNutri").doc(codigo).get()).exists);
+      const b = dbFB.batch();
+      b.set(dbFB.collection("invitaciones").doc(correo), { nombre, codigo, creadoEn: Date.now() });
+      b.set(dbFB.collection("codigosNutri").doc(codigo), { uid: null, correo });
+      await b.commit();
+    } else codigo = "NUT-" + String(1000 + Math.floor(Math.random() * 9000));
+  } catch { btn.disabled = false; toast("No se pudo guardar la invitación", "Revisa tu conexión e inténtalo de nuevo"); return; }
+  ADM.invit.push({ correo, nombre, codigo, creadoEn: Date.now() });
+  const url = location.origin + location.pathname;
+  const msg = `Hola, ${nombre}. Te di acceso al panel de NutriApp: ${url}\nEntra con tu correo ${correo}. Si aún no tienes cuenta, toca "¿Te invitaron? Crea tu cuenta". Tu código para que tus pacientes te elijan en la app es ${codigo}.`;
+  let copiado = false; try { await navigator.clipboard.writeText(msg); copiado = true; } catch {}
+  toast("Invitación guardada", copiado ? "Copiamos un mensaje con el enlace para que se lo envíes" : `Dile que entre a ${url} con ${correo}`);
+  keepScroll = true; render(false);
+}
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-adm]"); if (!b) { if (quitarUid && !e.target.closest(".tbl-wrap")) { quitarUid = null; if (ruta === "admin") { keepScroll = true; render(false); } } return; }
+  const accion = b.dataset.adm;
+  if (accion === "recargar") { ADM.listo = false; ADM.error = false; render(false); return; }
+  if (accion === "invitar") { invitar(b); return; }
+  if (accion === "pedirQuitar") { quitarUid = b.dataset.uid; keepScroll = true; render(false); return; }
+  if (accion === "quitar") {
+    const n = ADM.nutris.find((x) => x.uid === b.dataset.uid); if (!n) return;
+    b.disabled = true;
+    try {
+      if (authFB) { const bt = dbFB.batch(); bt.delete(dbFB.collection("nutricionistas").doc(n.uid)); if (n.codigo) bt.delete(dbFB.collection("codigosNutri").doc(n.codigo)); await bt.commit(); }
+      ADM.nutris = ADM.nutris.filter((x) => x.uid !== n.uid); quitarUid = null;
+      toast("Acceso quitado", `${n.nombre}. Sus pacientes quedan sin nutricionista hasta que los pases a otra.`);
+    } catch { toast("No se pudo quitar el acceso", "Revisa tu conexión e inténtalo de nuevo"); }
+    keepScroll = true; render(false); return;
+  }
+  if (accion === "quitarInv") {
+    const inv = ADM.invit.find((x) => x.correo === b.dataset.correo); if (!inv) return;
+    b.disabled = true;
+    try {
+      if (authFB) { const bt = dbFB.batch(); bt.delete(dbFB.collection("invitaciones").doc(inv.correo)); if (inv.codigo) bt.delete(dbFB.collection("codigosNutri").doc(inv.codigo)); await bt.commit(); }
+      ADM.invit = ADM.invit.filter((x) => x !== inv);
+      toast("Invitación quitada", inv.correo);
+    } catch { toast("No se pudo quitar la invitación", "Revisa tu conexión e inténtalo de nuevo"); }
+    keepScroll = true; render(false);
+  }
+});
+document.addEventListener("change", async (e) => {
+  const sel = e.target.closest("[data-reasignar]"); if (!sel) return;
+  const x = ADM.pacs.find((p) => p.codigo === sel.dataset.reasignar); if (!x) return;
+  const nuevo = sel.value || null, antes = x.nutri;
+  sel.disabled = true;
+  try {
+    if (authFB) await dbFB.collection("pacientes").doc(x.codigo).update({ nutricionistaUid: nuevo });
+    x.nutri = nuevo;
+    const n = ADM.nutris.find((y) => y.uid === nuevo);
+    toast("Nutricionista cambiada", `${x.nombre || "Espacio " + x.codigo} → ${n ? n.nombre : "sin nutricionista"}`);
+  } catch { sel.value = antes || ""; toast("No se pudo cambiar", "Revisa tu conexión e inténtalo de nuevo"); }
+  sel.disabled = false;
+});
+if (!authFB) activarAdmin(true);
 
 VISTAS.opciones = () => {
   const pal = PALD.p.find((x) => x.id === OPT.paleta) || PALD.p[0];
@@ -2190,6 +2412,7 @@ document.addEventListener("click", (e) => {
     setTimeout(() => {
       if (k === "vistaPac") { vistaPac = v; store.set("vistaPac", v); render(false); }
       else if (k === "filtroEst") { filtroEst = v; render(false); }
+      else if (k === "tabAdm") { tabAdm = v; render(false); }
       else if (k === "sev") { filtroSev = v; render(false); }
       else if (k === "per") { perRep = +v; keepScroll = true; render(false); }
       else if (k === "tema") { OPT.tema = v; guardarOpt(); aplicarTema(); toast("Tema actualizado", { claro: "Claro", oscuro: "Oscuro", auto: "Automático" }[v]); }
