@@ -39,9 +39,12 @@ async function respaldar() {
       const s = datos(await doc.ref.collection(sub).get());
       if (s.length) p[sub] = s;
     }
-    const dias = await doc.ref.collection("registros").get();
-    for (const dia of dias.docs) {
-      p.registros[dia.id] = datos(await dia.ref.collection("items").get());
+    // Los días de registro no existen como documento propio (la app solo escribe sus items),
+    // así que `get()` no los devuelve: listDocuments() sí incluye esos documentos "vacíos".
+    const dias = await doc.ref.collection("registros").listDocuments();
+    for (const dia of dias) {
+      const items = datos(await dia.collection("items").get());
+      if (items.length) p.registros[dia.id] = items;
     }
     salida.pacientes[doc.id] = p;
   }
