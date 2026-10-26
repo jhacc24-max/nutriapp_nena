@@ -193,6 +193,17 @@ El celular los muestra solo (notificación local programada por la app) y, si ha
 - **Se respalda** cada noche en un **repositorio privado de GitHub**, distinto del de la app: el workflow `.github/workflows/respaldo-firestore.yml` exporta las colecciones a JSON y las sube con fecha. Así la copia vive fuera de Firebase.
 - El paciente además puede descargar su propio respaldo en un archivo desde Opciones › Respaldo de datos.
 
+### 10.6b Costo: todo dentro de planes gratuitos
+
+| Pieza | Plan | Límite gratis | Uso estimado |
+|---|---|---|---|
+| Firestore | Spark (gratis) | 50 000 lecturas y 20 000 escrituras al día | El job de avisos lee los pacientes una vez por hora |
+| Push (FCM) | gratis | sin límite práctico | |
+| GitHub Actions | gratis | 2 000 min/mes en repos privados (ilimitado en públicos) | ~750 min/mes (avisos cada hora + respaldo diario) |
+| Repo de respaldo | GitHub privado, gratis | 1 GB recomendado por repo | |
+| WhatsApp | **no se usa** | Meta cobra cada aviso automático (mensaje de plantilla) | |
+| Telegram | gratis | | Opcional: falta vincular el chat de cada paciente con el bot |
+
 ### 10.7 Funciones del servidor (§8 de esta base)
 
 | Función | Disparador | Qué hace |

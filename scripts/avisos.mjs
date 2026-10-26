@@ -4,7 +4,9 @@
    - Comidas: según `pacientes/{codigo}.recordatorios.comidas` (lo pone el paciente en Opciones).
    Cada aviso se guarda en `notificaciones` (para verlo dentro del panel y de la app) y, si hay
    token de FCM en `pacientes/{codigo}/dispositivos`, se manda también como push.
-   WhatsApp y Telegram quedan anotados en el documento: necesitan un proveedor contratado. */
+   Todo es gratuito: el push de FCM y los documentos de Firestore no cuestan dentro del plan
+   gratuito. WhatsApp no se usa porque Meta cobra cada aviso automático; si se quiere un canal
+   de mensajería, Telegram es gratis (falta vincular el chat de cada paciente con el bot). */
 import admin from "firebase-admin";
 
 const credencial = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}");
