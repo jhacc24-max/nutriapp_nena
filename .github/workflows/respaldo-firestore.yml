@@ -28,7 +28,10 @@ jobs:
         env:
           TOKEN: ${{ secrets.REPO_RESPALDO_TOKEN }}
           REPO: ${{ vars.REPO_RESPALDO }}
-        run: git clone --depth 1 "https://x-access-token:$TOKEN@github.com/$REPO.git" destino
+        run: |
+          [ -n "$TOKEN" ] || { echo "::error::Falta el secreto REPO_RESPALDO_TOKEN en este repositorio."; exit 1; }
+          [ -n "$REPO" ] || { echo "::error::Falta la variable REPO_RESPALDO (por ejemplo jhacc24-max/nutriapp-respaldo)."; exit 1; }
+          git clone --depth 1 "https://x-access-token:$TOKEN@github.com/$REPO.git" destino
 
       - name: Exportar Firestore
         env:
