@@ -1,6 +1,6 @@
 /* Service worker de NutriApp: permite instalar la app y abrirla sin conexión.
    No guarda en caché las llamadas de Firebase (datos y sesión siempre van a la red). */
-const VERSION = "nutriapp-v15";
+const VERSION = "nutriapp-v16";
 const CASCARON = ["./", "./index.html", "./manifest.webmanifest", "./iconos-nutri.js", "./corazon-nutri.js", "./icons/icon-192.png", "./icons/icon-512.png"];
 const HOSTS_ESTATICOS = ["cdn.tailwindcss.com", "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com", "www.gstatic.com"];
 
@@ -15,6 +15,8 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   const mismoOrigen = url.origin === self.location.origin;
+  // El panel de la nutricionista (/panel/) es otra página: no se guarda como si fuera la app.
+  if (mismoOrigen && url.pathname.includes("/panel/")) return;
   if (!mismoOrigen && !HOSTS_ESTATICOS.includes(url.hostname)) return;
   // Páginas: primero la red (para ver siempre la última versión), y si no hay conexión, la copia guardada.
   if (req.mode === "navigate") {

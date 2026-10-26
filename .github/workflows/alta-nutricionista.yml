@@ -1,0 +1,30 @@
+# Da acceso al panel a una nutricionista cuya cuenta ya existe en Firebase Authentication.
+# Se lanza a mano desde Actions › "Alta de nutricionista" › Run workflow.
+name: Alta de nutricionista
+
+on:
+  workflow_dispatch:
+    inputs:
+      correo:
+        description: "Correo de la cuenta (creada antes en Firebase › Authentication)"
+        required: true
+      nombre:
+        description: "Nombre que se verá en el panel, p. ej. Lic. Ana Torres"
+        required: false
+
+jobs:
+  alta:
+    runs-on: ubuntu-latest
+    steps:
+      # El repo es público: el correo no se muestra en los registros.
+      - run: echo "::add-mask::${{ inputs.correo }}"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install --no-save firebase-admin@12.7.0
+      - env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          CORREO: ${{ inputs.correo }}
+          NOMBRE: ${{ inputs.nombre }}
+        run: node scripts/alta-nutricionista.mjs
