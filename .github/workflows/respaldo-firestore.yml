@@ -1,0 +1,47 @@
+# Copia nocturna de Firestore a un repositorio PRIVADO de respaldo.
+# Hace falta configurar en este repo:
+#   - secreto FIREBASE_SERVICE_ACCOUNT: el JSON de una cuenta de servicio de Firebase
+#     (Consola → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada).
+#   - secreto REPO_RESPALDO_TOKEN: un token con permiso de escritura en el repo de respaldo.
+#   - variable REPO_RESPALDO: por ejemplo jhacc24-max/nutriapp-respaldo.
+name: Respaldo de Firestore
+
+on:
+  schedule:
+    - cron: "15 6 * * *" # 01:15 en Lima (UTC-5)
+  workflow_dispatch:
+
+jobs:
+  respaldar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar firebase-admin
+        run: npm install --no-save firebase-admin@12.7.0
+
+      - name: Clonar el repositorio de respaldo
+        env:
+          TOKEN: ${{ secrets.REPO_RESPALDO_TOKEN }}
+          REPO: ${{ vars.REPO_RESPALDO }}
+        run: git clone --depth 1 "https://x-access-token:$TOKEN@github.com/$REPO.git" destino
+
+      - name: Exportar Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DESTINO: destino/respaldo
+        run: node scripts/respaldo-firestore.mjs
+
+      - name: Guardar la copia
+        working-directory: destino
+        run: |
+          git config user.name "Respaldo NutriApp"
+          git config user.email "respaldo@nutriapp.local"
+          git add respaldo
+          git diff --cached --quiet && echo "Sin cambios que guardar" && exit 0
+          git commit -m "Respaldo del $(date -u +%F)"
+          git push

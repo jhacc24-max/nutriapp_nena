@@ -1,8 +1,8 @@
 ---
 documento: Backend Schema — Estructura de datos
 version_base: 1.0
-app: "{{NOMBRE_APP}}"
-ultima_actualizacion: "{{AAAA-MM-DD}}"
+app: "NutriApp"
+ultima_actualizacion: "2026-10-26"
 ---
 
 # 05 · Backend Schema — Cómo se organizan los datos
@@ -112,4 +112,101 @@ create policy "dueño lee" on {{tabla}} for select using (owner_id = auth.uid())
 Tablas con suscripción en vivo (para animar cambios en pantalla, ver `07-MOTION` › `live-update-flash`): {{}}
 
 ## 10. Cambios respecto a la base
-{{}}
+
+**Esta app no usa Supabase ni SQL: usa Firebase (Auth + Cloud Firestore).** Las tablas de arriba son el molde del kit; lo que sigue es el modelo real. Las reglas de acceso están en `firestore.rules` (equivalen a las RLS de §6) y se prueban con el emulador de Firestore.
+
+### 10.1 Colecciones
+
+| Colección | Documento | Contenido |
+|---|---|---|
+| `usuarios/{uid}` | una por cuenta | `pacienteId` — el espacio al que está vinculada |
+| `nutricionistas/{uid}` | una por nutricionista | `nombre`, `avisos` (preferencias de notificación). **Se crea solo desde la consola de Firebase:** nadie puede darse el rol a sí mismo |
+| `codigosNutri/{codigo}` | p. ej. `NUT-4821` | `uid` de la nutricionista, para que el paciente la elija desde la app |
+| `pacientes/{codigo}` | el espacio compartido | `perfil`, `prescripcion`, `suplementos`, `medicamentos`, `recipientes`, `catalogoCustom`, `pesos`, `tema`, `creadoPor`, y los campos nuevos de abajo |
+| `pacientes/{codigo}/registros/{fecha}/items/{itemId}` | un alimento | `alimento`, `gramos`, `momento`, `tara`, `fecha`, `agregadoEn` |
+| `pacientes/{codigo}/menuHoy/{fecha}`, `menuEdiciones/{dia}` | | menú sugerido y sus ajustes |
+| `pacientes/{codigo}/dispositivos/{uid}` | un celular | `token` de FCM, `plataforma`, `actualizadoEn` — para mandar los recordatorios |
+| `pacientes/{codigo}/evaluaciones/{evalId}` | una consulta | `fecha`, `criterios[] {clave, puntaje 1-5}`, `comentario`, `nutricionistaUid` |
+| `pacientes/{codigo}/notasConsulta/{notaId}` | nota privada | `texto`, `fecha`, `nutricionistaUid` |
+| `citas/{citaId}` | una cita | ver 10.3 |
+| `notificaciones/{notifId}` | un aviso enviado | ver 10.4 |
+
+### 10.2 Estado del paciente (nuevo)
+
+En `pacientes/{codigo}`, solo lo escribe la nutricionista:
+
+| Campo | Tipo | Valores | Descripción |
+|---|---|---|---|
+| `nutricionistaUid` | string | uid | Quién lo sigue. Lo elige el paciente con el código de la nutricionista |
+| `estado` | string | `activo`, `pausado`, `baja` | Un espacio nuevo nace activo (sin el campo) |
+| `estadoMotivo` | string | | Por qué se pausó o se dio de baja |
+| `estadoDesde` | number | epoch ms | Cuándo cambió |
+| `estadoHasta` | string | `AAAA-MM-DD` | Solo en `pausado`: hasta cuándo |
+
+`pausado` oculta al paciente del tablero y corta sus recordatorios; `baja` termina el seguimiento y guarda el historial, y se puede reactivar.
+
+### 10.3 `citas`
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `pacienteId` | string | Código del espacio |
+| `nutricionistaUid` | string | Dueña de la cita |
+| `fecha` | string | `AAAA-MM-DD` |
+| `hora` | string | `HH:MM` (hora de Lima) |
+| `duracionMin` | number | |
+| `tipo` | string | `control`, `primera`, `teleconsulta`, `examenes` |
+| `hecha` | boolean | Atendida |
+| `recordatorio` | map | `{ frec: 'diaria' \| 'horas', hora: 'HH:MM', antes: [24, 1], canal: ['in_app','whatsapp','telegram'] }` |
+| `creadaEn` | number | epoch ms |
+
+`frec: 'diaria'` manda un aviso por día a la hora indicada hasta el día de la cita; `frec: 'horas'` manda uno por cada valor de `antes` (horas antes de la cita). `canal` usa los mismos valores que `notifications.channel` de §2.
+
+### 10.4 `notificaciones`
+
+Las escribe **solo el servidor** (el job de GitHub Actions con cuenta de servicio, que no pasa por las reglas). El destinatario solo puede marcarlas como leídas.
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `destinoUid` | string | A quién va |
+| `pacienteId` | string | Espacio relacionado (si aplica) |
+| `tipo` | string | `cita`, `recordatorio_comida`, `hallazgo` |
+| `canal` | string | `in_app`, `whatsapp`, `telegram`, `push` |
+| `titulo`, `cuerpo` | string | |
+| `citaId` | string | Si nace de una cita |
+| `enviadaEn` | number | epoch ms |
+| `leida` | boolean | |
+
+### 10.5 Recordatorios de comidas del paciente
+
+En `pacientes/{codigo}.recordatorios` (lo edita el propio paciente en Opciones):
+
+```json
+{ "activos": true,
+  "comidas": { "desayuno": "08:00", "almuerzo": "13:00", "cena": "19:30", "colacion": null } }
+```
+
+El celular los muestra solo (notificación local programada por la app) y, si hay token en `dispositivos`, el job del servidor los manda también por push, para que lleguen con la app cerrada.
+
+### 10.6 Dónde se guarda y dónde se respalda
+
+- **Se guarda** en Cloud Firestore (proyecto `nutriapp-c0bc8`), más una copia en el propio celular (`localStorage`) para que la app funcione sin conexión.
+- **Se respalda** cada noche en un **repositorio privado de GitHub**, distinto del de la app: el workflow `.github/workflows/respaldo-firestore.yml` exporta las colecciones a JSON y las sube con fecha. Así la copia vive fuera de Firebase.
+- El paciente además puede descargar su propio respaldo en un archivo desde Opciones › Respaldo de datos.
+
+### 10.6b Costo: todo dentro de planes gratuitos
+
+| Pieza | Plan | Límite gratis | Uso estimado |
+|---|---|---|---|
+| Firestore | Spark (gratis) | 50 000 lecturas y 20 000 escrituras al día | El job de avisos lee los pacientes una vez por hora |
+| Push (FCM) | gratis | sin límite práctico | |
+| GitHub Actions | gratis | 2 000 min/mes en repos privados (ilimitado en públicos) | ~750 min/mes (avisos cada hora + respaldo diario) |
+| Repo de respaldo | GitHub privado, gratis | 1 GB recomendado por repo | |
+| WhatsApp | **no se usa** | Meta cobra cada aviso automático (mensaje de plantilla) | |
+| Telegram | gratis | | Opcional: falta vincular el chat de cada paciente con el bot |
+
+### 10.7 Funciones del servidor (§8 de esta base)
+
+| Función | Disparador | Qué hace |
+|---|---|---|
+| `respaldo-firestore` | cron diario (GitHub Actions) | Exporta Firestore al repo privado de respaldo |
+| `avisos` | cron cada hora (GitHub Actions) | Lee `citas` y `recordatorios`, crea los documentos de `notificaciones` y manda el push por FCM |

@@ -1137,6 +1137,12 @@ const PERFIL_DEFAULT = { edad: 32, sexo: "femenino", pesoKg: 47, tallaCm: 165, a
    a fijar aparte, así que se dejan en automático (grasa por defecto y carbohidratos como
    resto) y solo se fijan manualmente las dos cifras finales que sí prescribió. */
 const PRESCRIPCION_DEFAULT = { activa: true, kcalManual: 1300, proteinaManualG: 60, carbohidratosPctManual: null, grasasPctManual: null };
+/* Recordatorios de comidas: avisos que la propia persona programa en Opciones para no olvidar
+   anotar lo que comió (ver docs-base/05-BACKEND-SCHEMA §10.5). La app los muestra con el
+   service worker mientras el celular esté encendido; el job del servidor manda además un push
+   con los mismos horarios, para que lleguen con la app cerrada. */
+const RECORDATORIOS_DEFAULT = { activos: false, comidas: { desayuno: "08:00", almuerzo: "13:00", cena: "19:30", colacion: null } };
+const COMIDAS_RECORDATORIO = [["desayuno", "Desayuno"], ["almuerzo", "Almuerzo"], ["cena", "Cena"], ["colacion", "Colación"]];
 /* Valores por porción según etiqueta real: Ensure Clinical, botella de 220 ml (330 kcal /
    20 g prot.); Ensure Advance con HMB en polvo, 6 cucharadas en 200 ml de agua → 235 ml
    finales (235 kcal / 8.84 g prot., más 1.2 g de HMB que la app no trackea aparte). */
@@ -6056,6 +6062,76 @@ function useInstalar() {
   return { disponible: !!evento, instalada, ios, seguro, pedir };
 }
 
+/* Recordatorios para no olvidar anotar la comida (Opciones › Cuenta). La persona elige la hora
+   de cada comida; se guardan en su espacio (pacientes/{codigo}.recordatorios) para que el panel
+   de la nutricionista los vea y el servidor pueda mandar el mismo aviso por push. */
+function TarjetaRecordatorios({ recordatorios, setRecordatorios }) {
+  const [permiso, setPermiso] = useState(typeof Notification === "undefined" ? "no-soportado" : Notification.permission);
+  const cambiarHora = (clave, valor) => setRecordatorios((r) => ({ ...r, comidas: { ...r.comidas, [clave]: valor || null } }));
+  const activar = async () => {
+    if (recordatorios.activos) { setRecordatorios((r) => ({ ...r, activos: false })); return; }
+    if (permiso === "default") {
+      const res = await Notification.requestPermission();
+      setPermiso(res);
+      if (res !== "granted") return;
+    }
+    setRecordatorios((r) => ({ ...r, activos: true }));
+  };
+  return (
+    <div className="nutri-panel rounded-2xl p-5 mb-5">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2"><IconHistorial size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Recordatorios de comidas</span></div>
+        <button onClick={activar} aria-pressed={!!recordatorios.activos} className={`text-xs px-3 py-1.5 rounded-full nutri-chip ${recordatorios.activos ? "nutri-chip-active" : "nutri-ink"}`}>{recordatorios.activos ? "Activados" : "Activar"}</button>
+      </div>
+      <p className="text-xs nutri-muted mb-3">Un aviso a la hora que elijas para acordarte de anotar lo que comiste. Deja una hora vacía si no quieres el aviso de esa comida.</p>
+      <div className="space-y-2">
+        {COMIDAS_RECORDATORIO.map(([clave, label]) => (
+          <div key={clave} className="pf-fila flex items-center justify-between gap-2">
+            <span className="text-sm nutri-ink">{label}</span>
+            <input type="time" aria-label={`Hora del aviso de ${label}`} value={(recordatorios.comidas || {})[clave] || ""} onChange={(e) => cambiarHora(clave, e.target.value)} className="rounded-lg nutri-chip px-3 py-2 text-sm bg-white nutri-ink" />
+          </div>
+        ))}
+      </div>
+      {permiso === "denied" && <p className="text-xs nutri-warn mt-3">Las notificaciones están bloqueadas para esta app en tu navegador. Habilítalas desde los ajustes del sitio para recibir los avisos.</p>}
+      {permiso === "no-soportado" && <p className="text-xs nutri-muted mt-3">Este navegador no muestra notificaciones. Los horarios igual se guardan y se usan desde la app instalada.</p>}
+    </div>
+  );
+}
+
+/* Programa los recordatorios de comidas en este dispositivo. Solo mantiene el aviso de la
+   próxima comida: cada vez que suena (o cambian los horarios) vuelve a calcular el siguiente.
+   Si el permiso de notificaciones no está dado o la pestaña está cerrada no pasa nada: el push
+   del servidor (scripts/avisos.mjs) cubre ese caso. */
+function useRecordatoriosDeComidas(recordatorios) {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!recordatorios || !recordatorios.activos) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    const ahora = new Date();
+    let proxima = null;
+    for (const [clave, label] of COMIDAS_RECORDATORIO) {
+      const hora = (recordatorios.comidas || {})[clave];
+      if (!hora) continue;
+      const cuando = new Date(ahora);
+      cuando.setHours(Number(hora.slice(0, 2)), Number(hora.slice(3, 5)), 0, 0);
+      if (cuando <= ahora) cuando.setDate(cuando.getDate() + 1); // ya pasó: queda para mañana
+      if (!proxima || cuando < proxima.cuando) proxima = { cuando, label };
+    }
+    if (!proxima) return;
+    const espera = Math.min(proxima.cuando - ahora, 2147483000);
+    const t = setTimeout(async () => {
+      try {
+        const cuerpo = "Registra lo que comiste para que tu nutricionista lo vea.";
+        const reg = await navigator.serviceWorker?.getRegistration();
+        if (reg) await reg.showNotification(`Hora de anotar el ${proxima.label.toLowerCase()}`, { body: cuerpo, icon: "./icons/icon-192.png", tag: "nutriapp-comida" });
+        else new Notification(`Hora de anotar el ${proxima.label.toLowerCase()}`, { body: cuerpo });
+      } catch {}
+      setTick((n) => n + 1); // vuelve a programar la siguiente
+    }, espera);
+    return () => clearTimeout(t);
+  }, [recordatorios, tick]);
+}
+
 function TarjetaCuenta({ salir, email, instalar }) {
   const [confirmando, setConfirmando] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
@@ -6110,7 +6186,7 @@ function TarjetaCuenta({ salir, email, instalar }) {
   );
 }
 
-function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, paleta, setPaleta, pacienteId, salir, email, instalar, exportarBackup, restaurarBackup }) {
+function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medicamentos, setMedicamentos, prescripcion, setPrescripcion, suplementos, setSuplementos, perfil, tema, setTema, recordatorios = RECORDATORIOS_DEFAULT, setRecordatorios = () => {}, paleta, setPaleta, pacienteId, salir, email, instalar, exportarBackup, restaurarBackup }) {
   const [nuevoMed, setNuevoMed] = useState({ nombre: "", dosis: "", frecuencia: "" });
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState("");
@@ -6196,6 +6272,8 @@ function PantallaOpciones({ seccion = "todo", recipientes, setRecipientes, medic
       {(seccion === "cuenta" || seccion === "todo") && <>
       <TarjetaCuenta salir={salir} email={email} instalar={instalar} />
       <p className="text-[11px] nutri-muted text-center -mt-3 mb-4">Versión de la app: <b className="nutri-ink">{VERSION_APP}</b></p>
+
+      <TarjetaRecordatorios recordatorios={recordatorios} setRecordatorios={setRecordatorios} />
 
       <div className="nutri-panel rounded-2xl p-5 mb-5">
         <div className="flex items-center gap-2 mb-2"><IconActivity size={16} className="nutri-brand-text" /><span className="text-sm font-medium nutri-ink">Respaldo de datos</span></div>
@@ -6701,6 +6779,9 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
   const [medicamentos, setMedicamentos] = useState(() => { try { const s = localStorage.getItem("nutriapp_medicamentos"); return s ? JSON.parse(s) : []; } catch { return []; } });
   const [prescripcion, setPrescripcion] = useState(() => { try { const s = localStorage.getItem("nutriapp_prescripcion"); return s ? JSON.parse(s) : PRESCRIPCION_DEFAULT; } catch { return PRESCRIPCION_DEFAULT; } });
   const [suplementos, setSuplementos] = useState(() => { try { const s = localStorage.getItem("nutriapp_suplementos"); return s ? JSON.parse(s) : SUPLEMENTOS_DEFAULT; } catch { return SUPLEMENTOS_DEFAULT; } });
+  const [recordatorios, setRecordatorios] = useState(() => { try { const s = localStorage.getItem("nutriapp_recordatorios"); return s ? JSON.parse(s) : RECORDATORIOS_DEFAULT; } catch { return RECORDATORIOS_DEFAULT; } });
+  useEffect(() => { try { localStorage.setItem("nutriapp_recordatorios", JSON.stringify(recordatorios)); } catch {} }, [recordatorios]);
+  useRecordatoriosDeComidas(recordatorios);
   const [tema, setTema] = useState(() => { try { return localStorage.getItem("nutriapp_tema") || "claro"; } catch { return "claro"; } });
   const [paleta, setPaleta] = useState(() => { try { const g = localStorage.getItem("nutriapp_paleta"); return PALETAS.some((x) => x.id === g) ? g : "turquesa"; } catch { return "turquesa"; } });
   useEffect(() => {
@@ -6807,6 +6888,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
       if (d.suplementos) { aplicandoRemoto.current = true; setSuplementos(d.suplementos); }
       if (d.pesos) { aplicandoRemoto.current = true; setPesos(d.pesos); }
       if (d.tema) { aplicandoRemoto.current = true; setTema(d.tema); }
+      if (d.recordatorios) { aplicandoRemoto.current = true; setRecordatorios(d.recordatorios); }
     }, () => setErrorSync("No se pudo leer tu información desde la nube. Revisa tu conexión."));
     const unsubLog = dbFirestore.collection("pacientes").doc(pacienteId).collection("registros").doc(hoyISO()).collection("items").orderBy("agregadoEn").onSnapshot((snap) => {
       setLog(snap.docs.map((doc) => ({ uid: doc.id, ...doc.data() })));
@@ -6823,8 +6905,8 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
     if (!pacienteId) return;
     if (!remotoListo.current) return;
     if (aplicandoRemoto.current) { aplicandoRemoto.current = false; return; }
-    guardarEstadoRemoto({ perfil, catalogoCustom: catalogo.filter((c) => c.personalizada), recipientes, medicamentos, prescripcion, suplementos, pesos, tema });
-  }, [pacienteId, perfil, catalogo, recipientes, medicamentos, prescripcion, suplementos, pesos, tema]);
+    guardarEstadoRemoto({ perfil, catalogoCustom: catalogo.filter((c) => c.personalizada), recipientes, medicamentos, prescripcion, suplementos, pesos, tema, recordatorios });
+  }, [pacienteId, perfil, catalogo, recipientes, medicamentos, prescripcion, suplementos, pesos, tema, recordatorios]);
 
   useEffect(() => { try { localStorage.setItem("nutriapp_perfil", JSON.stringify(perfil)); } catch {} }, [perfil]);
   useEffect(() => { try { localStorage.setItem("nutriapp_log_" + hoyISO(), JSON.stringify(log)); } catch {} }, [log]);
@@ -6919,6 +7001,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
       suplementos,
       pesos,
       tema,
+      recordatorios,
       registros,
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
@@ -6930,7 +7013,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  }, [pacienteId, perfil, catalogo, recipientes, medicamentos, prescripcion, suplementos, pesos, tema]);
+  }, [pacienteId, perfil, catalogo, recipientes, medicamentos, prescripcion, suplementos, pesos, tema, recordatorios]);
 
   const restaurarBackup = useCallback(async (backup) => {
     if (backup.perfil) setPerfil(backup.perfil);
@@ -6941,6 +7024,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
     if (backup.suplementos) setSuplementos(backup.suplementos);
     if (backup.pesos) setPesos(backup.pesos);
     if (backup.tema) setTema(backup.tema);
+    if (backup.recordatorios) setRecordatorios(backup.recordatorios);
     for (const [fecha, items] of Object.entries(backup.registros || {})) {
       const actuales = await obtenerLogFecha(pacienteId, fecha);
       actuales.forEach((it) => removeItem(it.uid, fecha));
@@ -6972,9 +7056,9 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
       {mostrarPerfil === "perfil" && <PantallaPerfil seccion="datos" perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />}
       {mostrarPerfil === "salud" && <>
         <PantallaPerfil seccion="condiciones" perfil={perfil} setPerfil={setPerfil} catalogo={catalogo} agregarCondicionCustom={agregarCondicionCustom} />
-        <PantallaOpciones seccion="medicamentos" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />
+        <PantallaOpciones seccion="medicamentos" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} recordatorios={recordatorios} setRecordatorios={setRecordatorios} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />
       </>}
-      {mostrarPerfil === "plan" && <PantallaOpciones seccion="plan" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
+      {mostrarPerfil === "plan" && <PantallaOpciones seccion="plan" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} recordatorios={recordatorios} setRecordatorios={setRecordatorios} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
     </SeccionCuenta>
   );
   if (mostrarReporte) return <PantallaReportes requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} onCerrar={() => setMostrarReporte(false)} />;
@@ -6994,7 +7078,7 @@ function NutriApp({ pacienteId, salir, email, nombre, foto }) {
         {tab === "dashboard" && <PantallaDashboard requerimiento={requerimiento} log={log} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} aguaMl={aguaMl} registrarAgua={registrarAgua} />}
         {tab === "menu" && <PantallaMenuHoy requerimiento={requerimiento} pacienteId={pacienteId} addItem={addItem} onErrorSync={setErrorSync} log={log} />}
         {tab === "reportes" && <PantallaReportes enPestana onHistorial={() => setMostrarHistorial(true)} requerimiento={requerimiento} pacienteId={pacienteId} perfil={perfil} pesos={pesos} agregarPeso={agregarPeso} importarPesos={importarPesos} corregirPeso={corregirPeso} eliminarPeso={eliminarPeso} medicamentos={medicamentos} />}
-        {tab === "opciones" && <PantallaOpciones seccion="cuenta" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
+        {tab === "opciones" && <PantallaOpciones seccion="cuenta" recipientes={recipientes} setRecipientes={setRecipientes} medicamentos={medicamentos} setMedicamentos={setMedicamentos} prescripcion={prescripcion} setPrescripcion={setPrescripcion} suplementos={suplementos} setSuplementos={setSuplementos} perfil={perfil} tema={tema} setTema={setTema} recordatorios={recordatorios} setRecordatorios={setRecordatorios} paleta={paleta} setPaleta={setPaleta} pacienteId={pacienteId} salir={salir} email={email} instalar={instalar} exportarBackup={exportarBackup} restaurarBackup={restaurarBackup} />}
       </div>
       <nav className="nutri-nav fixed flex max-w-md" aria-label="Navegación principal">
         <NavDefs />

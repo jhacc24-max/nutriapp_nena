@@ -196,6 +196,7 @@ Estos nombres son los que se usan en `03-APPFLOW.md` y `04-UIUX-DESIGN-BRIEF.md`
 | `line-draw` | líneas de gráfico se dibujan de izquierda a derecha |
 | `progress-fill` | barras/anillos de progreso se llenan con resorte |
 | `badge-pop` | contador de notificaciones aparece con pop y rebota al cambiar |
+| `chart-scrub` | al deslizar el dedo o el puntero sobre un gráfico, una guía vertical y el punto del dato siguen la posición con resorte (`spring-smooth`) y una etiqueta muestra la fecha y el valor de ese punto; la etiqueta cambia de contenido con un fundido corto (`dur-fast`). Al soltar, la guía vuelve al último dato y se queda ahí: el gráfico siempre muestra un valor, nunca queda "mudo" |
 
 ### 3.5 Estados del sistema
 
@@ -518,4 +519,5 @@ const enter = reduce ? { opacity: 1 } : { opacity: 1, y: 0 };
 | nivel_de_movimiento | expresivo | Pedido del usuario: app con mucho movimiento |
 | Animación "firma" de la app | Latido (`icon-beat`) en los íconos de la barra + `label-slide` | Identidad de salud / nutrición |
 | Animaciones desactivadas | Ninguna; todas se detienen con "reducir movimiento" | |
+| Gráficos | `chart-scrub` obligatorio en todo gráfico con serie de tiempo (peso, calorías, proteína y los de "Más métricas" del panel). Entra con `line-draw` o `bar-grow` y recién después se posa la guía | Pedido del usuario: al desplazarse por la gráfica debe verse la fecha y el valor |
 | Animaciones extra | Entrada escalonada con `nutriSube` y transición de pantalla según la dirección de la pestaña. Pendiente: revisar `press-scale`, `tap-dot`, `skeleton-shimmer` y `count-up` contra el checklist §9 | |
