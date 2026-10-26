@@ -1,0 +1,22 @@
+# Avisos de NutriApp: recordatorios de citas (para la nutricionista) y de comidas (para el paciente).
+# Corre cada hora en punto; el script decide a quién le toca en esa hora de Lima.
+# Secretos: FIREBASE_SERVICE_ACCOUNT (el mismo del respaldo).
+name: Avisos y recordatorios
+
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install --no-save firebase-admin@12.7.0
+      - env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/avisos.mjs

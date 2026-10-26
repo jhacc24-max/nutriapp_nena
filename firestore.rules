@@ -5,8 +5,15 @@ rules_version = '2';
 // - usuarios/{uid}: cada persona solo lee/escribe su propio documento, y solo puede
 //   vincularse (pacienteId) a un espacio que ya exista.
 // - pacientes/{codigo} y todo lo que cuelga de él (registros, menuEdiciones...):
-//   solo lo leen/escriben las personas vinculadas a ese espacio.
-// - Nadie puede listar espacios ni borrarlos desde la app.
+//   lo leen/escriben las personas vinculadas a ese espacio.
+// - Nutricionista: solo existe si su documento nutricionistas/{uid} fue creado desde la
+//   consola de Firebase (nadie puede darse ese rol a sí mismo). Ve a los pacientes cuyo
+//   espacio la eligió (pacientes/{codigo}.nutricionistaUid == su uid), puede listarlos,
+//   y solo puede cambiar el estado del paciente (activo / pausado / baja), sus citas,
+//   evaluaciones y notas de consulta. No puede editar comidas, perfil ni pesos.
+// - Las notificaciones y el respaldo los escribe solo el servidor (GitHub Actions con
+//   cuenta de servicio, que no pasa por estas reglas).
+// - Nadie puede borrar espacios desde la app.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -20,6 +27,26 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.pacienteId == codigo;
     }
 
+    function esNutricionista() {
+      return iniciada()
+        && exists(/databases/$(database)/documents/nutricionistas/$(request.auth.uid));
+    }
+
+    // La nutricionista elegida por ese espacio.
+    function esSuNutricionista(codigo) {
+      return esNutricionista()
+        && get(/databases/$(database)/documents/pacientes/$(codigo)).data.get('nutricionistaUid', null) == request.auth.uid;
+    }
+
+    function puedeVer(codigo) {
+      return esMiembro(codigo) || esSuNutricionista(codigo);
+    }
+
+    // Campos del estado del paciente: solo los cambia la nutricionista.
+    function camposEstado() {
+      return ['estado', 'estadoMotivo', 'estadoDesde', 'estadoHasta'];
+    }
+
     match /usuarios/{uid} {
       allow read: if iniciada() && request.auth.uid == uid;
       allow create, update: if iniciada() && request.auth.uid == uid
@@ -30,27 +57,98 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Perfil de la nutricionista. Se crea desde la consola; ella solo puede ajustar
+    // sus preferencias de avisos y su nombre visible.
+    match /nutricionistas/{uid} {
+      allow read: if iniciada() && request.auth.uid == uid;
+      allow update: if iniciada() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre', 'avisos']);
+      allow create, delete: if false;
+    }
+
+    // Código corto de cada nutricionista (p. ej. "NUT-4821") para que el paciente la elija
+    // desde la app. Se crea desde la consola junto con nutricionistas/{uid}.
+    match /codigosNutri/{codigoNutri} {
+      allow get: if iniciada();
+      allow list, write: if false;
+    }
+
     match /pacientes/{codigo} {
       // Crear un espacio nuevo: el código no debe existir y debes quedar como creador.
+      // Un espacio nuevo nace activo: el estado no se puede fijar al crearlo.
       allow create: if iniciada()
         && codigo.matches('^[A-Z0-9]{4,12}$')
-        && request.resource.data.creadoPor == request.auth.uid;
-      // Leer: solo miembros. Modificar: solo miembros, sin cambiar el creador
-      // (los espacios antiguos sin ese campo también quedan permitidos).
-      allow get: if esMiembro(codigo);
+        && request.resource.data.creadoPor == request.auth.uid
+        && !request.resource.data.keys().hasAny(camposEstado());
+      allow get: if puedeVer(codigo);
+      // La nutricionista lista solo los espacios que la eligieron
+      // (la consulta debe filtrar por where('nutricionistaUid', '==', uid)).
+      allow list: if esNutricionista() && resource.data.get('nutricionistaUid', null) == request.auth.uid;
+      // Miembros: modifican todo menos el creador y el estado. Pueden elegir o quitar a su
+      // nutricionista, pero solo una que exista de verdad.
       allow update: if esMiembro(codigo)
-        && request.resource.data.get('creadoPor', null) == resource.data.get('creadoPor', null);
-      allow list, delete: if false;
+        && request.resource.data.get('creadoPor', null) == resource.data.get('creadoPor', null)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(camposEstado())
+        && (request.resource.data.get('nutricionistaUid', null) == null
+            || request.resource.data.nutricionistaUid == resource.data.get('nutricionistaUid', null)
+            || exists(/databases/$(database)/documents/nutricionistas/$(request.resource.data.nutricionistaUid)));
+      // Nutricionista: solo el estado (activar, pausar o dar de baja).
+      allow update: if esSuNutricionista(codigo)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(camposEstado())
+        && request.resource.data.estado in ['activo', 'pausado', 'baja'];
+      allow delete: if false;
 
       // Subcolecciones del espacio. Se listan explícitamente: en la versión 2 de las reglas
       // un comodín recursivo también coincide con el propio documento y anularía las
       // restricciones de arriba (borrado, creador).
       match /registros/{fecha}/items/{itemId} {
-        allow read, write: if esMiembro(codigo);
+        allow read: if puedeVer(codigo);
+        allow write: if esMiembro(codigo);
       }
       match /menuEdiciones/{dia} {
         allow read, write: if esMiembro(codigo);
       }
+      match /menuHoy/{dia} {
+        allow read, write: if esMiembro(codigo);
+      }
+      // Celulares que reciben recordatorios: cada persona registra solo el suyo.
+      match /dispositivos/{uid} {
+        allow read, write: if esMiembro(codigo) && request.auth.uid == uid;
+      }
+      // Evaluaciones de la nutricionista: el paciente las puede leer.
+      match /evaluaciones/{evalId} {
+        allow read: if puedeVer(codigo);
+        allow write: if esSuNutricionista(codigo);
+      }
+      // Notas de consulta: privadas de la nutricionista.
+      match /notasConsulta/{notaId} {
+        allow read, write: if esSuNutricionista(codigo);
+      }
+    }
+
+    // Citas: las crea y edita la nutricionista; el paciente puede verlas.
+    match /citas/{citaId} {
+      allow read: if iniciada() && (
+        resource.data.nutricionistaUid == request.auth.uid
+        || esMiembro(resource.data.pacienteId));
+      allow create: if esSuNutricionista(request.resource.data.pacienteId)
+        && request.resource.data.nutricionistaUid == request.auth.uid;
+      allow update: if esNutricionista()
+        && resource.data.nutricionistaUid == request.auth.uid
+        && request.resource.data.nutricionistaUid == request.auth.uid
+        && request.resource.data.pacienteId == resource.data.pacienteId;
+      allow delete: if esNutricionista() && resource.data.nutricionistaUid == request.auth.uid;
+    }
+
+    // Avisos ya enviados (los escribe el servidor). Cada quien lee los suyos y
+    // solo puede marcarlos como leídos.
+    match /notificaciones/{notifId} {
+      allow read: if iniciada() && (
+        resource.data.destinoUid == request.auth.uid
+        || esMiembro(resource.data.get('pacienteId', '')));
+      allow update: if iniciada() && resource.data.destinoUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['leida']);
+      allow create, delete: if false;
     }
 
     // Todo lo demás, cerrado.
